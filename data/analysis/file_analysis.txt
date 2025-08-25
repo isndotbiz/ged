@@ -1,0 +1,10 @@
+Master file info:
+File: data/master/master.ged
+Size: 25 bytes
+People count: 1469
+Date integrity: 261 corrupted indicators
+
+Key alternative files:
+- JDMallinger.ged: 1206 people, Family Tree Maker export from July 2025
+- clean.ged/0819.ged: 1300 people, but corrupted dates
+- ultra_safe.ged: 1469 people, safe processing

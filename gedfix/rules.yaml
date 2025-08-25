@@ -1,0 +1,10 @@
+note_prefix: "AutoFix:"
+merge_thresholds:
+  place_ratio: 92
+  date_ratio: 95
+merge_allowed_tags:
+  - BIRT
+  - DEAT
+  - MARR
+
+
