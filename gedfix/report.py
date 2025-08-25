@@ -1,16 +1,7 @@
 from __future__ import annotations
+import json
+from pathlib import Path
 
-from collections import Counter
-from typing import Iterable, Dict, Any
-
-
-def summarize_report(items: Iterable[Dict[str, Any]]) -> Dict[str, int]:
-    """Items may be issues from scan or changes from fix."""
-    rules = [i.get("rule", "unknown") for i in items]
-    counts = Counter(rules)
-    out = {"total": sum(counts.values())}
-    for k, v in counts.items():
-        out[f"rule:{k}"] = v
-    return out
-
-
+def write_json_report(p: Path, data: dict) -> None:
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(json.dumps(data, indent=2), encoding="utf-8")

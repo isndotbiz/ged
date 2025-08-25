@@ -1,132 +1,135 @@
 from __future__ import annotations
-
-from dataclasses import dataclass
 import re
-from typing import Optional
 
-
-GEDCOM_MONTHS = {
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC",
+GEDCOM_MONTHS = {"JAN","FEB","MAR","APR","MAY","JUN","JUL","AUG","SEP","OCT","NOV","DEC"}
+MONTH_NAMES = {
+    "JANUARY": "JAN", "FEBRUARY": "FEB", "MARCH": "MAR", "APRIL": "APR",
+    "MAY": "MAY", "JUNE": "JUN", "JULY": "JUL", "AUGUST": "AUG",
+    "SEPTEMBER": "SEP", "OCTOBER": "OCT", "NOVEMBER": "NOV", "DECEMBER": "DEC",
+    "SEPT": "SEP", "JAN.": "JAN", "FEB.": "FEB", "MAR.": "MAR", "APR.": "APR",
+    "JUN.": "JUN", "JUL.": "JUL", "AUG.": "AUG", "SEP.": "SEP", "SEPT.": "SEP",
+    "OCT.": "OCT", "NOV.": "NOV", "DEC.": "DEC"
 }
+QUALIFIERS = {"ABT","EST","CAL","INT","BEF","AFT","BET","FROM","TO","AND"}
+CIRCA_TERMS = {"CIRCA": "ABT", "ABOUT": "ABT", "C.": "ABT", "CA.": "ABT", "APPROX": "ABT"}
 
+_ws = r"[ \t]+"
+_token = r"[A-Z0-9][A-Z0-9\-]*"
+_day  = r"(0?[1-9]|[12][0-9]|3[01])"
+_year = r"([12][0-9]{3}|\d{1,3})"  # allow partial years; we won't reinterpret
+_mon  = r"(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)"
+# Patterns we consider GEDCOM-safe (do not change semantics, only case/space)
+_PATTERNS = [
+    re.compile(rf"^{_day}{_ws}{_mon}{_ws}{_year}$"),
+    re.compile(rf"^{_mon}{_ws}{_year}$"),
+    re.compile(rf"^{_year}$"),
+    re.compile(rf"^(ABT|EST|CAL|INT){_ws}{_year}(\s*\(.+\))?$"),
+    re.compile(rf"^(ABT|EST|CAL|INT){_ws}{_mon}{_ws}{_year}$"),
+    re.compile(rf"^(ABT|EST|CAL|INT){_ws}{_day}{_ws}{_mon}{_ws}{_year}$"),
+    re.compile(rf"^(BEF|AFT){_ws}{_year}$"),
+    re.compile(rf"^(BEF|AFT){_ws}{_mon}{_ws}{_year}$"),
+    re.compile(rf"^(BEF|AFT){_ws}{_day}{_ws}{_mon}{_ws}{_year}$"),
+    re.compile(rf"^BET{_ws}{_year}{_ws}AND{_ws}{_year}$"),
+    re.compile(rf"^FROM{_ws}{_year}{_ws}TO{_ws}{_year}$"),
+]
 
-DATE_PREFIXES = {"ABT", "EST", "CAL", "INT", "BEF", "AFT", "BET", "FROM", "TO"}
-
-
-@dataclass
-class DateValidationResult:
-    is_valid: bool
-    normalized: Optional[str]
-    reason: Optional[str] = None
-
-
-_SPACE_RE = re.compile(r"\s+")
-
-
-def _collapse_spaces(value: str) -> str:
-    return _SPACE_RE.sub(" ", value.strip())
-
-
-def _uppercase_month_tokens(value: str) -> str:
-    tokens = value.split(" ")
+def normalize_spaces_and_case(raw: str) -> str:
+    s = " ".join(raw.strip().split())
+    # Uppercase tokens; preserve parentheses content for INT
+    parts = []
+    buf = ""
+    paren = False
+    for ch in s:
+        if ch == "(":
+            paren = True
+        if ch == ")":
+            paren = False
+        buf += ch
+    # Simple uppercasing outside parens
     out = []
-    for tok in tokens:
-        if tok.upper() in GEDCOM_MONTHS:
-            out.append(tok.upper())
+    token = ""
+    in_paren = False
+    for ch in s:
+        if ch == "(":
+            in_paren = True
+            if token:
+                out.append(token.upper())
+                token = ""
+            out.append("(")
+            continue
+        if ch == ")":
+            in_paren = False
+            if token:
+                out.append(token.upper())
+                token = ""
+            out.append(")")
+            continue
+        if ch == " ":
+            if token:
+                out.append(token.upper() if not in_paren else token)
+                token = ""
+            out.append(" ")
+            continue
+        token += ch
+    if token:
+        out.append(token.upper() if not in_paren else token)
+    # collapse spaces again
+    return " ".join("".join(out).split())
+
+def is_gedcom_safe(s: str) -> bool:
+    S = s.strip()
+    for p in _PATTERNS:
+        if p.match(S):
+            return True
+    return False
+
+def convert_month_names(text: str) -> str:
+    """Convert full month names and abbreviations to GEDCOM standard."""
+    words = text.upper().split()
+    converted = []
+    for word in words:
+        # Remove trailing punctuation for lookup
+        clean_word = word.rstrip('.,;:')
+        
+        if clean_word in MONTH_NAMES:
+            converted.append(MONTH_NAMES[clean_word])
+        elif clean_word in CIRCA_TERMS:
+            converted.append(CIRCA_TERMS[clean_word])
         else:
-            out.append(tok)
-    return " ".join(out)
+            converted.append(word)
+    return ' '.join(converted)
 
-
-_YEAR_RE = re.compile(r"^[0-9]{3,4}$")
-_DAY_RE = re.compile(r"^[0-9]{1,2}$")
-
-
-def _is_year(token: str) -> bool:
-    return bool(_YEAR_RE.match(token))
-
-
-def _is_day(token: str) -> bool:
-    try:
-        if not _DAY_RE.match(token):
-            return False
-        day = int(token)
-        return 1 <= day <= 31
-    except ValueError:
-        return False
-
-
-def _validate_simple_date(tokens: list[str]) -> bool:
-    # Forms: YYYY | MON YYYY | DD MON YYYY
-    if len(tokens) == 1 and _is_year(tokens[0]):
-        return True
-    if len(tokens) == 2 and tokens[0].upper() in GEDCOM_MONTHS and _is_year(tokens[1]):
-        return True
-    if (
-        len(tokens) == 3
-        and _is_day(tokens[0])
-        and tokens[1].upper() in GEDCOM_MONTHS
-        and _is_year(tokens[2])
-    ):
-        return True
-    return False
-
-
-def _validate_ranged(prefix_left: str, middle_tokens: list[str], joiner: str, right_tokens: list[str]) -> bool:
-    # Handles: BET <date> AND <date> ; FROM <date> TO <date>
-    if prefix_left == "BET" and joiner == "AND":
-        return _validate_simple_date(middle_tokens) and _validate_simple_date(right_tokens)
-    if prefix_left == "FROM" and joiner == "TO":
-        return _validate_simple_date(middle_tokens) and _validate_simple_date(right_tokens)
-    return False
-
-
-def normalize_gedcom_date_safe(value: str) -> DateValidationResult:
-    # Collapse whitespace and uppercase month tokens only
-    collapsed = _collapse_spaces(value)
-    month_up = _uppercase_month_tokens(collapsed)
-
-    tokens = month_up.split(" ") if month_up else []
-    if not tokens:
-        return DateValidationResult(is_valid=False, normalized=month_up, reason="empty")
-
-    # Allow prefixes ABT/EST/CAL/INT/BEF/AFT
-    first = tokens[0].upper()
-    if first in {"ABT", "EST", "CAL", "INT", "BEF", "AFT"}:
-        if _validate_simple_date(tokens[1:]):
-            return DateValidationResult(is_valid=True, normalized=month_up)
-        return DateValidationResult(is_valid=False, normalized=month_up, reason="invalid_after_prefix")
-
-    # Ranged forms
-    if first in {"BET", "FROM"}:
-        # Find joiner
-        try:
-            if first == "BET":
-                join_index = tokens.index("AND", 1)
-                left = tokens[1:join_index]
-                right = tokens[join_index + 1 :]
-                ok = _validate_ranged("BET", left, "AND", right)
-            else:
-                join_index = tokens.index("TO", 1)
-                left = tokens[1:join_index]
-                right = tokens[join_index + 1 :]
-                ok = _validate_ranged("FROM", left, "TO", right)
-            if ok:
-                return DateValidationResult(is_valid=True, normalized=month_up)
-            return DateValidationResult(is_valid=False, normalized=month_up, reason="invalid_range")
-        except ValueError:
-            return DateValidationResult(is_valid=False, normalized=month_up, reason="missing_joiner")
-
-    # Simple forms
-    if _validate_simple_date(tokens):
-        return DateValidationResult(is_valid=True, normalized=month_up)
-
-    # If contains slashes or hyphenated numeric patterns, classify as unrecognized but preserved
-    if re.search(r"[0-9]{1,2}/[0-9]{1,2}/[0-9]{2,4}", value) or re.search(r"^[0-9]{4}-[0-9]{2}-[0-9]{2}$", value):
-        return DateValidationResult(is_valid=False, normalized=month_up, reason="non_gedcom_freeform")
-
-    # Any other unknown
-    return DateValidationResult(is_valid=False, normalized=month_up, reason="unrecognized")
-
-
+def sanitize_date_value(raw: str, level: str = "standard") -> tuple[str, list[str]]:
+    """
+    Returns (possibly-normalized-value, notes[])
+    Levels:
+    - standard: Only normalize spacing/case on recognized patterns
+    - aggressive: Convert month names and circa terms
+    - comprehensive: Apply all safe transformations
+    """
+    notes: list[str] = []
+    original = raw
+    
+    # First normalize spaces and case
+    norm = normalize_spaces_and_case(raw)
+    
+    # For aggressive+ levels, try converting month names and circa terms
+    if level in ["aggressive", "ultra", "comprehensive"]:
+        converted = convert_month_names(norm)
+        # Re-normalize after conversion
+        converted = normalize_spaces_and_case(converted)
+        
+        if is_gedcom_safe(converted):
+            if converted != original:
+                notes.append(f"Date standardized from '{original}' to GEDCOM format.")
+            return converted, notes
+        
+        # If conversion didn't work, fall back to original normalization
+        norm = normalize_spaces_and_case(raw)
+    
+    # Check if basic normalization is GEDCOM-safe
+    if is_gedcom_safe(norm):
+        return norm, notes
+    
+    # Not GEDCOM-safe: preserve original, add AutoFix note
+    return raw, ["Unrecognized or non-GEDCOM date preserved."]

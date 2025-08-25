@@ -1,39 +1,31 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
+requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "gedfix"
 version = "0.1.0"
-description = "Date-safe GEDCOM 5.5.1 cleanup tool"
+description = "Date-safe GEDCOM 5.5.1 cleaner with auditable AutoFix notes"
 readme = "README.md"
 requires-python = ">=3.11"
-license = {text = "MIT"}
-authors = [{ name = "gedfix" }]
 dependencies = [
   "click>=8.1",
-  "ged4py>=0.4.5",
-  "rapidfuzz>=3.6",
-  "python-dateutil>=2.8; python_version>='3.11'",
-  "PyYAML>=6.0",
-]
-
-[project.optional-dependencies]
-dev = [
-  "pytest>=8.2",
+  "ged4py>=0.5.2",
+  "python-dateutil>=2.9",
+  "rapidfuzz>=3.9",
 ]
 
 [project.scripts]
 gedfix = "gedfix.cli:main"
 
-[tool.pytest.ini_options]
-addopts = "-q"
-testpaths = ["tests"]
+[tool.setuptools.packages.find]
+where = ["."]  
+include = ["gedfix*"]
+exclude = ["tests*", "out*"]
 
-[tool.setuptools]
-packages = ["gedfix"]
+[tool.pytest.ini_options]
+python_files = "test_*.py"
+addopts = "-q"
 
 [tool.setuptools.package-data]
 "gedfix" = ["rules.yaml"]
-
-

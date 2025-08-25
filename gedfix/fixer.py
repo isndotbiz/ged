@@ -1,93 +1,98 @@
 from __future__ import annotations
+from pathlib import Path
+from typing import Iterable
+from .dates import sanitize_date_value
+from .names import sanitize_name_value
+from .places import sanitize_place_value
+from .validation import validate_gedcom_structure
+from .rules import load_rules
+from .io_utils import backup_file
 
-from typing import Dict, List, Tuple
-import re
+NOTE_PREFIX_DEFAULT = "AutoFix:"
 
-from .dates import normalize_gedcom_date_safe
+def iterate_lines(p: Path) -> Iterable[str]:
+    with p.open("r", encoding="utf-8", errors="replace") as f:
+        for line in f:
+            yield line.rstrip("\n")
 
+def write_lines(p: Path, lines: Iterable[str]) -> None:
+    with p.open("w", encoding="utf-8", newline="\n") as f:
+        for line in lines:
+            f.write(line + "\n")
 
-AUTO_PREFIX = "AutoFix:"
+def fix_file(inp: Path, out: Path, level: str, backup_dir: Path | None, note_prefix: str | None) -> dict:
+    rules = load_rules()
+    level_config = rules.get("levels", {}).get(level, {})
+    note_prefix = note_prefix or rules.get("note_prefix", NOTE_PREFIX_DEFAULT)
+    
+    if backup_dir:
+        backup_file(inp, backup_dir)
 
+    changed = 0
+    notes_added = 0
+    output_lines: list[str] = []
+    validation_report = None
+    
+    # Run structural validation if enabled
+    if level_config.get("structural_validation", False):
+        validation_report = validate_gedcom_structure(inp)
 
-def _has_autofix_note(lines: List[str], idx: int) -> bool:
-    # Check following line for a NOTE with AutoFix prefix
-    if idx + 1 < len(lines):
-        nxt = lines[idx + 1]
-        if re.search(r"\bNOTE\b", nxt) and AUTO_PREFIX in nxt:
-            return True
-    return False
+    for line in iterate_lines(inp):
+        original_line = line
+        # Normalize simple multiple spaces
+        stripped = " ".join(line.strip().split())
+        
+        # Process different GEDCOM tags based on level configuration
+        if stripped.startswith("1 ") or stripped.startswith("2 ") or stripped.startswith("3 "):
+            parts = stripped.split(" ", 2)
+            if len(parts) >= 3:
+                tag = parts[1]
+                orig_val = parts[2]
+                new_val = orig_val
+                notes = []
+                
+                # Handle DATE fields
+                if tag == "DATE" and level_config.get("fix_dates", True):
+                    new_val, notes = sanitize_date_value(orig_val, level)
+                
+                # Handle NAME fields
+                elif tag == "NAME" and level_config.get("fix_names", True):
+                    new_val, name_notes = sanitize_name_value(orig_val, level)
+                    notes.extend(name_notes)
+                
+                # Handle PLAC fields
+                elif tag == "PLAC" and level_config.get("fix_places", False):
+                    new_val, place_notes = sanitize_place_value(orig_val, level)
+                    notes.extend(place_notes)
+                
+                # Output the processed line
+                if new_val != orig_val:
+                    changed += 1
+                output_lines.append(f"{parts[0]} {tag} {new_val}")
+                
+                # Add notes if any
+                for note in notes:
+                    notes_added += 1
+                    output_lines.append(f"{parts[0]} NOTE {note_prefix} {note} Original: \"{orig_val}\"")
+                
+                continue
+        
+        # Default: write normalized spacing
+        if stripped != original_line:
+            changed += 1
+        output_lines.append(stripped)
 
-
-def _append_note(lines: List[str], idx: int, message: str) -> None:
-    # Preserve level indentation: level is first integer at line start
-    m = re.match(r"^(\s*)(\d+)(.*)$", lines[idx])
-    if not m:
-        level_str = "1"
-        prefix_ws = ""
-        rest = ""
-    else:
-        prefix_ws, level_str, rest = m.groups()
-    try:
-        level = int(level_str)
-    except ValueError:
-        level = 1
-    note_level = level + 1
-    note_line = f"{prefix_ws}{note_level} NOTE {AUTO_PREFIX} {message}"
-    lines.insert(idx + 1, note_line)
-
-
-def fix_gedcom_text(text: str, level: str, rules: Dict) -> Tuple[str, List[Dict]]:
-    # For now, implement safe DATE normalization and NOTE trail
-    lines = text.splitlines()
-    changes: List[Dict] = []
-
-    line_re = re.compile(r"^\s*(\d+)\s+(?:@[^@\s]+@\s+)?([A-Za-z0-9_]+)\s*(.*)$")
-
-    for i, line in enumerate(list(lines)):
-        m = line_re.match(line)
-        if not m:
-            continue
-        _level, tag, remainder = m.groups()
-        if tag.upper() != "DATE":
-            continue
-        before_value = remainder.strip()
-        result = normalize_gedcom_date_safe(before_value)
-
-        # Normalize whitespace and month tokens only; never change semantics
-        normalized_value = result.normalized if result.normalized is not None else before_value
-
-        if result.is_valid:
-            # If already equal, skip. Else rewrite safely (idempotent spacing/month case only)
-            if normalized_value != before_value:
-                # Reconstruct line preserving original leading level and tag spacing minimally
-                leading = re.match(r"^(\s*\d+\s+(?:@[^@\s]+@\s+)?DATE)\b", line, re.IGNORECASE)
-                if leading:
-                    prefix = leading.group(1)
-                else:
-                    prefix = "2 DATE"
-                lines[i] = f"{prefix} {normalized_value}"
-                changes.append({
-                    "rule": "date_normalize",
-                    "message": "Normalized DATE whitespace/month tokens",
-                    "before": before_value,
-                    "after": normalized_value,
-                })
-        else:
-            # Do not change original value; add NOTE once
-            if not _has_autofix_note(lines, i):
-                _append_note(
-                    lines,
-                    i,
-                    f"Unrecognized DATE \"{before_value}\" preserved; please verify.",
-                )
-                changes.append({
-                    "rule": "date_unrecognized_note",
-                    "message": "Added NOTE for unrecognized DATE",
-                    "before": before_value,
-                    "after": None,
-                })
-
-    fixed_text = "\n".join(lines) + ("\n" if text.endswith("\n") else "")
-    return fixed_text, changes
-
-
+    write_lines(out, output_lines)
+    
+    result = {
+        "changed": changed, 
+        "notes_added": notes_added, 
+        "out": str(out),
+        "level": level
+    }
+    
+    # Add validation report if available
+    if validation_report:
+        result["validation"] = validation_report
+    
+    return result

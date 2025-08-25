@@ -1,17 +1,12 @@
 from __future__ import annotations
-
 from pathlib import Path
-from typing import Tuple
+import shutil, time
 
+def timestamp() -> str:
+    return time.strftime("%Y%m%d-%H%M%S")
 
-def read_text_preserve_encoding(path: Path) -> Tuple[str, str]:
-    """Try common encodings first, then fallback with replacement."""
-    for enc in ("utf-8-sig", "utf-8", "cp1252", "latin-1"):
-        try:
-            return path.read_text(encoding=enc), enc
-        except UnicodeDecodeError:
-            continue
-    data = path.read_bytes()
-    return data.decode("latin-1", errors="replace"), "latin-1"
-
-
+def backup_file(src: Path, backup_dir: Path) -> Path:
+    backup_dir.mkdir(parents=True, exist_ok=True)
+    dest = backup_dir / f"{src.stem}.{timestamp()}{src.suffix}"
+    shutil.copy2(src, dest)
+    return dest

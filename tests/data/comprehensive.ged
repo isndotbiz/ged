@@ -1,0 +1,32 @@
+0 HEAD
+1 SOUR TestApp
+1 VERS 1.0
+1 CHAR UTF-8
+0 @I1@ INDI
+1 NAME john william /DOE/
+1 BIRT
+2 DATE circa january 15, 1850
+2 PLAC new york city, NY, usa
+1 DEAT
+2 DATE 12/25/1920
+2 PLAC NYC, New York, United States
+0 @I2@ INDI
+1 NAME mary elizabeth /SMITH/
+1 BIRT
+2 DATE about February 1855
+2 PLAC boston, ma
+1 DEAT
+2 DATE dec. 31 1925
+0 @I3@ INDI
+1 NAME william j. /mcdonald/
+1 BIRT
+2 DATE march 1880
+2 PLAC st. louis, MO
+0 @F1@ FAM
+1 HUSB @I1@
+1 WIFE @I2@
+1 CHIL @I3@
+1 MARR
+2 DATE june 12 1875
+2 PLAC chicago, illinois, us
+0 TRLR

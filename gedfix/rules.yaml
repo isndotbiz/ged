@@ -1,10 +1,33 @@
 note_prefix: "AutoFix:"
-merge_thresholds:
-  place_ratio: 92
-  date_ratio: 95
-merge_allowed_tags:
-  - BIRT
-  - DEAT
-  - MARR
-
-
+levels:
+  standard:
+    merge_duplicates: false
+    fuzzy_threshold: 96
+    fix_dates: true
+    fix_names: true
+    fix_places: false
+    structural_validation: false
+  aggressive:
+    merge_duplicates: true
+    fuzzy_threshold: 92
+    fix_dates: true
+    fix_names: true
+    fix_places: true
+    structural_validation: true
+  ultra:
+    merge_duplicates: true
+    fuzzy_threshold: 88
+    fix_dates: true
+    fix_names: true
+    fix_places: true
+    structural_validation: true
+  comprehensive:
+    merge_duplicates: true
+    fuzzy_threshold: 90
+    fix_dates: true
+    fix_names: true
+    fix_places: true
+    structural_validation: true
+    advanced_name_resolution: true
+    historical_place_mapping: true
+    date_consistency_checks: true
