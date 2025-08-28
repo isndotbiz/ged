@@ -1,0 +1,43 @@
+{
+  "metadata": {
+    "parser_version": "1.0",
+    "parsed_at": "2025-08-24T23:54:59.403165",
+    "source": "MyHeritage Tree Consistency Checker"
+  },
+  "statistics": {
+    "total_pages": 1,
+    "total_issues": 2,
+    "issues_by_category": {
+      "missing dates": 1,
+      "general": 1
+    },
+    "issues_by_severity": {
+      "medium": 2
+    },
+    "parsing_errors": 0
+  },
+  "issues": [
+    {
+      "issue_type": "myheritage_missing_dates",
+      "severity": "medium",
+      "individual_id": null,
+      "individual_name": "Duncan Gilchrist",
+      "description": "Mallinger Web Site\n313\nGo PremiumPlus Jonathan Mallinger Help English\nHome Family tree Discoveries Photos DNA Research\nTree Consistency Checker\nroots_master\n633 consistency issues found (1,469 of 1,46...",
+      "suggested_fix": null,
+      "location": "Page 1",
+      "raw_text": "Mallinger Web Site\n313\nGo PremiumPlus Jonathan Mallinger Help English\nHome Family tree Discoveries Photos DNA Research\nTree Consistency Checker\nroots_master\n633 consistency issues found (1,469 of 1,469 people)\nChild born after death of parent (11)\nWalter Spong was born on 1754, after the death of his father William Spong on 1721\nTip: Correct the birth date of Walter Spong or the death date of William Spong.\nView 10 more issues of this type\nDied too old (13)\nDuncan Gilchrist (born December 28 1745, died 1855) was rather old at death (at least 109 years old)\nTip: Correct birth date or death date of Duncan Gilchrist.\nView 12 more issues of this type\nParent too young when having a child (51)\nMary Postle (born February 5 1726) and her father Samuel Postle, 8xpggf (born 1711) are 15 years apart\nTip: Correct the birth date of Mary Postle or of Samuel Postle, 8xpggf.\nIgnore this issue if the dates are fine.\nView 50 more issues of this type\nParent too old when having a child (13)\nElizabeth Sophia Steane (born May 16 1860) and her father William Steane (born 1802) are 58 years apart\nTip: Correct the birth date of Elizabeth Sophia Steane or of William Steane.\nIgnore this issue if the dates are fine.\nView 12 more issues of this type\nFact occurring after death (20)\nDate of Marriage of Eleanor \"Elienor\" Ford (May 1 1703) occurred after her death date (1702)\nTip: Correct date of Marriage or death date of Eleanor \"Elienor\" Ford.\nIgnore this issue if this is a fact that occurred after the person's death.\nView 19 more issues of this type\nFact occurring before birth (15)\nDate of Marriage of Sir William Dunkeld Mackintosh MacIntosh MacCintosh, Baron Mackintosh Of Torecastle 15th Chief Of Clan\nMcintosh (January 18 1500) occurred before his birth date (September 1523)\nTip: Correct date of Marriage or birth date of Sir William Dunkeld Mackintosh MacIntosh MacCintosh, Baron Mackintosh Of Torecastle 15th Chief Of Clan Mcintosh.\nView 14 more issues of this type\nSiblings with close age (6)",
+      "category": "missing dates"
+    },
+    {
+      "issue_type": "myheritage_general",
+      "severity": "medium",
+      "individual_id": null,
+      "individual_name": "Anthonius Barkey Bercke",
+      "description": "about 9 months and 16 days)\nTip: Correct the birth date of Florence Emily Evans or of Herbert Henry Evans.\nView 5 more issues of this type\nLarge spouse age difference (2)\nAnthonius Barkey Bercke (born...",
+      "suggested_fix": "in first name (1)\nFirst name of John II Partridge ends with the suffix 'II', which should be moved to the separate Suffix field\nTip: Move the suffix from the first name of John II Partridge into the 'Suffix' field",
+      "location": "Page 1",
+      "raw_text": "about 9 months and 16 days)\nTip: Correct the birth date of Florence Emily Evans or of Herbert Henry Evans.\nView 5 more issues of this type\nLarge spouse age difference (2)\nAnthonius Barkey Bercke (born August 29 1521) and his wife Garberice Bredeloh (born 1561) are 40 years apart\nTip: Correct the birth date of Anthonius Barkey Bercke or of Garberice Bredeloh.\nIgnore this issue if the dates are fine.\nView one more issue of this type\nMarried too young (19)\nAnne Newlove (born 1732) was rather young to be married on January 3 1741 when she was at most 9 years old\nTip: Correct the birth date or the date of Marriage of Anne Newlove.\nView 18 more issues of this type\nDied too young to be a spouse (2)\nWilliam Spong (born 1721, died 1721) was rather young to be a spouse (died at less than one years old)\nTip: Correct birth date or death date of William Spong.\nView one more issue of this type\nMultiple marriages of same couple (34)\nFletcher Shaw and his wife Mary Jane Johnson have 2 marriage facts\nTip: Remove redundant marriage facts of Fletcher Shaw or Mary Jane Johnson.\nView 33 more issues of this type\nSuffix in first name (1)\nFirst name of John II Partridge ends with the suffix 'II', which should be moved to the separate Suffix field\nTip: Move the suffix from the first name of John II Partridge into the 'Suffix' field.\n✓ Move 'II' to Suffix\nSuffix in last name (1)\nLast name of William Lommanse Jr. ends with the suffix 'Jr.', which should be moved to the separate Suffix field\nTip: Move the suffix from the last name of William Lommanse Jr. into the 'Suffix' field.\n✓ Move 'Jr.' to Suffix\nMultiple birth facts of same person (175)\nHelen Jean Mackay has 2 birth facts\nTip: Remove redundant birth facts of Helen Jean Mackay.\nView 174 more issues of this type\nMultiple death facts of same person (158)\nJohn F. Mallinger has 2 death facts\nTip: Remove redundant death facts of John F. Mallinger.\nView 157 more issues of this type\nDisconnected from tree (6)\nAnn Spong has no relatives in the family tree\nTip: Connect Ann Spong to a parent, a partner or a child in the family tree\nUse the 'Connect to existing person' entry in the 'More' menu\nView 5 more issues of this type\nSiblings with same first name (4)\nJohn Norwood My Th Gr Uncle (born 1524) and his brother John Norwood (born 1550) have the same first name\nTip: Correct the first names of John Norwood My Th Gr Uncle (born 1524) or John Norwood (born 1550).\nIf this is the same person, remove one of them.\nIgnore this issue if you are certain that the siblings had the same first name.\nView 3 more issues of this type\nInconsistent last name spelling (71)\nMary Ach has the last name 'Ach', which appears once in your tree, while a similar spelling 'Ash' appears 4 times\nTip: Replace last name of Mary Ach with the more commonly used 'Ash'.\n✓ Change to 'Ash'\nView 70 more issues of this type\nInconsistent place name spelling (31)\nHeinrich Johann Matthias Eschash, Th Ggf has a Death place 'Blessenbach, Hessen-Nassau, Preussen, Germany', which appears once in\nyour tree, while a similar spelling 'Blessenbach, Hessen Nassau, Preussen, Germany' appears twice\nTip: Replace the Death place of Heinrich Johann Matthias Eschash, Th Ggf with the more commonly used 'Blessenbach, Hessen Nassau, Preussen, Germany'.\n✓ Change to 'Blessenbach, Hessen Nassau, Preussen, Germany'\nView 30 more issues of this type",
+      "category": "general"
+    }
+  ]
+}

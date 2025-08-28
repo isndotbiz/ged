@@ -1,0 +1,3638 @@
+{
+  "duplicates_found": 316,
+  "processing_results": {
+    "auto_merged": 171,
+    "requires_review": 54,
+    "errors": 0,
+    "merge_log": [
+      {
+        "primary_id": "@I13@",
+        "secondary_id": "@I29@",
+        "merge_notes": [
+          "Added DEAT from @I29@",
+          "Preserved 1 date records from @I29@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I13@",
+        "secondary_id": "@I1341@",
+        "merge_notes": [
+          "Added DEAT from @I1341@",
+          "Added EVEN from @I1341@",
+          "Preserved 1 date records from @I1341@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I17@",
+        "secondary_id": "@I34@",
+        "merge_notes": [
+          "Added BIRT from @I34@",
+          "Added DEAT from @I34@",
+          "Added EVEN from @I34@",
+          "Preserved 2 date records from @I34@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I19@",
+        "secondary_id": "@I840@",
+        "merge_notes": [
+          "Added BIRT from @I840@",
+          "Added DEAT from @I840@",
+          "Added EVEN from @I840@",
+          "Preserved 2 date records from @I840@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I21@",
+        "secondary_id": "@I25@",
+        "merge_notes": [
+          "Added BIRT from @I25@",
+          "Added DEAT from @I25@",
+          "Added EVEN from @I25@",
+          "Preserved 2 date records from @I25@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I21@",
+        "secondary_id": "@I466@",
+        "merge_notes": [
+          "Added BIRT from @I466@",
+          "Added DEAT from @I466@",
+          "Added EVEN from @I466@",
+          "Preserved 1 date records from @I466@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I47@",
+        "secondary_id": "@I1331@",
+        "merge_notes": [
+          "Added BIRT from @I1331@",
+          "Added DEAT from @I1331@",
+          "Added EVEN from @I1331@",
+          "Preserved 1 date records from @I1331@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I71@",
+        "secondary_id": "@I392@",
+        "merge_notes": [
+          "Added BIRT from @I392@",
+          "Added DEAT from @I392@",
+          "Added EVEN from @I392@",
+          "Preserved 1 date records from @I392@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I74@",
+        "secondary_id": "@I1315@",
+        "merge_notes": [
+          "Added BIRT from @I1315@",
+          "Added DEAT from @I1315@",
+          "Added EVEN from @I1315@",
+          "Preserved 1 date records from @I1315@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I99@",
+        "secondary_id": "@I1246@",
+        "merge_notes": [
+          "Added BIRT from @I1246@",
+          "Added DEAT from @I1246@",
+          "Preserved 2 date records from @I1246@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I106@",
+        "secondary_id": "@I1305@",
+        "merge_notes": [
+          "Added BIRT from @I1305@",
+          "Added DEAT from @I1305@",
+          "Added EVEN from @I1305@",
+          "Preserved 1 date records from @I1305@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I108@",
+        "secondary_id": "@I113@",
+        "merge_notes": [
+          "Added BIRT from @I113@",
+          "Added DEAT from @I113@",
+          "Added EVEN from @I113@",
+          "Preserved 2 date records from @I113@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I108@",
+        "secondary_id": "@I114@",
+        "merge_notes": [
+          "Added BIRT from @I114@",
+          "Added DEAT from @I114@",
+          "Added EVEN from @I114@",
+          "Preserved 1 date records from @I114@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I118@",
+        "secondary_id": "@I124@",
+        "merge_notes": [
+          "Added BIRT from @I124@",
+          "Added DEAT from @I124@",
+          "Added EVEN from @I124@",
+          "Preserved 2 date records from @I124@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I120@",
+        "secondary_id": "@I1297@",
+        "merge_notes": [
+          "Added BIRT from @I1297@",
+          "Added DEAT from @I1297@",
+          "Added EVEN from @I1297@",
+          "Preserved 2 date records from @I1297@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I151@",
+        "merge_notes": [
+          "Added BIRT from @I151@",
+          "Added DEAT from @I151@",
+          "Preserved 2 date records from @I151@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I156@",
+        "merge_notes": [
+          "Added BIRT from @I156@",
+          "Added DEAT from @I156@",
+          "Preserved 2 date records from @I156@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I300@",
+        "merge_notes": [
+          "Added BIRT from @I300@",
+          "Added DEAT from @I300@",
+          "Preserved 2 date records from @I300@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I566@",
+        "merge_notes": [
+          "Added BIRT from @I566@",
+          "Added DEAT from @I566@",
+          "Added EVEN from @I566@",
+          "Preserved 2 date records from @I566@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I1317@",
+        "merge_notes": [
+          "Added BIRT from @I1317@",
+          "Added DEAT from @I1317@",
+          "Added EVEN from @I1317@",
+          "Preserved 2 date records from @I1317@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I1386@",
+        "merge_notes": [],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I121@",
+        "secondary_id": "@I1392@",
+        "merge_notes": [],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I128@",
+        "secondary_id": "@I1363@",
+        "merge_notes": [
+          "Added BIRT from @I1363@",
+          "Added DEAT from @I1363@",
+          "Added EVEN from @I1363@",
+          "Preserved 2 date records from @I1363@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I131@",
+        "secondary_id": "@I1334@",
+        "merge_notes": [
+          "Added BIRT from @I1334@",
+          "Added DEAT from @I1334@",
+          "Added EVEN from @I1334@",
+          "Preserved 1 date records from @I1334@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I132@",
+        "secondary_id": "@I1306@",
+        "merge_notes": [
+          "Added BIRT from @I1306@",
+          "Added EVEN from @I1306@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I139@",
+        "secondary_id": "@I152@",
+        "merge_notes": [
+          "Added DEAT from @I152@",
+          "Preserved 1 date records from @I152@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I139@",
+        "secondary_id": "@I1370@",
+        "merge_notes": [
+          "Added DEAT from @I1370@",
+          "Added EVEN from @I1370@",
+          "Preserved 1 date records from @I1370@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I159@",
+        "secondary_id": "@I161@",
+        "merge_notes": [
+          "Added BIRT from @I161@",
+          "Added DEAT from @I161@",
+          "Added EVEN from @I161@",
+          "Preserved 1 date records from @I161@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I167@",
+        "secondary_id": "@I1371@",
+        "merge_notes": [
+          "Added BIRT from @I1371@",
+          "Added DEAT from @I1371@",
+          "Added EVEN from @I1371@",
+          "Preserved 1 date records from @I1371@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I173@",
+        "secondary_id": "@I269@",
+        "merge_notes": [
+          "Added BIRT from @I269@",
+          "Added DEAT from @I269@",
+          "Preserved 1 date records from @I269@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I173@",
+        "secondary_id": "@I866@",
+        "merge_notes": [
+          "Added BIRT from @I866@",
+          "Added DEAT from @I866@",
+          "Preserved 2 date records from @I866@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I173@",
+        "secondary_id": "@I1348@",
+        "merge_notes": [
+          "Added BIRT from @I1348@",
+          "Added DEAT from @I1348@",
+          "Added EVEN from @I1348@",
+          "Preserved 1 date records from @I1348@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I173@",
+        "secondary_id": "@I1388@",
+        "merge_notes": [],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I181@",
+        "secondary_id": "@I1085@",
+        "merge_notes": [
+          "Added BIRT from @I1085@",
+          "Added DEAT from @I1085@",
+          "Added EVEN from @I1085@",
+          "Preserved 2 date records from @I1085@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I195@",
+        "secondary_id": "@I406@",
+        "merge_notes": [
+          "Added BIRT from @I406@",
+          "Added DEAT from @I406@",
+          "Added EVEN from @I406@",
+          "Preserved 2 date records from @I406@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I195@",
+        "secondary_id": "@I417@",
+        "merge_notes": [
+          "Added BIRT from @I417@",
+          "Added DEAT from @I417@",
+          "Added EVEN from @I417@",
+          "Preserved 1 date records from @I417@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I195@",
+        "secondary_id": "@I419@",
+        "merge_notes": [
+          "Added BIRT from @I419@",
+          "Added DEAT from @I419@",
+          "Added EVEN from @I419@",
+          "Preserved 1 date records from @I419@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I211@",
+        "secondary_id": "@I1250@",
+        "merge_notes": [
+          "Added BIRT from @I1250@",
+          "Added DEAT from @I1250@",
+          "Preserved 1 date records from @I1250@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I211@",
+        "secondary_id": "@I1256@",
+        "merge_notes": [
+          "Added BIRT from @I1256@",
+          "Added DEAT from @I1256@",
+          "Preserved 1 date records from @I1256@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I215@",
+        "secondary_id": "@I1350@",
+        "merge_notes": [
+          "Added BIRT from @I1350@",
+          "Added DEAT from @I1350@",
+          "Added EVEN from @I1350@",
+          "Preserved 1 date records from @I1350@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I222@",
+        "secondary_id": "@I998@",
+        "merge_notes": [
+          "Added BIRT from @I998@",
+          "Added DEAT from @I998@",
+          "Added EVEN from @I998@",
+          "Preserved 1 date records from @I998@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I226@",
+        "secondary_id": "@I1188@",
+        "merge_notes": [
+          "Added BIRT from @I1188@",
+          "Added DEAT from @I1188@",
+          "Added RESI from @I1188@",
+          "Added EVEN from @I1188@",
+          "Preserved 3 date records from @I1188@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I231@",
+        "secondary_id": "@I234@",
+        "merge_notes": [
+          "Added DEAT from @I234@",
+          "Preserved 1 date records from @I234@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I231@",
+        "secondary_id": "@I1367@",
+        "merge_notes": [
+          "Added DEAT from @I1367@",
+          "Added EVEN from @I1367@",
+          "Preserved 1 date records from @I1367@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I233@",
+        "secondary_id": "@I1342@",
+        "merge_notes": [
+          "Added BIRT from @I1342@",
+          "Added DEAT from @I1342@",
+          "Added EVEN from @I1342@",
+          "Preserved 1 date records from @I1342@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I249@",
+        "secondary_id": "@I250@",
+        "merge_notes": [
+          "Added BIRT from @I250@",
+          "Added DEAT from @I250@",
+          "Added EVEN from @I250@",
+          "Preserved 2 date records from @I250@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I249@",
+        "secondary_id": "@I545@",
+        "merge_notes": [
+          "Added BIRT from @I545@",
+          "Added DEAT from @I545@",
+          "Added EVEN from @I545@",
+          "Preserved 1 date records from @I545@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I252@",
+        "secondary_id": "@I254@",
+        "merge_notes": [
+          "Added BIRT from @I254@",
+          "Added DEAT from @I254@",
+          "Added EVEN from @I254@",
+          "Preserved 2 date records from @I254@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I252@",
+        "secondary_id": "@I256@",
+        "merge_notes": [
+          "Added BIRT from @I256@",
+          "Added DEAT from @I256@",
+          "Added EVEN from @I256@",
+          "Preserved 2 date records from @I256@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I252@",
+        "secondary_id": "@I1176@",
+        "merge_notes": [
+          "Added BIRT from @I1176@",
+          "Added DEAT from @I1176@",
+          "Added EVEN from @I1176@",
+          "Preserved 2 date records from @I1176@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I259@",
+        "secondary_id": "@I261@",
+        "merge_notes": [
+          "Added alternate name from @I261@",
+          "Added alternate name from @I261@",
+          "Added BIRT from @I261@",
+          "Added DEAT from @I261@",
+          "Added EVEN from @I261@",
+          "Preserved 2 date records from @I261@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I267@",
+        "secondary_id": "@I1377@",
+        "merge_notes": [
+          "Added BIRT from @I1377@",
+          "Added DEAT from @I1377@",
+          "Added EVEN from @I1377@",
+          "Preserved 2 date records from @I1377@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I268@",
+        "secondary_id": "@I1347@",
+        "merge_notes": [
+          "Added BIRT from @I1347@",
+          "Added DEAT from @I1347@",
+          "Added EVEN from @I1347@",
+          "Preserved 1 date records from @I1347@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I270@",
+        "secondary_id": "@I1316@",
+        "merge_notes": [
+          "Added BIRT from @I1316@",
+          "Added DEAT from @I1316@",
+          "Added EVEN from @I1316@",
+          "Preserved 1 date records from @I1316@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I272@",
+        "secondary_id": "@I1368@",
+        "merge_notes": [
+          "Added BIRT from @I1368@",
+          "Added DEAT from @I1368@",
+          "Added EVEN from @I1368@",
+          "Preserved 1 date records from @I1368@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I273@",
+        "secondary_id": "@I274@",
+        "merge_notes": [
+          "Added BIRT from @I274@",
+          "Added DEAT from @I274@",
+          "Added EVEN from @I274@",
+          "Preserved 2 date records from @I274@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I277@",
+        "secondary_id": "@I1303@",
+        "merge_notes": [
+          "Added BIRT from @I1303@",
+          "Added DEAT from @I1303@",
+          "Added EVEN from @I1303@",
+          "Preserved 1 date records from @I1303@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I292@",
+        "secondary_id": "@I1389@",
+        "merge_notes": [
+          "Added BIRT from @I1389@",
+          "Added DEAT from @I1389@",
+          "Preserved 2 date records from @I1389@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I294@",
+        "secondary_id": "@I917@",
+        "merge_notes": [
+          "Added BIRT from @I917@",
+          "Added DEAT from @I917@",
+          "Added EVEN from @I917@",
+          "Preserved 2 date records from @I917@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I295@",
+        "secondary_id": "@I297@",
+        "merge_notes": [
+          "Added BIRT from @I297@",
+          "Added DEAT from @I297@",
+          "Added EVEN from @I297@",
+          "Preserved 2 date records from @I297@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I295@",
+        "secondary_id": "@I846@",
+        "merge_notes": [
+          "Added BIRT from @I846@",
+          "Added DEAT from @I846@",
+          "Added EVEN from @I846@",
+          "Preserved 2 date records from @I846@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I295@",
+        "secondary_id": "@I913@",
+        "merge_notes": [
+          "Added BIRT from @I913@",
+          "Added DEAT from @I913@",
+          "Added EVEN from @I913@",
+          "Preserved 1 date records from @I913@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I304@",
+        "secondary_id": "@I326@",
+        "merge_notes": [
+          "Added BIRT from @I326@",
+          "Added DEAT from @I326@",
+          "Added EVEN from @I326@",
+          "Preserved 2 date records from @I326@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I306@",
+        "secondary_id": "@I322@",
+        "merge_notes": [
+          "Added BIRT from @I322@",
+          "Added DEAT from @I322@",
+          "Added EVEN from @I322@",
+          "Preserved 2 date records from @I322@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I317@",
+        "secondary_id": "@I800@",
+        "merge_notes": [
+          "Added BIRT from @I800@",
+          "Added DEAT from @I800@",
+          "Added EVEN from @I800@",
+          "Preserved 1 date records from @I800@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I325@",
+        "secondary_id": "@I328@",
+        "merge_notes": [
+          "Added BIRT from @I328@",
+          "Added DEAT from @I328@",
+          "Added EVEN from @I328@",
+          "Preserved 2 date records from @I328@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I325@",
+        "secondary_id": "@I329@",
+        "merge_notes": [
+          "Added BIRT from @I329@",
+          "Added DEAT from @I329@",
+          "Preserved 1 date records from @I329@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I325@",
+        "secondary_id": "@I1343@",
+        "merge_notes": [
+          "Added BIRT from @I1343@",
+          "Added DEAT from @I1343@",
+          "Added EVEN from @I1343@",
+          "Preserved 1 date records from @I1343@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I335@",
+        "secondary_id": "@I341@",
+        "merge_notes": [
+          "Added BIRT from @I341@",
+          "Added DEAT from @I341@",
+          "Added EVEN from @I341@",
+          "Preserved 2 date records from @I341@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I335@",
+        "secondary_id": "@I344@",
+        "merge_notes": [
+          "Added BIRT from @I344@",
+          "Added DEAT from @I344@",
+          "Added EVEN from @I344@",
+          "Preserved 2 date records from @I344@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I337@",
+        "secondary_id": "@I1128@",
+        "merge_notes": [
+          "Added EVEN from @I1128@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I339@",
+        "secondary_id": "@I345@",
+        "merge_notes": [
+          "Added BIRT from @I345@",
+          "Added DEAT from @I345@",
+          "Added EVEN from @I345@",
+          "Preserved 2 date records from @I345@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I339@",
+        "secondary_id": "@I347@",
+        "merge_notes": [
+          "Added BIRT from @I347@",
+          "Added DEAT from @I347@",
+          "Preserved 2 date records from @I347@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I339@",
+        "secondary_id": "@I1356@",
+        "merge_notes": [
+          "Added BIRT from @I1356@",
+          "Added DEAT from @I1356@",
+          "Added EVEN from @I1356@",
+          "Preserved 2 date records from @I1356@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I348@",
+        "secondary_id": "@I782@",
+        "merge_notes": [
+          "Added BIRT from @I782@",
+          "Added DEAT from @I782@",
+          "Added EVEN from @I782@",
+          "Preserved 2 date records from @I782@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I350@",
+        "secondary_id": "@I1340@",
+        "merge_notes": [
+          "Added BIRT from @I1340@",
+          "Added DEAT from @I1340@",
+          "Added EVEN from @I1340@",
+          "Preserved 1 date records from @I1340@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I351@",
+        "secondary_id": "@I1322@",
+        "merge_notes": [
+          "Added BIRT from @I1322@",
+          "Added EVEN from @I1322@",
+          "Preserved 1 date records from @I1322@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I360@",
+        "secondary_id": "@I861@",
+        "merge_notes": [
+          "Added BIRT from @I861@",
+          "Added DEAT from @I861@",
+          "Preserved 1 date records from @I861@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I360@",
+        "secondary_id": "@I1359@",
+        "merge_notes": [
+          "Added BIRT from @I1359@",
+          "Added DEAT from @I1359@",
+          "Added EVEN from @I1359@",
+          "Preserved 1 date records from @I1359@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I367@",
+        "secondary_id": "@I1310@",
+        "merge_notes": [
+          "Added BIRT from @I1310@",
+          "Added DEAT from @I1310@",
+          "Added EVEN from @I1310@",
+          "Preserved 1 date records from @I1310@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I372@",
+        "secondary_id": "@I512@",
+        "merge_notes": [
+          "Added BIRT from @I512@",
+          "Added DEAT from @I512@",
+          "Added EVEN from @I512@",
+          "Preserved 2 date records from @I512@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I374@",
+        "secondary_id": "@I375@",
+        "merge_notes": [
+          "Added BIRT from @I375@",
+          "Added DEAT from @I375@",
+          "Added EVEN from @I375@",
+          "Preserved 2 date records from @I375@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I378@",
+        "secondary_id": "@I1012@",
+        "merge_notes": [
+          "Added BIRT from @I1012@",
+          "Added DEAT from @I1012@",
+          "Added EVEN from @I1012@",
+          "Preserved 2 date records from @I1012@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I379@",
+        "secondary_id": "@I1323@",
+        "merge_notes": [
+          "Added BIRT from @I1323@",
+          "Added DEAT from @I1323@",
+          "Added EVEN from @I1323@",
+          "Preserved 1 date records from @I1323@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I382@",
+        "secondary_id": "@I491@",
+        "merge_notes": [
+          "Added BIRT from @I491@",
+          "Added DEAT from @I491@",
+          "Added EVEN from @I491@",
+          "Preserved 2 date records from @I491@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I391@",
+        "secondary_id": "@I1354@",
+        "merge_notes": [
+          "Added BIRT from @I1354@",
+          "Added DEAT from @I1354@",
+          "Added EVEN from @I1354@",
+          "Preserved 1 date records from @I1354@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I393@",
+        "secondary_id": "@I395@",
+        "merge_notes": [
+          "Added BIRT from @I395@",
+          "Added DEAT from @I395@",
+          "Added EVEN from @I395@",
+          "Preserved 1 date records from @I395@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I393@",
+        "secondary_id": "@I397@",
+        "merge_notes": [
+          "Added BIRT from @I397@",
+          "Added DEAT from @I397@",
+          "Added EVEN from @I397@",
+          "Preserved 2 date records from @I397@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I404@",
+        "secondary_id": "@I412@",
+        "merge_notes": [
+          "Added BIRT from @I412@",
+          "Added DEAT from @I412@",
+          "Added EVEN from @I412@",
+          "Preserved 1 date records from @I412@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I408@",
+        "secondary_id": "@I410@",
+        "merge_notes": [
+          "Added BIRT from @I410@",
+          "Added DEAT from @I410@",
+          "Added EVEN from @I410@",
+          "Preserved 2 date records from @I410@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I408@",
+        "secondary_id": "@I414@",
+        "merge_notes": [
+          "Added BIRT from @I414@",
+          "Added DEAT from @I414@",
+          "Added EVEN from @I414@",
+          "Preserved 1 date records from @I414@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I418@",
+        "secondary_id": "@I1346@",
+        "merge_notes": [
+          "Added BIRT from @I1346@",
+          "Added DEAT from @I1346@",
+          "Added EVEN from @I1346@",
+          "Preserved 1 date records from @I1346@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I426@",
+        "secondary_id": "@I427@",
+        "merge_notes": [
+          "Added BIRT from @I427@",
+          "Added DEAT from @I427@",
+          "Added EVEN from @I427@",
+          "Preserved 1 date records from @I427@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I429@",
+        "secondary_id": "@I433@",
+        "merge_notes": [
+          "Added BIRT from @I433@",
+          "Added DEAT from @I433@",
+          "Added EVEN from @I433@",
+          "Preserved 2 date records from @I433@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I434@",
+        "secondary_id": "@I1307@",
+        "merge_notes": [
+          "Added BIRT from @I1307@",
+          "Added DEAT from @I1307@",
+          "Added EVEN from @I1307@",
+          "Preserved 1 date records from @I1307@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I437@",
+        "secondary_id": "@I1375@",
+        "merge_notes": [
+          "Added BIRT from @I1375@",
+          "Added DEAT from @I1375@",
+          "Added EVEN from @I1375@",
+          "Preserved 1 date records from @I1375@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I456@",
+        "secondary_id": "@I1096@",
+        "merge_notes": [
+          "Added DEAT from @I1096@",
+          "Preserved 1 date records from @I1096@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I460@",
+        "secondary_id": "@I914@",
+        "merge_notes": [
+          "Added BIRT from @I914@",
+          "Added DEAT from @I914@",
+          "Added EVEN from @I914@",
+          "Preserved 2 date records from @I914@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I474@",
+        "secondary_id": "@I477@",
+        "merge_notes": [
+          "Added BIRT from @I477@",
+          "Added DEAT from @I477@",
+          "Added EVEN from @I477@",
+          "Preserved 2 date records from @I477@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I483@",
+        "secondary_id": "@I1313@",
+        "merge_notes": [
+          "Added BIRT from @I1313@",
+          "Added DEAT from @I1313@",
+          "Added EVEN from @I1313@",
+          "Preserved 1 date records from @I1313@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I497@",
+        "secondary_id": "@I1365@",
+        "merge_notes": [
+          "Added BIRT from @I1365@",
+          "Added DEAT from @I1365@",
+          "Added EVEN from @I1365@",
+          "Preserved 2 date records from @I1365@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I508@",
+        "secondary_id": "@I565@",
+        "merge_notes": [
+          "Added BIRT from @I565@",
+          "Added DEAT from @I565@",
+          "Added EVEN from @I565@",
+          "Preserved 2 date records from @I565@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I508@",
+        "secondary_id": "@I567@",
+        "merge_notes": [
+          "Added BIRT from @I567@",
+          "Added DEAT from @I567@",
+          "Added EVEN from @I567@",
+          "Preserved 2 date records from @I567@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I516@",
+        "secondary_id": "@I1364@",
+        "merge_notes": [
+          "Added BIRT from @I1364@",
+          "Added DEAT from @I1364@",
+          "Added EVEN from @I1364@",
+          "Preserved 1 date records from @I1364@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I518@",
+        "secondary_id": "@I522@",
+        "merge_notes": [
+          "Added EVEN from @I522@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I531@",
+        "secondary_id": "@I1358@",
+        "merge_notes": [
+          "Added BIRT from @I1358@",
+          "Added DEAT from @I1358@",
+          "Added EVEN from @I1358@",
+          "Preserved 1 date records from @I1358@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I556@",
+        "secondary_id": "@I624@",
+        "merge_notes": [
+          "Added BIRT from @I624@",
+          "Added DEAT from @I624@",
+          "Added EVEN from @I624@",
+          "Preserved 2 date records from @I624@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I597@",
+        "secondary_id": "@I1344@",
+        "merge_notes": [
+          "Added BIRT from @I1344@",
+          "Added DEAT from @I1344@",
+          "Added EVEN from @I1344@",
+          "Preserved 2 date records from @I1344@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I703@",
+        "secondary_id": "@I712@",
+        "merge_notes": [
+          "Added BIRT from @I712@",
+          "Added DEAT from @I712@",
+          "Added EVEN from @I712@",
+          "Preserved 2 date records from @I712@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I721@",
+        "secondary_id": "@I1299@",
+        "merge_notes": [
+          "Added BIRT from @I1299@",
+          "Added DEAT from @I1299@",
+          "Added EVEN from @I1299@",
+          "Preserved 1 date records from @I1299@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I722@",
+        "secondary_id": "@I1351@",
+        "merge_notes": [
+          "Added BIRT from @I1351@",
+          "Added DEAT from @I1351@",
+          "Added EVEN from @I1351@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I724@",
+        "secondary_id": "@I730@",
+        "merge_notes": [
+          "Added BIRT from @I730@",
+          "Added DEAT from @I730@",
+          "Added EVEN from @I730@",
+          "Preserved 2 date records from @I730@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I736@",
+        "secondary_id": "@I1376@",
+        "merge_notes": [
+          "Added BIRT from @I1376@",
+          "Added DEAT from @I1376@",
+          "Added EVEN from @I1376@",
+          "Preserved 2 date records from @I1376@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I746@",
+        "secondary_id": "@I1304@",
+        "merge_notes": [
+          "Added BIRT from @I1304@",
+          "Added DEAT from @I1304@",
+          "Added EVEN from @I1304@",
+          "Preserved 1 date records from @I1304@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I747@",
+        "secondary_id": "@I1345@",
+        "merge_notes": [
+          "Added EVEN from @I1345@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I774@",
+        "secondary_id": "@I1319@",
+        "merge_notes": [
+          "Added BIRT from @I1319@",
+          "Added DEAT from @I1319@",
+          "Added EVEN from @I1319@",
+          "Preserved 1 date records from @I1319@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I775@",
+        "secondary_id": "@I788@",
+        "merge_notes": [
+          "Added BIRT from @I788@",
+          "Added DEAT from @I788@",
+          "Added EVEN from @I788@",
+          "Preserved 2 date records from @I788@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I779@",
+        "secondary_id": "@I796@",
+        "merge_notes": [
+          "Added BIRT from @I796@",
+          "Added DEAT from @I796@",
+          "Added EVEN from @I796@",
+          "Preserved 2 date records from @I796@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I785@",
+        "secondary_id": "@I794@",
+        "merge_notes": [
+          "Added BIRT from @I794@",
+          "Added DEAT from @I794@",
+          "Added EVEN from @I794@",
+          "Preserved 1 date records from @I794@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I787@",
+        "secondary_id": "@I797@",
+        "merge_notes": [
+          "Added BIRT from @I797@",
+          "Added DEAT from @I797@",
+          "Added EVEN from @I797@",
+          "Preserved 2 date records from @I797@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I844@",
+        "secondary_id": "@I1044@",
+        "merge_notes": [
+          "Added BIRT from @I1044@",
+          "Added DEAT from @I1044@",
+          "Added EVEN from @I1044@",
+          "Preserved 1 date records from @I1044@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I847@",
+        "secondary_id": "@I918@",
+        "merge_notes": [
+          "Added BIRT from @I918@",
+          "Added DEAT from @I918@",
+          "Added EVEN from @I918@",
+          "Preserved 2 date records from @I918@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I847@",
+        "secondary_id": "@I1168@",
+        "merge_notes": [
+          "Added BIRT from @I1168@",
+          "Added DEAT from @I1168@",
+          "Added EVEN from @I1168@",
+          "Preserved 1 date records from @I1168@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I848@",
+        "secondary_id": "@I1170@",
+        "merge_notes": [
+          "Added BIRT from @I1170@",
+          "Added DEAT from @I1170@",
+          "Added EVEN from @I1170@",
+          "Preserved 2 date records from @I1170@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I850@",
+        "secondary_id": "@I916@",
+        "merge_notes": [
+          "Added BIRT from @I916@",
+          "Added DEAT from @I916@",
+          "Added EVEN from @I916@",
+          "Preserved 2 date records from @I916@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I852@",
+        "secondary_id": "@I1049@",
+        "merge_notes": [
+          "Added EVEN from @I1049@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I858@",
+        "secondary_id": "@I1378@",
+        "merge_notes": [
+          "Added alternate name from @I1378@",
+          "Added BIRT from @I1378@",
+          "Added DEAT from @I1378@",
+          "Preserved 1 date records from @I1378@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I859@",
+        "secondary_id": "@I870@",
+        "merge_notes": [
+          "Added BIRT from @I870@",
+          "Added DEAT from @I870@",
+          "Added EVEN from @I870@",
+          "Preserved 2 date records from @I870@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I862@",
+        "secondary_id": "@I865@",
+        "merge_notes": [
+          "Added BIRT from @I865@",
+          "Added DEAT from @I865@",
+          "Added EVEN from @I865@",
+          "Preserved 2 date records from @I865@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I910@",
+        "secondary_id": "@I1171@",
+        "merge_notes": [
+          "Added BIRT from @I1171@",
+          "Added DEAT from @I1171@",
+          "Added EVEN from @I1171@",
+          "Preserved 1 date records from @I1171@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I912@",
+        "secondary_id": "@I915@",
+        "merge_notes": [
+          "Added BIRT from @I915@",
+          "Added DEAT from @I915@",
+          "Added EVEN from @I915@",
+          "Preserved 2 date records from @I915@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I912@",
+        "secondary_id": "@I1036@",
+        "merge_notes": [
+          "Added BIRT from @I1036@",
+          "Added DEAT from @I1036@",
+          "Added EVEN from @I1036@",
+          "Preserved 2 date records from @I1036@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I912@",
+        "secondary_id": "@I1038@",
+        "merge_notes": [
+          "Added EVEN from @I1038@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I912@",
+        "secondary_id": "@I1050@",
+        "merge_notes": [
+          "Added BIRT from @I1050@",
+          "Added DEAT from @I1050@",
+          "Added EVEN from @I1050@",
+          "Preserved 2 date records from @I1050@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I912@",
+        "secondary_id": "@I1301@",
+        "merge_notes": [
+          "Added alternate name from @I1301@",
+          "Added alternate name from @I1301@",
+          "Added BIRT from @I1301@",
+          "Added DEAT from @I1301@",
+          "Added EVEN from @I1301@",
+          "Preserved 2 date records from @I1301@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I943@",
+        "secondary_id": "@I1337@",
+        "merge_notes": [
+          "Added BIRT from @I1337@",
+          "Added DEAT from @I1337@",
+          "Added EVEN from @I1337@",
+          "Preserved 1 date records from @I1337@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I961@",
+        "secondary_id": "@I1330@",
+        "merge_notes": [
+          "Added EVEN from @I1330@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I964@",
+        "secondary_id": "@I971@",
+        "merge_notes": [
+          "Added BIRT from @I971@",
+          "Added DEAT from @I971@",
+          "Added EVEN from @I971@",
+          "Preserved 1 date records from @I971@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I965@",
+        "secondary_id": "@I1336@",
+        "merge_notes": [
+          "Added EVEN from @I1336@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I980@",
+        "secondary_id": "@I1325@",
+        "merge_notes": [
+          "Added BIRT from @I1325@",
+          "Added DEAT from @I1325@",
+          "Added EVEN from @I1325@",
+          "Preserved 2 date records from @I1325@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I981@",
+        "secondary_id": "@I1320@",
+        "merge_notes": [
+          "Added BIRT from @I1320@",
+          "Added DEAT from @I1320@",
+          "Added EVEN from @I1320@",
+          "Preserved 2 date records from @I1320@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I982@",
+        "secondary_id": "@I1374@",
+        "merge_notes": [
+          "Added BIRT from @I1374@",
+          "Added DEAT from @I1374@",
+          "Added EVEN from @I1374@",
+          "Preserved 2 date records from @I1374@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I983@",
+        "secondary_id": "@I1308@",
+        "merge_notes": [
+          "Added BIRT from @I1308@",
+          "Added DEAT from @I1308@",
+          "Added EVEN from @I1308@",
+          "Preserved 2 date records from @I1308@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I984@",
+        "secondary_id": "@I1311@",
+        "merge_notes": [
+          "Added BIRT from @I1311@",
+          "Added DEAT from @I1311@",
+          "Added EVEN from @I1311@",
+          "Preserved 2 date records from @I1311@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I985@",
+        "secondary_id": "@I1373@",
+        "merge_notes": [
+          "Added BIRT from @I1373@",
+          "Added DEAT from @I1373@",
+          "Added EVEN from @I1373@",
+          "Preserved 1 date records from @I1373@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I986@",
+        "secondary_id": "@I1332@",
+        "merge_notes": [
+          "Added BIRT from @I1332@",
+          "Added DEAT from @I1332@",
+          "Added EVEN from @I1332@",
+          "Preserved 2 date records from @I1332@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I987@",
+        "secondary_id": "@I1361@",
+        "merge_notes": [
+          "Added BIRT from @I1361@",
+          "Added DEAT from @I1361@",
+          "Added EVEN from @I1361@",
+          "Preserved 2 date records from @I1361@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I988@",
+        "secondary_id": "@I1339@",
+        "merge_notes": [
+          "Added BIRT from @I1339@",
+          "Added DEAT from @I1339@",
+          "Added EVEN from @I1339@",
+          "Preserved 2 date records from @I1339@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I989@",
+        "secondary_id": "@I1353@",
+        "merge_notes": [
+          "Added BIRT from @I1353@",
+          "Added DEAT from @I1353@",
+          "Added EVEN from @I1353@",
+          "Preserved 2 date records from @I1353@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I992@",
+        "secondary_id": "@I1349@",
+        "merge_notes": [
+          "Added EVEN from @I1349@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I993@",
+        "secondary_id": "@I1296@",
+        "merge_notes": [
+          "Added EVEN from @I1296@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1011@",
+        "secondary_id": "@I1109@",
+        "merge_notes": [
+          "Added BIRT from @I1109@",
+          "Added DEAT from @I1109@",
+          "Added EVEN from @I1109@",
+          "Preserved 2 date records from @I1109@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1056@",
+        "secondary_id": "@I1372@",
+        "merge_notes": [
+          "Added BIRT from @I1372@",
+          "Added DEAT from @I1372@",
+          "Added RESI from @I1372@",
+          "Added EVEN from @I1372@",
+          "Preserved 2 date records from @I1372@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1069@",
+        "secondary_id": "@I1321@",
+        "merge_notes": [
+          "Added BIRT from @I1321@",
+          "Added DEAT from @I1321@",
+          "Added EVEN from @I1321@",
+          "Preserved 1 date records from @I1321@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1071@",
+        "secondary_id": "@I1352@",
+        "merge_notes": [
+          "Added BIRT from @I1352@",
+          "Added DEAT from @I1352@",
+          "Added RESI from @I1352@",
+          "Added EVEN from @I1352@",
+          "Preserved 2 date records from @I1352@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1086@",
+        "secondary_id": "@I1298@",
+        "merge_notes": [
+          "Added BIRT from @I1298@",
+          "Added DEAT from @I1298@",
+          "Added EVEN from @I1298@",
+          "Preserved 1 date records from @I1298@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1111@",
+        "secondary_id": "@I1338@",
+        "merge_notes": [
+          "Added BIRT from @I1338@",
+          "Added DEAT from @I1338@",
+          "Added EVEN from @I1338@",
+          "Preserved 1 date records from @I1338@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1129@",
+        "secondary_id": "@I1312@",
+        "merge_notes": [
+          "Added BIRT from @I1312@",
+          "Added DEAT from @I1312@",
+          "Added EVEN from @I1312@",
+          "Preserved 1 date records from @I1312@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1150@",
+        "secondary_id": "@I1167@",
+        "merge_notes": [
+          "Added BIRT from @I1167@",
+          "Added DEAT from @I1167@",
+          "Added EVEN from @I1167@",
+          "Preserved 2 date records from @I1167@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1172@",
+        "secondary_id": "@I1362@",
+        "merge_notes": [
+          "Added BIRT from @I1362@",
+          "Added DEAT from @I1362@",
+          "Added EVEN from @I1362@",
+          "Preserved 1 date records from @I1362@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1222@",
+        "secondary_id": "@I1225@",
+        "merge_notes": [
+          "Added BIRT from @I1225@",
+          "Added DEAT from @I1225@",
+          "Preserved 2 date records from @I1225@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1234@",
+        "secondary_id": "@I1245@",
+        "merge_notes": [
+          "Added BIRT from @I1245@",
+          "Added DEAT from @I1245@",
+          "Preserved 2 date records from @I1245@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1239@",
+        "secondary_id": "@I1248@",
+        "merge_notes": [
+          "Added BIRT from @I1248@",
+          "Added DEAT from @I1248@",
+          "Preserved 2 date records from @I1248@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1239@",
+        "secondary_id": "@I1382@",
+        "merge_notes": [
+          "Added BIRT from @I1382@",
+          "Added DEAT from @I1382@",
+          "Preserved 1 date records from @I1382@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1257@",
+        "secondary_id": "@I1302@",
+        "merge_notes": [
+          "Added BIRT from @I1302@",
+          "Added DEAT from @I1302@",
+          "Added EVEN from @I1302@",
+          "Preserved 2 date records from @I1302@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1262@",
+        "secondary_id": "@I1355@",
+        "merge_notes": [
+          "Added BIRT from @I1355@",
+          "Added DEAT from @I1355@",
+          "Added EVEN from @I1355@",
+          "Preserved 1 date records from @I1355@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1263@",
+        "secondary_id": "@I1266@",
+        "merge_notes": [
+          "Added BIRT from @I1266@",
+          "Added DEAT from @I1266@",
+          "Preserved 2 date records from @I1266@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1271@",
+        "secondary_id": "@I1294@",
+        "merge_notes": [
+          "Added BIRT from @I1294@",
+          "Added DEAT from @I1294@",
+          "Preserved 2 date records from @I1294@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1404@",
+        "secondary_id": "@I1406@",
+        "merge_notes": [
+          "Added BIRT from @I1406@",
+          "Added DEAT from @I1406@",
+          "Preserved 2 date records from @I1406@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1419@",
+        "secondary_id": "@I1421@",
+        "merge_notes": [
+          "Added BIRT from @I1421@",
+          "Added DEAT from @I1421@",
+          "Preserved 2 date records from @I1421@"
+        ],
+        "similarity": 100
+      },
+      {
+        "primary_id": "@I1210@",
+        "secondary_id": "@I1229@",
+        "merge_notes": [
+          "Added alternate name from @I1229@",
+          "Added BIRT from @I1229@",
+          "Added DEAT from @I1229@"
+        ],
+        "similarity": 98.55072463768117
+      }
+    ]
+  },
+  "output_results": {
+    "output_file": "data/processing/fixed/people_deduplicated.ged",
+    "individuals_remaining": 1298,
+    "individuals_removed": 171,
+    "families": 645
+  },
+  "merge_log": [
+    {
+      "primary_id": "@I13@",
+      "secondary_id": "@I29@",
+      "merge_notes": [
+        "Added DEAT from @I29@",
+        "Preserved 1 date records from @I29@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I13@",
+      "secondary_id": "@I1341@",
+      "merge_notes": [
+        "Added DEAT from @I1341@",
+        "Added EVEN from @I1341@",
+        "Preserved 1 date records from @I1341@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I17@",
+      "secondary_id": "@I34@",
+      "merge_notes": [
+        "Added BIRT from @I34@",
+        "Added DEAT from @I34@",
+        "Added EVEN from @I34@",
+        "Preserved 2 date records from @I34@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I19@",
+      "secondary_id": "@I840@",
+      "merge_notes": [
+        "Added BIRT from @I840@",
+        "Added DEAT from @I840@",
+        "Added EVEN from @I840@",
+        "Preserved 2 date records from @I840@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I21@",
+      "secondary_id": "@I25@",
+      "merge_notes": [
+        "Added BIRT from @I25@",
+        "Added DEAT from @I25@",
+        "Added EVEN from @I25@",
+        "Preserved 2 date records from @I25@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I21@",
+      "secondary_id": "@I466@",
+      "merge_notes": [
+        "Added BIRT from @I466@",
+        "Added DEAT from @I466@",
+        "Added EVEN from @I466@",
+        "Preserved 1 date records from @I466@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I47@",
+      "secondary_id": "@I1331@",
+      "merge_notes": [
+        "Added BIRT from @I1331@",
+        "Added DEAT from @I1331@",
+        "Added EVEN from @I1331@",
+        "Preserved 1 date records from @I1331@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I71@",
+      "secondary_id": "@I392@",
+      "merge_notes": [
+        "Added BIRT from @I392@",
+        "Added DEAT from @I392@",
+        "Added EVEN from @I392@",
+        "Preserved 1 date records from @I392@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I74@",
+      "secondary_id": "@I1315@",
+      "merge_notes": [
+        "Added BIRT from @I1315@",
+        "Added DEAT from @I1315@",
+        "Added EVEN from @I1315@",
+        "Preserved 1 date records from @I1315@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I99@",
+      "secondary_id": "@I1246@",
+      "merge_notes": [
+        "Added BIRT from @I1246@",
+        "Added DEAT from @I1246@",
+        "Preserved 2 date records from @I1246@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I106@",
+      "secondary_id": "@I1305@",
+      "merge_notes": [
+        "Added BIRT from @I1305@",
+        "Added DEAT from @I1305@",
+        "Added EVEN from @I1305@",
+        "Preserved 1 date records from @I1305@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I108@",
+      "secondary_id": "@I113@",
+      "merge_notes": [
+        "Added BIRT from @I113@",
+        "Added DEAT from @I113@",
+        "Added EVEN from @I113@",
+        "Preserved 2 date records from @I113@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I108@",
+      "secondary_id": "@I114@",
+      "merge_notes": [
+        "Added BIRT from @I114@",
+        "Added DEAT from @I114@",
+        "Added EVEN from @I114@",
+        "Preserved 1 date records from @I114@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I118@",
+      "secondary_id": "@I124@",
+      "merge_notes": [
+        "Added BIRT from @I124@",
+        "Added DEAT from @I124@",
+        "Added EVEN from @I124@",
+        "Preserved 2 date records from @I124@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I120@",
+      "secondary_id": "@I1297@",
+      "merge_notes": [
+        "Added BIRT from @I1297@",
+        "Added DEAT from @I1297@",
+        "Added EVEN from @I1297@",
+        "Preserved 2 date records from @I1297@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I151@",
+      "merge_notes": [
+        "Added BIRT from @I151@",
+        "Added DEAT from @I151@",
+        "Preserved 2 date records from @I151@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I156@",
+      "merge_notes": [
+        "Added BIRT from @I156@",
+        "Added DEAT from @I156@",
+        "Preserved 2 date records from @I156@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I300@",
+      "merge_notes": [
+        "Added BIRT from @I300@",
+        "Added DEAT from @I300@",
+        "Preserved 2 date records from @I300@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I566@",
+      "merge_notes": [
+        "Added BIRT from @I566@",
+        "Added DEAT from @I566@",
+        "Added EVEN from @I566@",
+        "Preserved 2 date records from @I566@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1317@",
+      "merge_notes": [
+        "Added BIRT from @I1317@",
+        "Added DEAT from @I1317@",
+        "Added EVEN from @I1317@",
+        "Preserved 2 date records from @I1317@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1386@",
+      "merge_notes": [],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1392@",
+      "merge_notes": [],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I128@",
+      "secondary_id": "@I1363@",
+      "merge_notes": [
+        "Added BIRT from @I1363@",
+        "Added DEAT from @I1363@",
+        "Added EVEN from @I1363@",
+        "Preserved 2 date records from @I1363@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I131@",
+      "secondary_id": "@I1334@",
+      "merge_notes": [
+        "Added BIRT from @I1334@",
+        "Added DEAT from @I1334@",
+        "Added EVEN from @I1334@",
+        "Preserved 1 date records from @I1334@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I132@",
+      "secondary_id": "@I1306@",
+      "merge_notes": [
+        "Added BIRT from @I1306@",
+        "Added EVEN from @I1306@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I139@",
+      "secondary_id": "@I152@",
+      "merge_notes": [
+        "Added DEAT from @I152@",
+        "Preserved 1 date records from @I152@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I139@",
+      "secondary_id": "@I1370@",
+      "merge_notes": [
+        "Added DEAT from @I1370@",
+        "Added EVEN from @I1370@",
+        "Preserved 1 date records from @I1370@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I159@",
+      "secondary_id": "@I161@",
+      "merge_notes": [
+        "Added BIRT from @I161@",
+        "Added DEAT from @I161@",
+        "Added EVEN from @I161@",
+        "Preserved 1 date records from @I161@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I167@",
+      "secondary_id": "@I1371@",
+      "merge_notes": [
+        "Added BIRT from @I1371@",
+        "Added DEAT from @I1371@",
+        "Added EVEN from @I1371@",
+        "Preserved 1 date records from @I1371@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I269@",
+      "merge_notes": [
+        "Added BIRT from @I269@",
+        "Added DEAT from @I269@",
+        "Preserved 1 date records from @I269@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I866@",
+      "merge_notes": [
+        "Added BIRT from @I866@",
+        "Added DEAT from @I866@",
+        "Preserved 2 date records from @I866@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I1348@",
+      "merge_notes": [
+        "Added BIRT from @I1348@",
+        "Added DEAT from @I1348@",
+        "Added EVEN from @I1348@",
+        "Preserved 1 date records from @I1348@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I1388@",
+      "merge_notes": [],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I181@",
+      "secondary_id": "@I1085@",
+      "merge_notes": [
+        "Added BIRT from @I1085@",
+        "Added DEAT from @I1085@",
+        "Added EVEN from @I1085@",
+        "Preserved 2 date records from @I1085@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I406@",
+      "merge_notes": [
+        "Added BIRT from @I406@",
+        "Added DEAT from @I406@",
+        "Added EVEN from @I406@",
+        "Preserved 2 date records from @I406@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I417@",
+      "merge_notes": [
+        "Added BIRT from @I417@",
+        "Added DEAT from @I417@",
+        "Added EVEN from @I417@",
+        "Preserved 1 date records from @I417@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I419@",
+      "merge_notes": [
+        "Added BIRT from @I419@",
+        "Added DEAT from @I419@",
+        "Added EVEN from @I419@",
+        "Preserved 1 date records from @I419@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I211@",
+      "secondary_id": "@I1250@",
+      "merge_notes": [
+        "Added BIRT from @I1250@",
+        "Added DEAT from @I1250@",
+        "Preserved 1 date records from @I1250@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I211@",
+      "secondary_id": "@I1256@",
+      "merge_notes": [
+        "Added BIRT from @I1256@",
+        "Added DEAT from @I1256@",
+        "Preserved 1 date records from @I1256@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I215@",
+      "secondary_id": "@I1350@",
+      "merge_notes": [
+        "Added BIRT from @I1350@",
+        "Added DEAT from @I1350@",
+        "Added EVEN from @I1350@",
+        "Preserved 1 date records from @I1350@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I222@",
+      "secondary_id": "@I998@",
+      "merge_notes": [
+        "Added BIRT from @I998@",
+        "Added DEAT from @I998@",
+        "Added EVEN from @I998@",
+        "Preserved 1 date records from @I998@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I226@",
+      "secondary_id": "@I1188@",
+      "merge_notes": [
+        "Added BIRT from @I1188@",
+        "Added DEAT from @I1188@",
+        "Added RESI from @I1188@",
+        "Added EVEN from @I1188@",
+        "Preserved 3 date records from @I1188@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I231@",
+      "secondary_id": "@I234@",
+      "merge_notes": [
+        "Added DEAT from @I234@",
+        "Preserved 1 date records from @I234@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I231@",
+      "secondary_id": "@I1367@",
+      "merge_notes": [
+        "Added DEAT from @I1367@",
+        "Added EVEN from @I1367@",
+        "Preserved 1 date records from @I1367@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I233@",
+      "secondary_id": "@I1342@",
+      "merge_notes": [
+        "Added BIRT from @I1342@",
+        "Added DEAT from @I1342@",
+        "Added EVEN from @I1342@",
+        "Preserved 1 date records from @I1342@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I249@",
+      "secondary_id": "@I250@",
+      "merge_notes": [
+        "Added BIRT from @I250@",
+        "Added DEAT from @I250@",
+        "Added EVEN from @I250@",
+        "Preserved 2 date records from @I250@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I249@",
+      "secondary_id": "@I545@",
+      "merge_notes": [
+        "Added BIRT from @I545@",
+        "Added DEAT from @I545@",
+        "Added EVEN from @I545@",
+        "Preserved 1 date records from @I545@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I254@",
+      "merge_notes": [
+        "Added BIRT from @I254@",
+        "Added DEAT from @I254@",
+        "Added EVEN from @I254@",
+        "Preserved 2 date records from @I254@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I256@",
+      "merge_notes": [
+        "Added BIRT from @I256@",
+        "Added DEAT from @I256@",
+        "Added EVEN from @I256@",
+        "Preserved 2 date records from @I256@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I1176@",
+      "merge_notes": [
+        "Added BIRT from @I1176@",
+        "Added DEAT from @I1176@",
+        "Added EVEN from @I1176@",
+        "Preserved 2 date records from @I1176@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I259@",
+      "secondary_id": "@I261@",
+      "merge_notes": [
+        "Added alternate name from @I261@",
+        "Added alternate name from @I261@",
+        "Added BIRT from @I261@",
+        "Added DEAT from @I261@",
+        "Added EVEN from @I261@",
+        "Preserved 2 date records from @I261@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I267@",
+      "secondary_id": "@I1377@",
+      "merge_notes": [
+        "Added BIRT from @I1377@",
+        "Added DEAT from @I1377@",
+        "Added EVEN from @I1377@",
+        "Preserved 2 date records from @I1377@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I268@",
+      "secondary_id": "@I1347@",
+      "merge_notes": [
+        "Added BIRT from @I1347@",
+        "Added DEAT from @I1347@",
+        "Added EVEN from @I1347@",
+        "Preserved 1 date records from @I1347@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I270@",
+      "secondary_id": "@I1316@",
+      "merge_notes": [
+        "Added BIRT from @I1316@",
+        "Added DEAT from @I1316@",
+        "Added EVEN from @I1316@",
+        "Preserved 1 date records from @I1316@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I272@",
+      "secondary_id": "@I1368@",
+      "merge_notes": [
+        "Added BIRT from @I1368@",
+        "Added DEAT from @I1368@",
+        "Added EVEN from @I1368@",
+        "Preserved 1 date records from @I1368@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I273@",
+      "secondary_id": "@I274@",
+      "merge_notes": [
+        "Added BIRT from @I274@",
+        "Added DEAT from @I274@",
+        "Added EVEN from @I274@",
+        "Preserved 2 date records from @I274@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I277@",
+      "secondary_id": "@I1303@",
+      "merge_notes": [
+        "Added BIRT from @I1303@",
+        "Added DEAT from @I1303@",
+        "Added EVEN from @I1303@",
+        "Preserved 1 date records from @I1303@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I292@",
+      "secondary_id": "@I1389@",
+      "merge_notes": [
+        "Added BIRT from @I1389@",
+        "Added DEAT from @I1389@",
+        "Preserved 2 date records from @I1389@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I294@",
+      "secondary_id": "@I917@",
+      "merge_notes": [
+        "Added BIRT from @I917@",
+        "Added DEAT from @I917@",
+        "Added EVEN from @I917@",
+        "Preserved 2 date records from @I917@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I297@",
+      "merge_notes": [
+        "Added BIRT from @I297@",
+        "Added DEAT from @I297@",
+        "Added EVEN from @I297@",
+        "Preserved 2 date records from @I297@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I846@",
+      "merge_notes": [
+        "Added BIRT from @I846@",
+        "Added DEAT from @I846@",
+        "Added EVEN from @I846@",
+        "Preserved 2 date records from @I846@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I913@",
+      "merge_notes": [
+        "Added BIRT from @I913@",
+        "Added DEAT from @I913@",
+        "Added EVEN from @I913@",
+        "Preserved 1 date records from @I913@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I304@",
+      "secondary_id": "@I326@",
+      "merge_notes": [
+        "Added BIRT from @I326@",
+        "Added DEAT from @I326@",
+        "Added EVEN from @I326@",
+        "Preserved 2 date records from @I326@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I306@",
+      "secondary_id": "@I322@",
+      "merge_notes": [
+        "Added BIRT from @I322@",
+        "Added DEAT from @I322@",
+        "Added EVEN from @I322@",
+        "Preserved 2 date records from @I322@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I317@",
+      "secondary_id": "@I800@",
+      "merge_notes": [
+        "Added BIRT from @I800@",
+        "Added DEAT from @I800@",
+        "Added EVEN from @I800@",
+        "Preserved 1 date records from @I800@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I328@",
+      "merge_notes": [
+        "Added BIRT from @I328@",
+        "Added DEAT from @I328@",
+        "Added EVEN from @I328@",
+        "Preserved 2 date records from @I328@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I329@",
+      "merge_notes": [
+        "Added BIRT from @I329@",
+        "Added DEAT from @I329@",
+        "Preserved 1 date records from @I329@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I1343@",
+      "merge_notes": [
+        "Added BIRT from @I1343@",
+        "Added DEAT from @I1343@",
+        "Added EVEN from @I1343@",
+        "Preserved 1 date records from @I1343@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I335@",
+      "secondary_id": "@I341@",
+      "merge_notes": [
+        "Added BIRT from @I341@",
+        "Added DEAT from @I341@",
+        "Added EVEN from @I341@",
+        "Preserved 2 date records from @I341@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I335@",
+      "secondary_id": "@I344@",
+      "merge_notes": [
+        "Added BIRT from @I344@",
+        "Added DEAT from @I344@",
+        "Added EVEN from @I344@",
+        "Preserved 2 date records from @I344@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I337@",
+      "secondary_id": "@I1128@",
+      "merge_notes": [
+        "Added EVEN from @I1128@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I345@",
+      "merge_notes": [
+        "Added BIRT from @I345@",
+        "Added DEAT from @I345@",
+        "Added EVEN from @I345@",
+        "Preserved 2 date records from @I345@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I347@",
+      "merge_notes": [
+        "Added BIRT from @I347@",
+        "Added DEAT from @I347@",
+        "Preserved 2 date records from @I347@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I1356@",
+      "merge_notes": [
+        "Added BIRT from @I1356@",
+        "Added DEAT from @I1356@",
+        "Added EVEN from @I1356@",
+        "Preserved 2 date records from @I1356@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I348@",
+      "secondary_id": "@I782@",
+      "merge_notes": [
+        "Added BIRT from @I782@",
+        "Added DEAT from @I782@",
+        "Added EVEN from @I782@",
+        "Preserved 2 date records from @I782@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I350@",
+      "secondary_id": "@I1340@",
+      "merge_notes": [
+        "Added BIRT from @I1340@",
+        "Added DEAT from @I1340@",
+        "Added EVEN from @I1340@",
+        "Preserved 1 date records from @I1340@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I351@",
+      "secondary_id": "@I1322@",
+      "merge_notes": [
+        "Added BIRT from @I1322@",
+        "Added EVEN from @I1322@",
+        "Preserved 1 date records from @I1322@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I360@",
+      "secondary_id": "@I861@",
+      "merge_notes": [
+        "Added BIRT from @I861@",
+        "Added DEAT from @I861@",
+        "Preserved 1 date records from @I861@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I360@",
+      "secondary_id": "@I1359@",
+      "merge_notes": [
+        "Added BIRT from @I1359@",
+        "Added DEAT from @I1359@",
+        "Added EVEN from @I1359@",
+        "Preserved 1 date records from @I1359@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I367@",
+      "secondary_id": "@I1310@",
+      "merge_notes": [
+        "Added BIRT from @I1310@",
+        "Added DEAT from @I1310@",
+        "Added EVEN from @I1310@",
+        "Preserved 1 date records from @I1310@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I372@",
+      "secondary_id": "@I512@",
+      "merge_notes": [
+        "Added BIRT from @I512@",
+        "Added DEAT from @I512@",
+        "Added EVEN from @I512@",
+        "Preserved 2 date records from @I512@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I374@",
+      "secondary_id": "@I375@",
+      "merge_notes": [
+        "Added BIRT from @I375@",
+        "Added DEAT from @I375@",
+        "Added EVEN from @I375@",
+        "Preserved 2 date records from @I375@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I378@",
+      "secondary_id": "@I1012@",
+      "merge_notes": [
+        "Added BIRT from @I1012@",
+        "Added DEAT from @I1012@",
+        "Added EVEN from @I1012@",
+        "Preserved 2 date records from @I1012@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I379@",
+      "secondary_id": "@I1323@",
+      "merge_notes": [
+        "Added BIRT from @I1323@",
+        "Added DEAT from @I1323@",
+        "Added EVEN from @I1323@",
+        "Preserved 1 date records from @I1323@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I382@",
+      "secondary_id": "@I491@",
+      "merge_notes": [
+        "Added BIRT from @I491@",
+        "Added DEAT from @I491@",
+        "Added EVEN from @I491@",
+        "Preserved 2 date records from @I491@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I391@",
+      "secondary_id": "@I1354@",
+      "merge_notes": [
+        "Added BIRT from @I1354@",
+        "Added DEAT from @I1354@",
+        "Added EVEN from @I1354@",
+        "Preserved 1 date records from @I1354@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I393@",
+      "secondary_id": "@I395@",
+      "merge_notes": [
+        "Added BIRT from @I395@",
+        "Added DEAT from @I395@",
+        "Added EVEN from @I395@",
+        "Preserved 1 date records from @I395@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I393@",
+      "secondary_id": "@I397@",
+      "merge_notes": [
+        "Added BIRT from @I397@",
+        "Added DEAT from @I397@",
+        "Added EVEN from @I397@",
+        "Preserved 2 date records from @I397@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I404@",
+      "secondary_id": "@I412@",
+      "merge_notes": [
+        "Added BIRT from @I412@",
+        "Added DEAT from @I412@",
+        "Added EVEN from @I412@",
+        "Preserved 1 date records from @I412@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I408@",
+      "secondary_id": "@I410@",
+      "merge_notes": [
+        "Added BIRT from @I410@",
+        "Added DEAT from @I410@",
+        "Added EVEN from @I410@",
+        "Preserved 2 date records from @I410@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I408@",
+      "secondary_id": "@I414@",
+      "merge_notes": [
+        "Added BIRT from @I414@",
+        "Added DEAT from @I414@",
+        "Added EVEN from @I414@",
+        "Preserved 1 date records from @I414@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I418@",
+      "secondary_id": "@I1346@",
+      "merge_notes": [
+        "Added BIRT from @I1346@",
+        "Added DEAT from @I1346@",
+        "Added EVEN from @I1346@",
+        "Preserved 1 date records from @I1346@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I426@",
+      "secondary_id": "@I427@",
+      "merge_notes": [
+        "Added BIRT from @I427@",
+        "Added DEAT from @I427@",
+        "Added EVEN from @I427@",
+        "Preserved 1 date records from @I427@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I429@",
+      "secondary_id": "@I433@",
+      "merge_notes": [
+        "Added BIRT from @I433@",
+        "Added DEAT from @I433@",
+        "Added EVEN from @I433@",
+        "Preserved 2 date records from @I433@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I434@",
+      "secondary_id": "@I1307@",
+      "merge_notes": [
+        "Added BIRT from @I1307@",
+        "Added DEAT from @I1307@",
+        "Added EVEN from @I1307@",
+        "Preserved 1 date records from @I1307@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I437@",
+      "secondary_id": "@I1375@",
+      "merge_notes": [
+        "Added BIRT from @I1375@",
+        "Added DEAT from @I1375@",
+        "Added EVEN from @I1375@",
+        "Preserved 1 date records from @I1375@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I456@",
+      "secondary_id": "@I1096@",
+      "merge_notes": [
+        "Added DEAT from @I1096@",
+        "Preserved 1 date records from @I1096@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I460@",
+      "secondary_id": "@I914@",
+      "merge_notes": [
+        "Added BIRT from @I914@",
+        "Added DEAT from @I914@",
+        "Added EVEN from @I914@",
+        "Preserved 2 date records from @I914@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I474@",
+      "secondary_id": "@I477@",
+      "merge_notes": [
+        "Added BIRT from @I477@",
+        "Added DEAT from @I477@",
+        "Added EVEN from @I477@",
+        "Preserved 2 date records from @I477@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I483@",
+      "secondary_id": "@I1313@",
+      "merge_notes": [
+        "Added BIRT from @I1313@",
+        "Added DEAT from @I1313@",
+        "Added EVEN from @I1313@",
+        "Preserved 1 date records from @I1313@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I497@",
+      "secondary_id": "@I1365@",
+      "merge_notes": [
+        "Added BIRT from @I1365@",
+        "Added DEAT from @I1365@",
+        "Added EVEN from @I1365@",
+        "Preserved 2 date records from @I1365@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I565@",
+      "merge_notes": [
+        "Added BIRT from @I565@",
+        "Added DEAT from @I565@",
+        "Added EVEN from @I565@",
+        "Preserved 2 date records from @I565@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I567@",
+      "merge_notes": [
+        "Added BIRT from @I567@",
+        "Added DEAT from @I567@",
+        "Added EVEN from @I567@",
+        "Preserved 2 date records from @I567@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I516@",
+      "secondary_id": "@I1364@",
+      "merge_notes": [
+        "Added BIRT from @I1364@",
+        "Added DEAT from @I1364@",
+        "Added EVEN from @I1364@",
+        "Preserved 1 date records from @I1364@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I518@",
+      "secondary_id": "@I522@",
+      "merge_notes": [
+        "Added EVEN from @I522@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I531@",
+      "secondary_id": "@I1358@",
+      "merge_notes": [
+        "Added BIRT from @I1358@",
+        "Added DEAT from @I1358@",
+        "Added EVEN from @I1358@",
+        "Preserved 1 date records from @I1358@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I556@",
+      "secondary_id": "@I624@",
+      "merge_notes": [
+        "Added BIRT from @I624@",
+        "Added DEAT from @I624@",
+        "Added EVEN from @I624@",
+        "Preserved 2 date records from @I624@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I597@",
+      "secondary_id": "@I1344@",
+      "merge_notes": [
+        "Added BIRT from @I1344@",
+        "Added DEAT from @I1344@",
+        "Added EVEN from @I1344@",
+        "Preserved 2 date records from @I1344@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I703@",
+      "secondary_id": "@I712@",
+      "merge_notes": [
+        "Added BIRT from @I712@",
+        "Added DEAT from @I712@",
+        "Added EVEN from @I712@",
+        "Preserved 2 date records from @I712@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I721@",
+      "secondary_id": "@I1299@",
+      "merge_notes": [
+        "Added BIRT from @I1299@",
+        "Added DEAT from @I1299@",
+        "Added EVEN from @I1299@",
+        "Preserved 1 date records from @I1299@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I722@",
+      "secondary_id": "@I1351@",
+      "merge_notes": [
+        "Added BIRT from @I1351@",
+        "Added DEAT from @I1351@",
+        "Added EVEN from @I1351@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I724@",
+      "secondary_id": "@I730@",
+      "merge_notes": [
+        "Added BIRT from @I730@",
+        "Added DEAT from @I730@",
+        "Added EVEN from @I730@",
+        "Preserved 2 date records from @I730@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I736@",
+      "secondary_id": "@I1376@",
+      "merge_notes": [
+        "Added BIRT from @I1376@",
+        "Added DEAT from @I1376@",
+        "Added EVEN from @I1376@",
+        "Preserved 2 date records from @I1376@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I746@",
+      "secondary_id": "@I1304@",
+      "merge_notes": [
+        "Added BIRT from @I1304@",
+        "Added DEAT from @I1304@",
+        "Added EVEN from @I1304@",
+        "Preserved 1 date records from @I1304@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I747@",
+      "secondary_id": "@I1345@",
+      "merge_notes": [
+        "Added EVEN from @I1345@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I774@",
+      "secondary_id": "@I1319@",
+      "merge_notes": [
+        "Added BIRT from @I1319@",
+        "Added DEAT from @I1319@",
+        "Added EVEN from @I1319@",
+        "Preserved 1 date records from @I1319@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I775@",
+      "secondary_id": "@I788@",
+      "merge_notes": [
+        "Added BIRT from @I788@",
+        "Added DEAT from @I788@",
+        "Added EVEN from @I788@",
+        "Preserved 2 date records from @I788@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I779@",
+      "secondary_id": "@I796@",
+      "merge_notes": [
+        "Added BIRT from @I796@",
+        "Added DEAT from @I796@",
+        "Added EVEN from @I796@",
+        "Preserved 2 date records from @I796@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I785@",
+      "secondary_id": "@I794@",
+      "merge_notes": [
+        "Added BIRT from @I794@",
+        "Added DEAT from @I794@",
+        "Added EVEN from @I794@",
+        "Preserved 1 date records from @I794@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I787@",
+      "secondary_id": "@I797@",
+      "merge_notes": [
+        "Added BIRT from @I797@",
+        "Added DEAT from @I797@",
+        "Added EVEN from @I797@",
+        "Preserved 2 date records from @I797@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I844@",
+      "secondary_id": "@I1044@",
+      "merge_notes": [
+        "Added BIRT from @I1044@",
+        "Added DEAT from @I1044@",
+        "Added EVEN from @I1044@",
+        "Preserved 1 date records from @I1044@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I847@",
+      "secondary_id": "@I918@",
+      "merge_notes": [
+        "Added BIRT from @I918@",
+        "Added DEAT from @I918@",
+        "Added EVEN from @I918@",
+        "Preserved 2 date records from @I918@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I847@",
+      "secondary_id": "@I1168@",
+      "merge_notes": [
+        "Added BIRT from @I1168@",
+        "Added DEAT from @I1168@",
+        "Added EVEN from @I1168@",
+        "Preserved 1 date records from @I1168@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I848@",
+      "secondary_id": "@I1170@",
+      "merge_notes": [
+        "Added BIRT from @I1170@",
+        "Added DEAT from @I1170@",
+        "Added EVEN from @I1170@",
+        "Preserved 2 date records from @I1170@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I850@",
+      "secondary_id": "@I916@",
+      "merge_notes": [
+        "Added BIRT from @I916@",
+        "Added DEAT from @I916@",
+        "Added EVEN from @I916@",
+        "Preserved 2 date records from @I916@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I852@",
+      "secondary_id": "@I1049@",
+      "merge_notes": [
+        "Added EVEN from @I1049@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I858@",
+      "secondary_id": "@I1378@",
+      "merge_notes": [
+        "Added alternate name from @I1378@",
+        "Added BIRT from @I1378@",
+        "Added DEAT from @I1378@",
+        "Preserved 1 date records from @I1378@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I859@",
+      "secondary_id": "@I870@",
+      "merge_notes": [
+        "Added BIRT from @I870@",
+        "Added DEAT from @I870@",
+        "Added EVEN from @I870@",
+        "Preserved 2 date records from @I870@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I862@",
+      "secondary_id": "@I865@",
+      "merge_notes": [
+        "Added BIRT from @I865@",
+        "Added DEAT from @I865@",
+        "Added EVEN from @I865@",
+        "Preserved 2 date records from @I865@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I910@",
+      "secondary_id": "@I1171@",
+      "merge_notes": [
+        "Added BIRT from @I1171@",
+        "Added DEAT from @I1171@",
+        "Added EVEN from @I1171@",
+        "Preserved 1 date records from @I1171@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I915@",
+      "merge_notes": [
+        "Added BIRT from @I915@",
+        "Added DEAT from @I915@",
+        "Added EVEN from @I915@",
+        "Preserved 2 date records from @I915@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1036@",
+      "merge_notes": [
+        "Added BIRT from @I1036@",
+        "Added DEAT from @I1036@",
+        "Added EVEN from @I1036@",
+        "Preserved 2 date records from @I1036@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1038@",
+      "merge_notes": [
+        "Added EVEN from @I1038@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1050@",
+      "merge_notes": [
+        "Added BIRT from @I1050@",
+        "Added DEAT from @I1050@",
+        "Added EVEN from @I1050@",
+        "Preserved 2 date records from @I1050@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1301@",
+      "merge_notes": [
+        "Added alternate name from @I1301@",
+        "Added alternate name from @I1301@",
+        "Added BIRT from @I1301@",
+        "Added DEAT from @I1301@",
+        "Added EVEN from @I1301@",
+        "Preserved 2 date records from @I1301@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I943@",
+      "secondary_id": "@I1337@",
+      "merge_notes": [
+        "Added BIRT from @I1337@",
+        "Added DEAT from @I1337@",
+        "Added EVEN from @I1337@",
+        "Preserved 1 date records from @I1337@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I961@",
+      "secondary_id": "@I1330@",
+      "merge_notes": [
+        "Added EVEN from @I1330@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I964@",
+      "secondary_id": "@I971@",
+      "merge_notes": [
+        "Added BIRT from @I971@",
+        "Added DEAT from @I971@",
+        "Added EVEN from @I971@",
+        "Preserved 1 date records from @I971@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I965@",
+      "secondary_id": "@I1336@",
+      "merge_notes": [
+        "Added EVEN from @I1336@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I980@",
+      "secondary_id": "@I1325@",
+      "merge_notes": [
+        "Added BIRT from @I1325@",
+        "Added DEAT from @I1325@",
+        "Added EVEN from @I1325@",
+        "Preserved 2 date records from @I1325@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I981@",
+      "secondary_id": "@I1320@",
+      "merge_notes": [
+        "Added BIRT from @I1320@",
+        "Added DEAT from @I1320@",
+        "Added EVEN from @I1320@",
+        "Preserved 2 date records from @I1320@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I982@",
+      "secondary_id": "@I1374@",
+      "merge_notes": [
+        "Added BIRT from @I1374@",
+        "Added DEAT from @I1374@",
+        "Added EVEN from @I1374@",
+        "Preserved 2 date records from @I1374@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I983@",
+      "secondary_id": "@I1308@",
+      "merge_notes": [
+        "Added BIRT from @I1308@",
+        "Added DEAT from @I1308@",
+        "Added EVEN from @I1308@",
+        "Preserved 2 date records from @I1308@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I984@",
+      "secondary_id": "@I1311@",
+      "merge_notes": [
+        "Added BIRT from @I1311@",
+        "Added DEAT from @I1311@",
+        "Added EVEN from @I1311@",
+        "Preserved 2 date records from @I1311@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I985@",
+      "secondary_id": "@I1373@",
+      "merge_notes": [
+        "Added BIRT from @I1373@",
+        "Added DEAT from @I1373@",
+        "Added EVEN from @I1373@",
+        "Preserved 1 date records from @I1373@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I986@",
+      "secondary_id": "@I1332@",
+      "merge_notes": [
+        "Added BIRT from @I1332@",
+        "Added DEAT from @I1332@",
+        "Added EVEN from @I1332@",
+        "Preserved 2 date records from @I1332@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I987@",
+      "secondary_id": "@I1361@",
+      "merge_notes": [
+        "Added BIRT from @I1361@",
+        "Added DEAT from @I1361@",
+        "Added EVEN from @I1361@",
+        "Preserved 2 date records from @I1361@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I988@",
+      "secondary_id": "@I1339@",
+      "merge_notes": [
+        "Added BIRT from @I1339@",
+        "Added DEAT from @I1339@",
+        "Added EVEN from @I1339@",
+        "Preserved 2 date records from @I1339@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I989@",
+      "secondary_id": "@I1353@",
+      "merge_notes": [
+        "Added BIRT from @I1353@",
+        "Added DEAT from @I1353@",
+        "Added EVEN from @I1353@",
+        "Preserved 2 date records from @I1353@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I992@",
+      "secondary_id": "@I1349@",
+      "merge_notes": [
+        "Added EVEN from @I1349@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I993@",
+      "secondary_id": "@I1296@",
+      "merge_notes": [
+        "Added EVEN from @I1296@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1011@",
+      "secondary_id": "@I1109@",
+      "merge_notes": [
+        "Added BIRT from @I1109@",
+        "Added DEAT from @I1109@",
+        "Added EVEN from @I1109@",
+        "Preserved 2 date records from @I1109@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1056@",
+      "secondary_id": "@I1372@",
+      "merge_notes": [
+        "Added BIRT from @I1372@",
+        "Added DEAT from @I1372@",
+        "Added RESI from @I1372@",
+        "Added EVEN from @I1372@",
+        "Preserved 2 date records from @I1372@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1069@",
+      "secondary_id": "@I1321@",
+      "merge_notes": [
+        "Added BIRT from @I1321@",
+        "Added DEAT from @I1321@",
+        "Added EVEN from @I1321@",
+        "Preserved 1 date records from @I1321@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1071@",
+      "secondary_id": "@I1352@",
+      "merge_notes": [
+        "Added BIRT from @I1352@",
+        "Added DEAT from @I1352@",
+        "Added RESI from @I1352@",
+        "Added EVEN from @I1352@",
+        "Preserved 2 date records from @I1352@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1086@",
+      "secondary_id": "@I1298@",
+      "merge_notes": [
+        "Added BIRT from @I1298@",
+        "Added DEAT from @I1298@",
+        "Added EVEN from @I1298@",
+        "Preserved 1 date records from @I1298@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1111@",
+      "secondary_id": "@I1338@",
+      "merge_notes": [
+        "Added BIRT from @I1338@",
+        "Added DEAT from @I1338@",
+        "Added EVEN from @I1338@",
+        "Preserved 1 date records from @I1338@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1129@",
+      "secondary_id": "@I1312@",
+      "merge_notes": [
+        "Added BIRT from @I1312@",
+        "Added DEAT from @I1312@",
+        "Added EVEN from @I1312@",
+        "Preserved 1 date records from @I1312@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1150@",
+      "secondary_id": "@I1167@",
+      "merge_notes": [
+        "Added BIRT from @I1167@",
+        "Added DEAT from @I1167@",
+        "Added EVEN from @I1167@",
+        "Preserved 2 date records from @I1167@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1172@",
+      "secondary_id": "@I1362@",
+      "merge_notes": [
+        "Added BIRT from @I1362@",
+        "Added DEAT from @I1362@",
+        "Added EVEN from @I1362@",
+        "Preserved 1 date records from @I1362@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1222@",
+      "secondary_id": "@I1225@",
+      "merge_notes": [
+        "Added BIRT from @I1225@",
+        "Added DEAT from @I1225@",
+        "Preserved 2 date records from @I1225@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1234@",
+      "secondary_id": "@I1245@",
+      "merge_notes": [
+        "Added BIRT from @I1245@",
+        "Added DEAT from @I1245@",
+        "Preserved 2 date records from @I1245@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1239@",
+      "secondary_id": "@I1248@",
+      "merge_notes": [
+        "Added BIRT from @I1248@",
+        "Added DEAT from @I1248@",
+        "Preserved 2 date records from @I1248@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1239@",
+      "secondary_id": "@I1382@",
+      "merge_notes": [
+        "Added BIRT from @I1382@",
+        "Added DEAT from @I1382@",
+        "Preserved 1 date records from @I1382@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1257@",
+      "secondary_id": "@I1302@",
+      "merge_notes": [
+        "Added BIRT from @I1302@",
+        "Added DEAT from @I1302@",
+        "Added EVEN from @I1302@",
+        "Preserved 2 date records from @I1302@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1262@",
+      "secondary_id": "@I1355@",
+      "merge_notes": [
+        "Added BIRT from @I1355@",
+        "Added DEAT from @I1355@",
+        "Added EVEN from @I1355@",
+        "Preserved 1 date records from @I1355@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1263@",
+      "secondary_id": "@I1266@",
+      "merge_notes": [
+        "Added BIRT from @I1266@",
+        "Added DEAT from @I1266@",
+        "Preserved 2 date records from @I1266@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1271@",
+      "secondary_id": "@I1294@",
+      "merge_notes": [
+        "Added BIRT from @I1294@",
+        "Added DEAT from @I1294@",
+        "Preserved 2 date records from @I1294@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1404@",
+      "secondary_id": "@I1406@",
+      "merge_notes": [
+        "Added BIRT from @I1406@",
+        "Added DEAT from @I1406@",
+        "Preserved 2 date records from @I1406@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1419@",
+      "secondary_id": "@I1421@",
+      "merge_notes": [
+        "Added BIRT from @I1421@",
+        "Added DEAT from @I1421@",
+        "Preserved 2 date records from @I1421@"
+      ],
+      "similarity": 100
+    },
+    {
+      "primary_id": "@I1210@",
+      "secondary_id": "@I1229@",
+      "merge_notes": [
+        "Added alternate name from @I1229@",
+        "Added BIRT from @I1229@",
+        "Added DEAT from @I1229@"
+      ],
+      "similarity": 98.55072463768117
+    }
+  ]
+}

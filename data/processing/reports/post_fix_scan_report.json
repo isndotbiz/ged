@@ -1,0 +1,9 @@
+{
+  "file": "data/processing/fixed/step1_dates/master_geo_media_dates_fixed.ged",
+  "lines": 79957,
+  "issues": {
+    "dates_to_review": 0,
+    "names_to_standardize": 0,
+    "places_to_normalize": 0
+  }
+}

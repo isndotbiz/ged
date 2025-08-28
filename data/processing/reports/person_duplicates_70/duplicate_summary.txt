@@ -1,0 +1,46 @@
+PERSON DUPLICATE DETECTION SUMMARY
+==================================================
+
+Total individuals analyzed: 1469
+Total potential duplicates found: 9
+
+CONFIDENCE BREAKDOWN:
+  High confidence (≥80.0%): 7 pairs
+  Medium confidence (70.0%-79.9%): 2 pairs
+
+TOP 10 HIGH-CONFIDENCE MATCHES:
+----------------------------------------
+1. Stephen Stuart /Fitzgerald/ ↔ Stephen Stuart /Fitzgerald/ (80.0%)
+   IDs: @I980@ ↔ @I1325@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+2. Frederick George Mayberry /Fitzgerald/ ↔ Frederick George Mayberry /Fitzgerald/ (80.0%)
+   IDs: @I981@ ↔ @I1320@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+3. Walter Alexandria /Fitzgerald/ ↔ Walter Alexandria /Fitzgerald/ (80.0%)
+   IDs: @I982@ ↔ @I1374@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+4. Gerald Archibald /Fitzgerald/ ↔ Gerald Archibald /Fitzgerald/ (80.0%)
+   IDs: @I983@ ↔ @I1308@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+5. Geraldine Blanche Almyra /Fitzgerald/ ↔ Geraldine Blanche Almyra /Fitzgerald/ (80.0%)
+   IDs: @I984@ ↔ @I1311@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+6. Hilda Maud Rosamund /Fitzgerald/ ↔ Hilda Maud Rosamund /Fitzgerald/ (80.0%)
+   IDs: @I986@ ↔ @I1332@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+7. Stanley Montague /Fitzgerald/ ↔ Stanley Montague /Fitzgerald/ (80.0%)
+   IDs: @I987@ ↔ @I1361@
+   Reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+
+RECOMMENDED ACTIONS:
+1. Review high-confidence matches first
+2. Import GEDCOM into RootsMagic 10
+3. Use Tools > Merge > Find Duplicate People for safe merging
+4. Manually verify each match before merging
+5. Always backup before making changes

@@ -1,0 +1,22 @@
+suffix_handling:
+  move_suffix_from_name: true
+  known_suffixes: ["Jr", "Sr", "II", "III", "IV", "Ii", "PhD", "MD"]
+
+fact_deduplication:
+  birth:
+    strategy: "prefer_earliest"
+    keep_notes: true
+    match_window_days: 3
+
+name_normalization:
+  enable: true
+  fuzzy_threshold: 85
+  ignore_case: true
+  prefer_most_common: true
+
+disconnected_persons:
+  flag_for_review: true
+
+sibling_name_duplicates:
+  fuzzy_threshold: 90
+  action: "flag"

@@ -1,0 +1,260 @@
+{
+  "analysis_summary": {
+    "total_individuals": 1469,
+    "total_duplicates_found": 9,
+    "high_confidence_count": 7,
+    "medium_confidence_count": 2
+  },
+  "duplicates": [
+    {
+      "person1": {
+        "id": "@I980@",
+        "name": "Stephen Stuart /Fitzgerald/",
+        "birth_date": "1879",
+        "birth_place": "Worle, Somerset, England",
+        "death_date": "SEP 1910",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1325@",
+        "name": "Stephen Stuart /Fitzgerald/",
+        "birth_date": "1879",
+        "birth_place": "Worle, Somerset, England",
+        "death_date": "SEP 1910",
+        "sex": "M"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I981@",
+        "name": "Frederick George Mayberry /Fitzgerald/",
+        "birth_date": "17 SEP 1880",
+        "birth_place": "Axbridge, Somerset, England",
+        "death_date": "1955",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1320@",
+        "name": "Frederick George Mayberry /Fitzgerald/",
+        "birth_date": "17 SEP 1880",
+        "birth_place": "Axbridge, Somerset, England",
+        "death_date": "1955",
+        "sex": "M"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I982@",
+        "name": "Walter Alexandria /Fitzgerald/",
+        "birth_date": "8 JUL 1882",
+        "birth_place": "Axbridge, Somerset, England",
+        "death_date": "28 NOV 1948",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1374@",
+        "name": "Walter Alexandria /Fitzgerald/",
+        "birth_date": "8 JUL 1882",
+        "birth_place": "Axbridge, Somerset, England",
+        "death_date": "28 NOV 1948",
+        "sex": "M"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I983@",
+        "name": "Gerald Archibald /Fitzgerald/",
+        "birth_date": "1884",
+        "birth_place": "Woodstock, Oxfordshire, England",
+        "death_date": "1940",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1308@",
+        "name": "Gerald Archibald /Fitzgerald/",
+        "birth_date": "1884",
+        "birth_place": "Woodstock, Oxfordshire, England",
+        "death_date": "1940",
+        "sex": "M"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I984@",
+        "name": "Geraldine Blanche Almyra /Fitzgerald/",
+        "birth_date": "1886",
+        "birth_place": "Woodstock, Oxfordshire, England",
+        "death_date": "1918",
+        "sex": "F"
+      },
+      "person2": {
+        "id": "@I1311@",
+        "name": "Geraldine Blanche Almyra /Fitzgerald/",
+        "birth_date": "1886",
+        "birth_place": "Woodstock, Oxfordshire, England",
+        "death_date": "1918",
+        "sex": "F"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I986@",
+        "name": "Hilda Maud Rosamund /Fitzgerald/",
+        "birth_date": "24 FEB 1892",
+        "birth_place": "Bristol, Gloucestershire, England",
+        "death_date": "OCT 1976",
+        "sex": "F"
+      },
+      "person2": {
+        "id": "@I1332@",
+        "name": "Hilda Maud Rosamund /Fitzgerald/",
+        "birth_date": "24 FEB 1892",
+        "birth_place": "Bristol, Gloucestershire, England",
+        "death_date": "OCT 1976",
+        "sex": "F"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I987@",
+        "name": "Stanley Montague /Fitzgerald/",
+        "birth_date": "28 NOV 1893",
+        "birth_place": "Bristol, Gloucestershire, England",
+        "death_date": "14 MAY 1957",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1361@",
+        "name": "Stanley Montague /Fitzgerald/",
+        "birth_date": "28 NOV 1893",
+        "birth_place": "Bristol, Gloucestershire, England",
+        "death_date": "14 MAY 1957",
+        "sex": "M"
+      },
+      "similarity_score": 80.0,
+      "confidence_level": "HIGH",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar birth places (100.0%)",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "RECOMMENDED for automatic merge"
+    },
+    {
+      "person1": {
+        "id": "@I988@",
+        "name": "Philip Bevan /Fitzgerald/",
+        "birth_date": "24 NOV 1895",
+        "birth_place": "",
+        "death_date": "8 FEB 1935",
+        "sex": "M"
+      },
+      "person2": {
+        "id": "@I1339@",
+        "name": "Philip Bevan /Fitzgerald/",
+        "birth_date": "24 NOV 1895",
+        "birth_place": "",
+        "death_date": "8 FEB 1935",
+        "sex": "M"
+      },
+      "similarity_score": 70.0,
+      "confidence_level": "MEDIUM",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "MANUAL REVIEW suggested"
+    },
+    {
+      "person1": {
+        "id": "@I989@",
+        "name": "Florence Margaret Joanna /Fitzgerald/",
+        "birth_date": "1 AUG 1897",
+        "birth_place": "",
+        "death_date": "13 FEB 1964",
+        "sex": "F"
+      },
+      "person2": {
+        "id": "@I1353@",
+        "name": "Florence Margaret Joanna /Fitzgerald/",
+        "birth_date": "1 AUG 1897",
+        "birth_place": "",
+        "death_date": "13 FEB 1964",
+        "sex": "F"
+      },
+      "similarity_score": 70.0,
+      "confidence_level": "MEDIUM",
+      "match_reasons": [
+        "Very similar names (100.0%)",
+        "Same death year",
+        "Same sex",
+        "Similar death places (100.0%)"
+      ],
+      "recommendation": "MANUAL REVIEW suggested"
+    }
+  ]
+}

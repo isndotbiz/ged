@@ -1,0 +1,61 @@
+ROOTSMAGIC 10 DUPLICATE MERGING GUIDE
+==================================================
+
+STEP-BY-STEP SAFE MERGING PROCESS:
+1. Import final_with_media.ged into RootsMagic 10
+2. File > Backup Database (create safety backup)
+3. Tools > Merge > Find Duplicate People
+4. Review each suggested merge carefully
+5. Use merge preview to verify data combination
+6. Merge only when you're 100% confident
+
+PRIORITY MERGE LIST:
+------------------------------
+
+HIGH PRIORITY (7 matches):
+1. Search for: Stephen Stuart /Fitzgerald/
+   Should match: Stephen Stuart /Fitzgerald/
+   IDs: @I980@ ↔ @I1325@
+   Score: 80.0%
+
+2. Search for: Frederick George Mayberry /Fitzgerald/
+   Should match: Frederick George Mayberry /Fitzgerald/
+   IDs: @I981@ ↔ @I1320@
+   Score: 80.0%
+
+3. Search for: Walter Alexandria /Fitzgerald/
+   Should match: Walter Alexandria /Fitzgerald/
+   IDs: @I982@ ↔ @I1374@
+   Score: 80.0%
+
+4. Search for: Gerald Archibald /Fitzgerald/
+   Should match: Gerald Archibald /Fitzgerald/
+   IDs: @I983@ ↔ @I1308@
+   Score: 80.0%
+
+5. Search for: Geraldine Blanche Almyra /Fitzgerald/
+   Should match: Geraldine Blanche Almyra /Fitzgerald/
+   IDs: @I984@ ↔ @I1311@
+   Score: 80.0%
+
+6. Search for: Hilda Maud Rosamund /Fitzgerald/
+   Should match: Hilda Maud Rosamund /Fitzgerald/
+   IDs: @I986@ ↔ @I1332@
+   Score: 80.0%
+
+7. Search for: Stanley Montague /Fitzgerald/
+   Should match: Stanley Montague /Fitzgerald/
+   IDs: @I987@ ↔ @I1361@
+   Score: 80.0%
+
+
+MEDIUM PRIORITY - MANUAL REVIEW (2 matches):
+1. Philip Bevan /Fitzgerald/ vs Philip Bevan /Fitzgerald/ (70.0%)
+2. Florence Margaret Joanna /Fitzgerald/ vs Florence Margaret Joanna /Fitzgerald/ (70.0%)
+
+REMEMBER:
+- RootsMagic's merge function is much safer than automated scripts
+- You can preview exactly what will be merged before confirming
+- All data from both records will be preserved
+- Family relationships will be maintained correctly
+- You can undo merges if needed

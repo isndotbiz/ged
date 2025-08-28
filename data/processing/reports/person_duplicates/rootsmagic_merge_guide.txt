@@ -1,0 +1,20 @@
+ROOTSMAGIC 10 DUPLICATE MERGING GUIDE
+==================================================
+
+STEP-BY-STEP SAFE MERGING PROCESS:
+1. Import final_with_media.ged into RootsMagic 10
+2. File > Backup Database (create safety backup)
+3. Tools > Merge > Find Duplicate People
+4. Review each suggested merge carefully
+5. Use merge preview to verify data combination
+6. Merge only when you're 100% confident
+
+PRIORITY MERGE LIST:
+------------------------------
+
+REMEMBER:
+- RootsMagic's merge function is much safer than automated scripts
+- You can preview exactly what will be merged before confirming
+- All data from both records will be preserved
+- Family relationships will be maintained correctly
+- You can undo merges if needed

@@ -1,0 +1,2564 @@
+{
+  "input_file": "data/processing/fixed/aggressively_cleaned.ged",
+  "output_file": "data/processing/fixed/people_deduplicated_source_safe.ged",
+  "settings": {
+    "similarity_threshold": 90.0,
+    "auto_merge_threshold": 98.0
+  },
+  "results": {
+    "duplicates_found": 377,
+    "auto_merged": 197,
+    "requires_manual_review": 58,
+    "errors": 0,
+    "individuals_removed": 197,
+    "sources_preserved": 294
+  },
+  "manual_review_needed": [
+    {
+      "primary_id": "@I455@",
+      "secondary_id": "@I637@",
+      "similarity": 97.85714285714286,
+      "primary_name": "Thomas /Gibbons/",
+      "secondary_name": "Thomas /Gibbonn/",
+      "primary_birth": "19 MAY 1662",
+      "secondary_birth": "1588"
+    },
+    {
+      "primary_id": "@I159@",
+      "secondary_id": "@I1009@",
+      "similarity": 97.3076923076923,
+      "primary_name": "Thomas /Loomes/",
+      "secondary_name": "Thomas /Loomis/",
+      "primary_birth": "23 JAN 1669",
+      "secondary_birth": "12 APR 1507"
+    },
+    {
+      "primary_id": "@I408@",
+      "secondary_id": "@I476@",
+      "similarity": 97.3076923076923,
+      "primary_name": "Thomas /Balmer/",
+      "secondary_name": "Thomas /Palmer/",
+      "primary_birth": "6 SEP 1729",
+      "secondary_birth": "1566"
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I569@",
+      "similarity": 97.3076923076923,
+      "primary_name": "Richard /Pitts/",
+      "secondary_name": "Richard /Potts/",
+      "primary_birth": "1670",
+      "secondary_birth": "1590"
+    },
+    {
+      "primary_id": "@I664@",
+      "secondary_id": "@I761@",
+      "similarity": 97.3076923076923,
+      "primary_name": "Thomas /Caller/",
+      "secondary_name": "Thomas /Callar/",
+      "primary_birth": "13 MAR 1811",
+      "secondary_birth": "ABT 1765"
+    },
+    {
+      "primary_id": "@I925@",
+      "secondary_id": "@I928@",
+      "similarity": 96.66666666666666,
+      "primary_name": "Thomas /Depuy/",
+      "secondary_name": "Thomas /Dupuy/",
+      "primary_birth": "AFT 1688",
+      "secondary_birth": "1700"
+    },
+    {
+      "primary_id": "@I1258@",
+      "secondary_id": "@I1259@",
+      "similarity": 96.66666666666666,
+      "primary_name": "John /Mumford/",
+      "secondary_name": "John /Momford/",
+      "primary_birth": "MAR 1603",
+      "secondary_birth": "1571"
+    },
+    {
+      "primary_id": "@I10@",
+      "secondary_id": "@I1137@",
+      "similarity": 95.9090909090909,
+      "primary_name": "Mary Jane /Johnson/",
+      "secondary_name": "Mary Ann /Johnson/",
+      "primary_birth": "21 OCT 1858",
+      "secondary_birth": "20 APR 1811"
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I474@",
+      "similarity": 95.9090909090909,
+      "primary_name": "John /Balmer/",
+      "secondary_name": "John /Palmer/",
+      "primary_birth": "26 MAR 1861",
+      "secondary_birth": "JUN 1604"
+    },
+    {
+      "primary_id": "@I893@",
+      "secondary_id": "@I894@",
+      "similarity": 95.9090909090909,
+      "primary_name": "Alan /Mackintosh/",
+      "secondary_name": "Lachlan /Mackintosh/",
+      "primary_birth": "1578",
+      "secondary_birth": "1580"
+    },
+    {
+      "primary_id": "@I142@",
+      "secondary_id": "@I825@",
+      "similarity": 95.32258064516128,
+      "primary_name": "Elizabeth /Palmer/",
+      "secondary_name": "Elizabeth /Alger/",
+      "primary_birth": "ABT APR 1593",
+      "secondary_birth": "1512"
+    },
+    {
+      "primary_id": "@I180@",
+      "secondary_id": "@I768@",
+      "similarity": 95.32258064516128,
+      "primary_name": "Elizabeth /Croson/",
+      "secondary_name": "Elizabeth /Cross/",
+      "primary_birth": "ABT 1663",
+      "secondary_birth": "ABT 1723"
+    },
+    {
+      "primary_id": "@I634@",
+      "secondary_id": "@I679@",
+      "similarity": 95.32258064516128,
+      "primary_name": "William /Standing/",
+      "secondary_name": "William /Standen/",
+      "primary_birth": "1770",
+      "secondary_birth": "ABT 1735"
+    },
+    {
+      "primary_id": "@I635@",
+      "secondary_id": "@I1240@",
+      "similarity": 95.0,
+      "primary_name": "John /Minto/",
+      "secondary_name": "John /Minor/",
+      "primary_birth": "1767",
+      "secondary_birth": "1814"
+    },
+    {
+      "primary_id": "@I1233@",
+      "secondary_id": "@I1235@",
+      "similarity": 95.0,
+      "primary_name": "Jane /Minor/",
+      "secondary_name": "Anne /Minor/",
+      "primary_birth": "1819",
+      "secondary_birth": "1810"
+    },
+    {
+      "primary_id": "@I262@",
+      "secondary_id": "@I520@",
+      "similarity": 94.65517241379311,
+      "primary_name": "Elizabeth /Rose/",
+      "secondary_name": "Elizabeth /House/",
+      "primary_birth": "31 AUG 1740",
+      "secondary_birth": ""
+    },
+    {
+      "primary_id": "@I262@",
+      "secondary_id": "@I768@",
+      "similarity": 94.65517241379311,
+      "primary_name": "Elizabeth /Rose/",
+      "secondary_name": "Elizabeth /Cross/",
+      "primary_birth": "31 AUG 1740",
+      "secondary_birth": "ABT 1723"
+    },
+    {
+      "primary_id": "@I330@",
+      "secondary_id": "@I679@",
+      "similarity": 94.65517241379311,
+      "primary_name": "William /Steane/",
+      "secondary_name": "William /Standen/",
+      "primary_birth": "1802",
+      "secondary_birth": "ABT 1735"
+    },
+    {
+      "primary_id": "@I368@",
+      "secondary_id": "@I510@",
+      "similarity": 94.65517241379311,
+      "primary_name": "William /Savage/",
+      "secondary_name": "William /Savidge/",
+      "primary_birth": "1709",
+      "secondary_birth": "1630"
+    },
+    {
+      "primary_id": "@I884@",
+      "secondary_id": "@I1401@",
+      "similarity": 94.65517241379311,
+      "primary_name": "Agnes /MacKenzie/",
+      "secondary_name": "Anne /MacKenzie/",
+      "primary_birth": "1550",
+      "secondary_birth": ""
+    },
+    {
+      "primary_id": "@I45@",
+      "secondary_id": "@I727@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Elizabeth /Gray/",
+      "secondary_name": "Elizabeth /Guy/",
+      "primary_birth": "JUL 1648",
+      "secondary_birth": "ABT 1673"
+    },
+    {
+      "primary_id": "@I111@",
+      "secondary_id": "@I357@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Mary /Ach/",
+      "secondary_name": "Mary /March/",
+      "primary_birth": "1710",
+      "secondary_birth": "1725"
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I351@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Elizabeth //",
+      "secondary_name": "Elisabeth //",
+      "primary_birth": "ABT 1520",
+      "secondary_birth": "AB 1735"
+    },
+    {
+      "primary_id": "@I190@",
+      "secondary_id": "@I669@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Thomas Henry /King/",
+      "secondary_name": "Thomas Henry /Knight/",
+      "primary_birth": "28 JUL 1854",
+      "secondary_birth": "1510"
+    },
+    {
+      "primary_id": "@I212@",
+      "secondary_id": "@I405@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Jane //",
+      "secondary_name": "Janet //",
+      "primary_birth": "ABT 1674",
+      "secondary_birth": "1801"
+    },
+    {
+      "primary_id": "@I607@",
+      "secondary_id": "@I622@",
+      "similarity": 93.88888888888889,
+      "primary_name": "Mary /Cameron/",
+      "secondary_name": "Marjory /Cameron/",
+      "primary_birth": "ABT 1622",
+      "secondary_birth": "1692"
+    },
+    {
+      "primary_id": "@I260@",
+      "secondary_id": "@I1393@",
+      "similarity": 93.23529411764706,
+      "primary_name": "Elizabeth /Stanton/",
+      "secondary_name": "Elizabeth /Standen/",
+      "primary_birth": "1768",
+      "secondary_birth": "APR 1770"
+    },
+    {
+      "primary_id": "@I429@",
+      "secondary_id": "@I431@",
+      "similarity": 93.0,
+      "primary_name": "John /Varley/",
+      "secondary_name": "John /Varley II/",
+      "primary_birth": "14 MAR 1646",
+      "secondary_birth": "24 MAR 1613"
+    },
+    {
+      "primary_id": "@I699@",
+      "secondary_id": "@I706@",
+      "similarity": 93.0,
+      "primary_name": "Patrik /Cowan/",
+      "secondary_name": "Patrick /Cowen/",
+      "primary_birth": "1587",
+      "secondary_birth": "2 JAN 1614"
+    },
+    {
+      "primary_id": "@I42@",
+      "secondary_id": "@I123@",
+      "similarity": 92.5,
+      "primary_name": "Elizabeth /Worts/",
+      "secondary_name": "Elizabeth /Wortley/",
+      "primary_birth": "1695",
+      "secondary_birth": "1595"
+    },
+    {
+      "primary_id": "@I45@",
+      "secondary_id": "@I807@",
+      "similarity": 92.5,
+      "primary_name": "Elizabeth /Gray/",
+      "secondary_name": "Elizabeth /Greenway/",
+      "primary_birth": "JUL 1648",
+      "secondary_birth": "1593"
+    },
+    {
+      "primary_id": "@I1001@",
+      "secondary_id": "@I1142@",
+      "similarity": 92.17948717948718,
+      "primary_name": "Emma Elizabeth /Johnson/",
+      "secondary_name": "Elizabeth /Johnson/",
+      "primary_birth": "15 APR 1866",
+      "secondary_birth": "8 AUG 1806"
+    },
+    {
+      "primary_id": "@I270@",
+      "secondary_id": "@I734@",
+      "similarity": 91.95652173913044,
+      "primary_name": "Richard /Mon/",
+      "secondary_name": "Richard /Bond/",
+      "primary_birth": "ABT 1640",
+      "secondary_birth": "NOV 1642"
+    },
+    {
+      "primary_id": "@I438@",
+      "secondary_id": "@I1082@",
+      "similarity": 91.95652173913044,
+      "primary_name": "James /Kershaw/",
+      "secondary_name": "James /Shaw/",
+      "primary_birth": "ABT 1560",
+      "secondary_birth": "1790"
+    },
+    {
+      "primary_id": "@I180@",
+      "secondary_id": "@I262@",
+      "similarity": 91.66666666666667,
+      "primary_name": "Elizabeth /Croson/",
+      "secondary_name": "Elizabeth /Rose/",
+      "primary_birth": "ABT 1663",
+      "secondary_birth": "31 AUG 1740"
+    },
+    {
+      "primary_id": "@I217@",
+      "secondary_id": "@I490@",
+      "similarity": 91.66666666666667,
+      "primary_name": "Elizabeth /Dane/",
+      "secondary_name": "Elizabeth /Rabnie/",
+      "primary_birth": "1692",
+      "secondary_birth": "ABT 1642"
+    },
+    {
+      "primary_id": "@I710@",
+      "secondary_id": "@I1214@",
+      "similarity": 91.66666666666667,
+      "primary_name": "Catharine /Cowen/",
+      "secondary_name": "Catharine /Stowe/",
+      "primary_birth": "22 MAR 1612",
+      "secondary_birth": "1559"
+    },
+    {
+      "primary_id": "@I717@",
+      "secondary_id": "@I760@",
+      "similarity": 91.66666666666667,
+      "primary_name": "Johne /Porteous/",
+      "secondary_name": "John P. /Porteous/",
+      "primary_birth": "20 MAR 1574",
+      "secondary_birth": "1588"
+    },
+    {
+      "primary_id": "@I1460@",
+      "secondary_id": "@I1462@",
+      "similarity": 91.66666666666667,
+      "primary_name": "Hans /Hadermann/",
+      "secondary_name": "Johann /Hadermann/",
+      "primary_birth": "1570",
+      "secondary_birth": "15 JAN 1605"
+    },
+    {
+      "primary_id": "@I44@",
+      "secondary_id": "@I49@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Elizabeth /Ash/",
+      "secondary_name": "Elizabeth /Smith/",
+      "primary_birth": "AUG 1673",
+      "secondary_birth": "ABT 1624"
+    },
+    {
+      "primary_id": "@I44@",
+      "secondary_id": "@I1133@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Elizabeth /Ash/",
+      "secondary_name": "Elizabeth /Heath/",
+      "primary_birth": "AUG 1673",
+      "secondary_birth": "1630"
+    },
+    {
+      "primary_id": "@I85@",
+      "secondary_id": "@I317@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Jannet /Gardner/",
+      "secondary_name": "Joanna /Gardner/",
+      "primary_birth": "1750",
+      "secondary_birth": "27 MAY 1712"
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I828@",
+      "similarity": 90.71428571428572,
+      "primary_name": "John /Balmer/",
+      "secondary_name": "John /Alger/",
+      "primary_birth": "26 MAR 1861",
+      "secondary_birth": "ABT 1490"
+    },
+    {
+      "primary_id": "@I230@",
+      "secondary_id": "@I240@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Thomas /Edwards/",
+      "secondary_name": "Thomas /Edmeads/",
+      "primary_birth": "18 AUG 1733",
+      "secondary_birth": "ABT 1630"
+    },
+    {
+      "primary_id": "@I237@",
+      "secondary_id": "@I1258@",
+      "similarity": 90.71428571428572,
+      "primary_name": "John /Ford/",
+      "secondary_name": "John /Mumford/",
+      "primary_birth": "ABT 1656",
+      "secondary_birth": "MAR 1603"
+    },
+    {
+      "primary_id": "@I237@",
+      "secondary_id": "@I1259@",
+      "similarity": 90.71428571428572,
+      "primary_name": "John /Ford/",
+      "secondary_name": "John /Momford/",
+      "primary_birth": "ABT 1656",
+      "secondary_birth": "1571"
+    },
+    {
+      "primary_id": "@I283@",
+      "secondary_id": "@I403@",
+      "similarity": 90.71428571428572,
+      "primary_name": "John William /Perkins/",
+      "secondary_name": "William /Perkins/",
+      "primary_birth": "1799",
+      "secondary_birth": "7 AUG 1774"
+    },
+    {
+      "primary_id": "@I360@",
+      "secondary_id": "@I456@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Anne //",
+      "secondary_name": "Ann //",
+      "primary_birth": "ABT 1616",
+      "secondary_birth": "ABT 1664"
+    },
+    {
+      "primary_id": "@I430@",
+      "secondary_id": "@I877@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Isabelle /Whalley/",
+      "secondary_name": "Isabell /Hall/",
+      "primary_birth": "24 FEB 1655",
+      "secondary_birth": "1520"
+    },
+    {
+      "primary_id": "@I456@",
+      "secondary_id": "@I993@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Ann //",
+      "secondary_name": "Anna //",
+      "primary_birth": "ABT 1664",
+      "secondary_birth": ""
+    },
+    {
+      "primary_id": "@I474@",
+      "secondary_id": "@I828@",
+      "similarity": 90.71428571428572,
+      "primary_name": "John /Palmer/",
+      "secondary_name": "John /Alger/",
+      "primary_birth": "JUN 1604",
+      "secondary_birth": "ABT 1490"
+    },
+    {
+      "primary_id": "@I763@",
+      "secondary_id": "@I824@",
+      "similarity": 90.71428571428572,
+      "primary_name": "William /Caller/",
+      "secondary_name": "William /Palmer/",
+      "primary_birth": "1748",
+      "secondary_birth": "1 JAN 1510"
+    },
+    {
+      "primary_id": "@I784@",
+      "secondary_id": "@I801@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Joseph /Gardner/",
+      "secondary_name": "Joshua /Gardner/",
+      "primary_birth": "23 OCT 1672",
+      "secondary_birth": "5 MAR 1642"
+    },
+    {
+      "primary_id": "@I809@",
+      "secondary_id": "@I810@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Martha /Greenway/",
+      "secondary_name": "Mary /Greenway/",
+      "primary_birth": "26 NOV 1607",
+      "secondary_birth": "ABT 5 NOV 1605"
+    },
+    {
+      "primary_id": "@I1234@",
+      "secondary_id": "@I1235@",
+      "similarity": 90.71428571428572,
+      "primary_name": "Fanny /Minor/",
+      "secondary_name": "Anne /Minor/",
+      "primary_birth": "1812",
+      "secondary_birth": "1810"
+    },
+    {
+      "primary_id": "@I87@",
+      "secondary_id": "@I88@",
+      "similarity": 90.0,
+      "primary_name": "David Charles /Mallinger/",
+      "secondary_name": "Charles /Mallinger/",
+      "primary_birth": "4 JUN 1882",
+      "secondary_birth": "ABT 1866"
+    },
+    {
+      "primary_id": "@I598@",
+      "secondary_id": "@I629@",
+      "similarity": 90.0,
+      "primary_name": "John Macewan /Cameron/",
+      "secondary_name": "John Mcallen /Cameron/",
+      "primary_birth": "1670",
+      "secondary_birth": "1580"
+    },
+    {
+      "primary_id": "@I1150@",
+      "secondary_id": "@I1167@",
+      "similarity": 90.0,
+      "primary_name": "Elizabeth /Cecil/",
+      "secondary_name": "Elizabeth /Cecil/",
+      "primary_birth": "APR 1525",
+      "secondary_birth": "1535"
+    }
+  ],
+  "merge_log": [
+    {
+      "primary_id": "@I4@",
+      "secondary_id": "@I1327@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I1327@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I13@",
+      "secondary_id": "@I29@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I29@",
+        "Added spouse family @F581@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I13@",
+      "secondary_id": "@I1341@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1341@",
+        "Added spouse family @F582@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I17@",
+      "secondary_id": "@I34@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I34@",
+        "Added spouse family @F419@",
+        "Added child family @F434@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I19@",
+      "secondary_id": "@I840@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I840@",
+        "Added child family @F258@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I21@",
+      "secondary_id": "@I25@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I25@",
+        "Added spouse family @F347@",
+        "Added child family @F258@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I21@",
+      "secondary_id": "@I466@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 41 fact lines from @I466@",
+        "Added spouse family @F258@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I47@",
+      "secondary_id": "@I1331@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1331@",
+        "Added spouse family @F625@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I61@",
+      "secondary_id": "@I719@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 47 fact lines from @I719@",
+        "Added spouse family @F417@",
+        "Added child family @F630@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I70@",
+      "secondary_id": "@I399@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 27 fact lines from @I399@",
+        "Added spouse family @F228@",
+        "Added child family @F224@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I71@",
+      "secondary_id": "@I392@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I392@",
+        "Added spouse family @F493@",
+        "Added child family @F435@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I74@",
+      "secondary_id": "@I1315@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1315@",
+        "Added spouse family @F503@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I99@",
+      "secondary_id": "@I1246@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I1246@",
+        "Added child family @F319@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I106@",
+      "secondary_id": "@I1305@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1305@",
+        "Added spouse family @F556@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I108@",
+      "secondary_id": "@I113@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I113@",
+        "Added spouse family @F351@",
+        "Added child family @F356@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I108@",
+      "secondary_id": "@I114@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I114@",
+        "Added spouse family @F356@",
+        "Added child family @F354@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I118@",
+      "secondary_id": "@I124@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I124@",
+        "Added spouse family @F333@",
+        "Added child family @F587@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I120@",
+      "secondary_id": "@I1297@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1297@",
+        "Added spouse family @F141@",
+        "Added child family @F92@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I151@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I151@",
+        "Added spouse family @F408@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I156@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I156@",
+        "Added spouse family @F415@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I300@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I300@",
+        "Added spouse family @F83@",
+        "Added child family @F76@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I566@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I566@",
+        "Added spouse family @F281@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1317@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1317@",
+        "Added spouse family @F141@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1386@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I1386@",
+        "Added spouse family @F561@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I121@",
+      "secondary_id": "@I1392@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I1392@",
+        "Added spouse family @F496@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I128@",
+      "secondary_id": "@I1363@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I1363@",
+        "Added spouse family @F593@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I131@",
+      "secondary_id": "@I1334@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1334@",
+        "Added spouse family @F92@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I132@",
+      "secondary_id": "@I1306@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I1306@",
+        "Added spouse family @F92@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I139@",
+      "secondary_id": "@I152@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I152@",
+        "Added spouse family @F408@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I139@",
+      "secondary_id": "@I1370@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1370@",
+        "Added spouse family @F610@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I153@",
+      "secondary_id": "@I1241@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I1241@",
+        "Added child family @F411@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I159@",
+      "secondary_id": "@I161@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I161@",
+        "Added spouse family @F56@",
+        "Added child family @F69@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I167@",
+      "secondary_id": "@I1371@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1371@",
+        "Added spouse family @F466@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I269@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I269@",
+        "Added spouse family @F313@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I866@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 27 fact lines from @I866@",
+        "Added spouse family @F267@",
+        "Added child family @F269@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I1008@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 46 fact lines from @I1008@",
+        "Added spouse family @F14@",
+        "Added child family @F323@",
+        "Added child family @F440@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I1348@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1348@",
+        "Added spouse family @F97@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I173@",
+      "secondary_id": "@I1388@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1388@",
+        "Added spouse family @F546@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I181@",
+      "secondary_id": "@I1085@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1085@",
+        "Added spouse family @F424@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I192@",
+      "secondary_id": "@I1314@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 39 fact lines from @I1314@",
+        "Added spouse family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I406@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I406@",
+        "Added spouse family @F295@",
+        "Added child family @F314@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I417@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I417@",
+        "Added spouse family @F557@",
+        "Added child family @F553@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I195@",
+      "secondary_id": "@I419@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I419@",
+        "Added spouse family @F553@",
+        "Added child family @F46@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I209@",
+      "secondary_id": "@I481@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I481@",
+        "Added spouse family @F293@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I211@",
+      "secondary_id": "@I793@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I793@",
+        "Added child family @F43@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I211@",
+      "secondary_id": "@I1250@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I1250@",
+        "Added spouse family @F194@",
+        "Added child family @F433@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I211@",
+      "secondary_id": "@I1256@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I1256@",
+        "Added spouse family @F433@",
+        "Added child family @F643@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I215@",
+      "secondary_id": "@I1350@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1350@",
+        "Added spouse family @F453@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I222@",
+      "secondary_id": "@I998@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I998@",
+        "Added child family @F17@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I223@",
+      "secondary_id": "@I226@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I226@",
+        "Added spouse family @F75@",
+        "Added child family @F184@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I223@",
+      "secondary_id": "@I1188@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 124 fact lines from @I1188@",
+        "Added child family @F88@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I231@",
+      "secondary_id": "@I234@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 10 fact lines from @I234@",
+        "Added spouse family @F482@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I231@",
+      "secondary_id": "@I1367@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I1367@",
+        "Added spouse family @F483@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I233@",
+      "secondary_id": "@I1342@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1342@",
+        "Added spouse family @F480@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I249@",
+      "secondary_id": "@I250@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I250@",
+        "Added spouse family @F250@",
+        "Added child family @F329@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I249@",
+      "secondary_id": "@I545@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 30 fact lines from @I545@",
+        "Added child family @F25@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I249@",
+      "secondary_id": "@I555@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I555@",
+        "Added spouse family @F329@",
+        "Added child family @F358@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I254@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I254@",
+        "Added spouse family @F225@",
+        "Added child family @F222@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I256@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I256@",
+        "Added spouse family @F222@",
+        "Added child family @F221@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I252@",
+      "secondary_id": "@I1176@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I1176@",
+        "Added spouse family @F221@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I267@",
+      "secondary_id": "@I1377@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1377@",
+        "Added spouse family @F569@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I268@",
+      "secondary_id": "@I1347@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1347@",
+        "Added spouse family @F567@",
+        "Added child family @F97@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I270@",
+      "secondary_id": "@I1316@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1316@",
+        "Added spouse family @F97@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I272@",
+      "secondary_id": "@I1368@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1368@",
+        "Added spouse family @F580@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I273@",
+      "secondary_id": "@I274@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 39 fact lines from @I274@",
+        "Added spouse family @F320@",
+        "Added child family @F577@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I277@",
+      "secondary_id": "@I1303@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1303@",
+        "Added spouse family @F460@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I292@",
+      "secondary_id": "@I1389@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 42 fact lines from @I1389@",
+        "Added spouse family @F499@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I294@",
+      "secondary_id": "@I917@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I917@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I297@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I297@",
+        "Added spouse family @F133@",
+        "Added child family @F209@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I846@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I846@",
+        "Added child family @F47@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I295@",
+      "secondary_id": "@I913@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I913@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I304@",
+      "secondary_id": "@I326@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I326@",
+        "Added spouse family @F245@",
+        "Added child family @F536@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I306@",
+      "secondary_id": "@I322@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 29 fact lines from @I322@",
+        "Added spouse family @F168@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I317@",
+      "secondary_id": "@I800@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I800@",
+        "Added child family @F412@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I328@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 23 fact lines from @I328@",
+        "Added spouse family @F536@",
+        "Added child family @F532@",
+        "Added child family @F533@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I329@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I329@",
+        "Added spouse family @F532@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I325@",
+      "secondary_id": "@I1343@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1343@",
+        "Added spouse family @F533@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I335@",
+      "secondary_id": "@I341@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I341@",
+        "Added spouse family @F256@",
+        "Added child family @F9@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I335@",
+      "secondary_id": "@I344@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I344@",
+        "Added spouse family @F456@",
+        "Added spouse family @F9@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I337@",
+      "secondary_id": "@I1128@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1128@",
+        "Added child family @F9@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I345@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I345@",
+        "Added spouse family @F24@",
+        "Added child family @F588@",
+        "Added child family @F589@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I347@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I347@",
+        "Added spouse family @F588@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I339@",
+      "secondary_id": "@I1356@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1356@",
+        "Added spouse family @F589@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I348@",
+      "secondary_id": "@I782@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I782@",
+        "Added child family @F213@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I350@",
+      "secondary_id": "@I1340@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1340@",
+        "Added spouse family @F93@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I351@",
+      "secondary_id": "@I1322@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I1322@",
+        "Added spouse family @F93@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I360@",
+      "secondary_id": "@I861@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 10 fact lines from @I861@",
+        "Added spouse family @F550@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I360@",
+      "secondary_id": "@I1359@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I1359@",
+        "Added spouse family @F551@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I367@",
+      "secondary_id": "@I1310@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1310@",
+        "Added spouse family @F571@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I372@",
+      "secondary_id": "@I512@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I512@",
+        "Added spouse family @F126@",
+        "Added child family @F156@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I374@",
+      "secondary_id": "@I375@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I375@",
+        "Added spouse family @F423@",
+        "Added child family @F418@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I378@",
+      "secondary_id": "@I1012@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 26 fact lines from @I1012@",
+        "Added spouse family @F421@",
+        "Added child family @F378@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I379@",
+      "secondary_id": "@I1323@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1323@",
+        "Added spouse family @F636@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I382@",
+      "secondary_id": "@I491@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I491@",
+        "Added spouse family @F229@",
+        "Added child family @F232@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I389@",
+      "secondary_id": "@I391@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 13 fact lines from @I391@",
+        "Added spouse family @F484@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I389@",
+      "secondary_id": "@I1354@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1354@",
+        "Added spouse family @F485@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I393@",
+      "secondary_id": "@I395@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I395@",
+        "Added spouse family @F241@",
+        "Added child family @F531@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I393@",
+      "secondary_id": "@I397@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I397@",
+        "Added spouse family @F531@",
+        "Added child family @F541@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I404@",
+      "secondary_id": "@I412@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I412@",
+        "Added spouse family @F306@",
+        "Added child family @F574@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I408@",
+      "secondary_id": "@I410@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I410@",
+        "Added spouse family @F311@",
+        "Added child family @F306@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I408@",
+      "secondary_id": "@I414@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I414@",
+        "Added spouse family @F574@",
+        "Added child family @F284@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I415@",
+      "secondary_id": "@I878@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 27 fact lines from @I878@",
+        "Added spouse family @F46@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I418@",
+      "secondary_id": "@I1346@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1346@",
+        "Added spouse family @F559@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I426@",
+      "secondary_id": "@I427@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 20 fact lines from @I427@",
+        "Added spouse family @F355@",
+        "Added child family @F335@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I429@",
+      "secondary_id": "@I433@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I433@",
+        "Added spouse family @F586@",
+        "Added child family @F583@",
+        "Added child family @F584@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I434@",
+      "secondary_id": "@I1307@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1307@",
+        "Added spouse family @F584@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I437@",
+      "secondary_id": "@I1375@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1375@",
+        "Added spouse family @F598@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I456@",
+      "secondary_id": "@I1096@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 9 fact lines from @I1096@",
+        "Added spouse family @F361@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I460@",
+      "secondary_id": "@I914@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I914@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I474@",
+      "secondary_id": "@I477@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I477@",
+        "Added spouse family @F285@",
+        "Added child family @F401@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I483@",
+      "secondary_id": "@I1313@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1313@",
+        "Added spouse family @F573@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I497@",
+      "secondary_id": "@I1365@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I1365@",
+        "Added spouse family @F528@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I565@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I565@",
+        "Added spouse family @F281@",
+        "Added child family @F266@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I567@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I567@",
+        "Added spouse family @F266@",
+        "Added child family @F276@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I508@",
+      "secondary_id": "@I571@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I571@",
+        "Added spouse family @F324@",
+        "Added child family @F578@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I516@",
+      "secondary_id": "@I1364@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1364@",
+        "Added spouse family @F488@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I518@",
+      "secondary_id": "@I522@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I522@",
+        "Added child family @F42@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I531@",
+      "secondary_id": "@I1358@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1358@",
+        "Added spouse family @F508@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I556@",
+      "secondary_id": "@I624@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I624@",
+        "Added child family @F564@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I597@",
+      "secondary_id": "@I1344@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1344@",
+        "Added spouse family @F525@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I606@",
+      "secondary_id": "@I611@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 25 fact lines from @I611@",
+        "Added child family @F191@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I703@",
+      "secondary_id": "@I712@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I712@",
+        "Added spouse family @F432@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I721@",
+      "secondary_id": "@I1299@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1299@",
+        "Added spouse family @F634@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I722@",
+      "secondary_id": "@I1351@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1351@",
+        "Added spouse family @F638@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I724@",
+      "secondary_id": "@I730@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I730@",
+        "Added spouse family @F397@",
+        "Added child family @F386@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I736@",
+      "secondary_id": "@I1376@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1376@",
+        "Added spouse family @F623@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I746@",
+      "secondary_id": "@I1304@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1304@",
+        "Added spouse family @F475@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I747@",
+      "secondary_id": "@I1345@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I1345@",
+        "Added spouse family @F478@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I769@",
+      "secondary_id": "@I771@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I771@",
+        "Added spouse family @F207@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I774@",
+      "secondary_id": "@I1319@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1319@",
+        "Added spouse family @F511@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I775@",
+      "secondary_id": "@I788@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I788@",
+        "Added child family @F43@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I778@",
+      "secondary_id": "@I787@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 28 fact lines from @I787@",
+        "Added child family @F43@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I778@",
+      "secondary_id": "@I797@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I797@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I779@",
+      "secondary_id": "@I796@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 23 fact lines from @I796@",
+        "Added child family @F43@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I785@",
+      "secondary_id": "@I794@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I794@",
+        "Added child family @F213@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I844@",
+      "secondary_id": "@I1044@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 26 fact lines from @I1044@",
+        "Added child family @F61@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I847@",
+      "secondary_id": "@I918@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I918@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I847@",
+      "secondary_id": "@I1168@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 26 fact lines from @I1168@",
+        "Added child family @F61@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I848@",
+      "secondary_id": "@I1170@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 26 fact lines from @I1170@",
+        "Added spouse family @F63@",
+        "Added child family @F61@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I850@",
+      "secondary_id": "@I916@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I916@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I852@",
+      "secondary_id": "@I1049@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I1049@",
+        "Added child family @F61@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I859@",
+      "secondary_id": "@I870@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 23 fact lines from @I870@",
+        "Added child family @F554@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I862@",
+      "secondary_id": "@I865@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I865@",
+        "Added child family @F554@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I897@",
+      "secondary_id": "@I1272@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 19 fact lines from @I1272@",
+        "Added child family @F208@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I910@",
+      "secondary_id": "@I1171@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 22 fact lines from @I1171@",
+        "Added child family @F61@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I915@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I915@",
+        "Added child family @F275@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1036@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 49 fact lines from @I1036@",
+        "Added spouse family @F81@",
+        "Added spouse family @F125@",
+        "Added spouse family @F61@",
+        "Added child family @F80@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1038@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 18 fact lines from @I1038@",
+        "Added spouse family @F3@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I912@",
+      "secondary_id": "@I1050@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 45 fact lines from @I1050@",
+        "Added spouse family @F80@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I943@",
+      "secondary_id": "@I1337@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1337@",
+        "Added spouse family @F613@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I961@",
+      "secondary_id": "@I1330@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 10 fact lines from @I1330@",
+        "Added spouse family @F455@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I964@",
+      "secondary_id": "@I971@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I971@",
+        "Added child family @F148@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I965@",
+      "secondary_id": "@I1336@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I1336@",
+        "Added spouse family @F530@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I980@",
+      "secondary_id": "@I1325@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1325@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I981@",
+      "secondary_id": "@I1320@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1320@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I982@",
+      "secondary_id": "@I1374@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1374@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I983@",
+      "secondary_id": "@I1308@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1308@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I984@",
+      "secondary_id": "@I1311@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1311@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I985@",
+      "secondary_id": "@I1373@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1373@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I986@",
+      "secondary_id": "@I1332@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1332@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I987@",
+      "secondary_id": "@I1361@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1361@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I988@",
+      "secondary_id": "@I1339@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1339@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I989@",
+      "secondary_id": "@I1353@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1353@",
+        "Added child family @F140@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I992@",
+      "secondary_id": "@I1349@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 11 fact lines from @I1349@",
+        "Added spouse family @F98@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I993@",
+      "secondary_id": "@I1296@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 10 fact lines from @I1296@",
+        "Added spouse family @F98@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1011@",
+      "secondary_id": "@I1109@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 17 fact lines from @I1109@",
+        "Added spouse family @F170@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1032@",
+      "secondary_id": "@I1048@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I1048@",
+        "Added child family @F2@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1056@",
+      "secondary_id": "@I1372@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 48 fact lines from @I1372@",
+        "Added spouse family @F491@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1069@",
+      "secondary_id": "@I1321@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I1321@",
+        "Added spouse family @F543@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1071@",
+      "secondary_id": "@I1352@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 48 fact lines from @I1352@",
+        "Added spouse family @F591@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1086@",
+      "secondary_id": "@I1298@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1298@",
+        "Added spouse family @F640@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1111@",
+      "secondary_id": "@I1338@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 27 fact lines from @I1338@",
+        "Added spouse family @F565@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1129@",
+      "secondary_id": "@I1312@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1312@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1172@",
+      "secondary_id": "@I1362@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 32 fact lines from @I1362@",
+        "Added spouse family @F91@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1210@",
+      "secondary_id": "@I1229@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I1229@",
+        "Added spouse family @F220@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1222@",
+      "secondary_id": "@I1225@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1225@",
+        "Added spouse family @F248@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1234@",
+      "secondary_id": "@I1245@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I1245@",
+        "Added child family @F319@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1238@",
+      "secondary_id": "@I1243@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 24 fact lines from @I1243@",
+        "Added child family @F319@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1239@",
+      "secondary_id": "@I1248@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 21 fact lines from @I1248@",
+        "Added child family @F319@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1239@",
+      "secondary_id": "@I1382@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 33 fact lines from @I1382@",
+        "Added spouse family @F626@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1257@",
+      "secondary_id": "@I1302@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 16 fact lines from @I1302@",
+        "Added child family @F506@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1262@",
+      "secondary_id": "@I1355@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 12 fact lines from @I1355@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1263@",
+      "secondary_id": "@I1266@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1266@",
+        "Added spouse family @F410@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1271@",
+      "secondary_id": "@I1294@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1294@",
+        "Added spouse family @F188@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1404@",
+      "secondary_id": "@I1406@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 14 fact lines from @I1406@",
+        "Added spouse family @F216@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1419@",
+      "secondary_id": "@I1421@",
+      "similarity": 100,
+      "preserved_data": [
+        "Added 15 fact lines from @I1421@",
+        "Added spouse family @F26@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I851@",
+      "secondary_id": "@I855@",
+      "similarity": 99.73684210526316,
+      "preserved_data": [
+        "Added 23 fact lines from @I855@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I946@",
+      "secondary_id": "@I953@",
+      "similarity": 99.73684210526316,
+      "preserved_data": [
+        "Added 18 fact lines from @I953@",
+        "Added child family @F96@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I992@",
+      "secondary_id": "@I994@",
+      "similarity": 99.44444444444444,
+      "preserved_data": [
+        "Added 23 fact lines from @I994@",
+        "Added child family @F15@",
+        "Added child family @F98@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I898@",
+      "secondary_id": "@I902@",
+      "similarity": 99.11764705882352,
+      "preserved_data": [
+        "Added 24 fact lines from @I902@",
+        "Added child family @F157@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1007@",
+      "secondary_id": "@I1378@",
+      "similarity": 99.11764705882352,
+      "preserved_data": [
+        "Added 32 fact lines from @I1378@",
+        "Added spouse family @F463@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I13@",
+      "secondary_id": "@I27@",
+      "similarity": 98.75,
+      "preserved_data": [
+        "Added 19 fact lines from @I27@",
+        "Added spouse family @F325@",
+        "Added child family @F581@",
+        "Added child family @F582@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I15@",
+      "secondary_id": "@I1140@",
+      "similarity": 98.75,
+      "preserved_data": [
+        "Added 28 fact lines from @I1140@",
+        "Added child family @F272@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I307@",
+      "secondary_id": "@I1051@",
+      "similarity": 98.75,
+      "preserved_data": [
+        "Added 45 fact lines from @I1051@",
+        "Added spouse family @F80@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I548@",
+      "secondary_id": "@I549@",
+      "similarity": 98.75,
+      "preserved_data": [
+        "Added 22 fact lines from @I549@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1214@",
+      "secondary_id": "@I1228@",
+      "similarity": 98.33333333333333,
+      "preserved_data": [
+        "Added 14 fact lines from @I1228@",
+        "Added spouse family @F227@"
+      ],
+      "merged_facts": []
+    },
+    {
+      "primary_id": "@I1402@",
+      "secondary_id": "@I1403@",
+      "similarity": 98.33333333333333,
+      "preserved_data": [
+        "Added 33 fact lines from @I1403@",
+        "Added child family @F494@"
+      ],
+      "merged_facts": []
+    }
+  ]
+}

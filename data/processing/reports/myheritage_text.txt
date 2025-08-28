@@ -1,0 +1,168 @@
+Mallinger Web Site
+
+176
+
+Home
+
+Family tree
+
+Go PremiumPlus
+
+Discoveries
+
+Photos
+
+Jonathan Mallinger
+
+DNA
+
+Research
+
+Tree Consistency Checker
+
+master_geo_media
+
+265 consistency issues found (1,401 of 1,401 people)
+Child older than parent (3)
+
+William Patersone (born Circa 1584) is older than his father Thomas Paterson (born Circa 1605)
+Tip: Correct the birth date of William Patersone or of Thomas Paterson.
+
+View 2 more issues of this type
+
+Child born after death of parent (12)
+
+Walter Spong was born on 1754, after the death of his father William Spong on 1721
+Tip: Correct the birth date of Walter Spong or the death date of William Spong.
+
+View 11 more issues of this type
+
+Died too old (9)
+
+Robert Crane (born 1610, died Circa 1713) was rather old at death (at least 101 years old)
+Tip: Correct birth date or death date of Robert Crane.
+
+View 8 more issues of this type
+
+Parent too young when having a child (49)
+
+Mary Postle (born February 5 1726) and her father Samuel Postle, 8xpggf (born 1711) are 15 years apart
+Tip: Correct the birth date of Mary Postle or of Samuel Postle, 8xpggf.
+Ignore this issue if the dates are fine.
+
+View 48 more issues of this type
+
+Parent too old when having a child (15)
+
+Elizabeth Sophia Steane (born May 16 1860) and her father William Steane (born 1802) are 58 years apart
+Tip: Correct the birth date of Elizabeth Sophia Steane or of William Steane.
+Ignore this issue if the dates are fine.
+
+View 14 more issues of this type
+
+Fact occurring after death (2)
+
+Date of Marriage of Eleanor "Elienor" Ford (May 1 1703) occurred after her death date (1702)
+Tip: Correct date of Marriage or death date of Eleanor "Elienor" Ford.
+Ignore this issue if this is a fact that occurred after the person's death.
+
+View one more issue of this type
+
+Fact occurring before birth (8)
+
+Date of Marriage of Richard Pitts (1648) occurred before his birth date (1670)
+Tip: Correct date of Marriage or birth date of Richard Pitts.
+
+View 7 more issues of this type
+
+Siblings with close age (6)
+
+Florence Emily Evans (born June 24 1885) and her brother Herbert Henry Evans (born April 6 1886) are too
+close in age (286 days apart: about 9 months and 16 days)
+Tip: Correct the birth date of Florence Emily Evans or of Herbert Henry Evans.
+
+View 5 more issues of this type
+
+Large spouse age diﬀerence (3)
+Richard Pitts (born 1670) and his wife Marlyn Pitte (born 1626) are 44 years apart
+Tip: Correct the birth date of Richard Pitts or of Marlyn Pitte.
+Ignore this issue if the dates are fine, but note that the dates are probably wrong in this case because it was not common for the
+wife to be much older than the husband.
+
+View 2 more issues of this type
+
+Married too young (7)
+
+Anne Newlove (born 1732) was rather young to be married on January 3 1741 when she was at most 9 years
+old
+Tip: Correct the birth date or the date of Marriage of Anne Newlove.
+
+View 6 more issues of this type
+
+Died too young to be a spouse (2)
+
+William Spong (born 1721, died 1721) was rather young to be a spouse (died at less than one years old)
+Tip: Correct birth date or death date of William Spong.
+
+View one more issue of this type
+
+Married name entered as maiden name (36)
+Maiden name 'Welsh' of Mary Elizabeth Welsh is the same as last name of her husband Charles Welsh
+Tip: Move the 'Maiden name' of Mary Elizabeth Welsh to the 'Married name' field, and enter her last name at birth, if known, into the
+'Maiden name' field.
+Ignore this issue if she married a husband with the same last name as hers.
+✓ Move 'Welsh' to Married name
+
+View 35 more issues of this type
+
+Multiple birth facts of same person (3)
+
+Richard Pitts has 2 birth facts
+Tip: Remove redundant birth facts of Richard Pitts.
+
+View 2 more issues of this type
+
+Multiple death facts of same person (4)
+
+Unknown Sumersomersomers has 2 death facts
+Tip: Remove redundant death facts of Unknown Sumersomersomers.
+
+View 3 more issues of this type
+
+Disconnected from tree (5)
+
+Ann Spong has no relatives in the family tree
+Tip: Connect Ann Spong to a parent, a partner or a child in the family tree
+Use the 'Connect to existing person' entry in the 'More' menu
+
+View 4 more issues of this type
+
+Siblings with same first name (4)
+John Norwood (born 1524) and his brother John Norwood (born 1550) have the same first name
+Tip: Correct the first names of John Norwood (born 1524) or John Norwood (born 1550).
+If this is the same person, remove one of them.
+Ignore this issue if you are certain that the siblings had the same first name.
+
+View 3 more issues of this type
+
+Inconsistent last name spelling (74)
+John Thompson has the last name 'Thompson', which appears once in your tree, while a similar spelling
+'Tompson' appears twice
+Tip: Replace last name of John Thompson with the more commonly used 'Tompson'.
+✓ Change to 'Tompson'
+
+View 73 more issues of this type
+
+Inconsistent place name spelling (23)
+Hugh Fraser has a Birth place 'Beauly, Inverness Shire, Scotland', which appears once in your tree, while a
+similar spelling 'Beauly, Inverness-Shire, Scotland' appears twice
+Tip: Replace the Birth place of Hugh Fraser with the more commonly used 'Beauly, Inverness-Shire, Scotland'.
+✓ Change to 'Beauly, Inverness-Shire, Scotland'
+
+View 22 more issues of this type
+
+Help
+
+English
+
+

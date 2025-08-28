@@ -1,0 +1,120 @@
+{
+  "statistics": {
+    "total_individuals": 1469,
+    "total_families": 645,
+    "total_sources": 294,
+    "dates_fixed": 0,
+    "places_standardized": 1346,
+    "names_standardized": 18,
+    "duplicates_found": 315,
+    "issues_found": 1
+  },
+  "data_quality": {
+    "name_completeness": 96.25595643294758,
+    "birth_date_coverage": 94.89448604492853,
+    "death_date_coverage": 94.89448604492853,
+    "marriage_date_coverage": 14.573643410852712
+  },
+  "issues": {
+    "structural": [],
+    "names": [
+      "@I119@: Incomplete name - 'Madge'",
+      "@I121@: Incomplete name - 'Mary'",
+      "@I132@: Incomplete name - 'Johanna'",
+      "@I151@: Incomplete name - 'Mary'",
+      "@I156@: Incomplete name - 'Mary'",
+      "@I173@: Incomplete name - 'Elizabeth'",
+      "@I212@: Incomplete name - 'Jone'",
+      "@I269@: Incomplete name - 'Elizabeth'",
+      "@I300@: Incomplete name - 'Mary'",
+      "@I351@: Incomplete name - 'Elisabeth'",
+      "@I360@: Incomplete name - 'Anne'",
+      "@I456@: Incomplete name - 'Ann'",
+      "@I496@: Incomplete name - 'Haywood'",
+      "@I497@: Incomplete name - 'Sumersomersomers'",
+      "@I566@: Incomplete name - 'Mary'",
+      "@I575@: Incomplete name - 'Esther'",
+      "@I686@: Incomplete name - 'Sarah'",
+      "@I698@: Incomplete name - 'George'",
+      "@I722@: Incomplete name - 'Porteous'",
+      "@I858@: Incomplete name - 'Margaret'",
+      "@I861@: Incomplete name - 'Anne'",
+      "@I866@: Incomplete name - 'Elizabeth'",
+      "@I958@: Incomplete name - 'Maritien'",
+      "@I961@: Incomplete name - 'Vangoor'",
+      "@I966@: Incomplete name - 'Estera'",
+      "@I970@: Incomplete name - 'Ruchia'",
+      "@I993@: Incomplete name - 'Anna'",
+      "@I1007@: Incomplete name - 'Margareta'",
+      "@I1065@: Incomplete name - 'Hiltshuls'",
+      "@I1070@: Incomplete name - 'Bertha'",
+      "@I1079@: Incomplete name - 'Isabella'",
+      "@I1083@: Incomplete name - 'Nancy'",
+      "@I1096@: Incomplete name - 'Ann'",
+      "@I1112@: Incomplete name - 'Mrs.'",
+      "@I1213@: Incomplete name - 'Margarethe'",
+      "@I1221@: Incomplete name - 'Mayer'",
+      "@I1257@: Incomplete name - 'Amy'",
+      "@I1262@: Incomplete name - 'Agnes'",
+      "@I1264@: Incomplete name - 'Joan'",
+      "@I1296@: Incomplete name - 'Anna'",
+      "@I1302@: Incomplete name - 'Amy'",
+      "@I1306@: Incomplete name - 'Johanna'",
+      "@I1317@: Incomplete name - 'Mary'",
+      "@I1322@: Incomplete name - 'Elisabeth'",
+      "@I1330@: Incomplete name - 'Vangoor'",
+      "@I1348@: Incomplete name - 'Elizabeth'",
+      "@I1351@: Incomplete name - 'Porteous'",
+      "@I1355@: Incomplete name - 'Agnes'",
+      "@I1359@: Incomplete name - 'Anne'",
+      "@I1365@: Incomplete name - 'Sumersomersomers'",
+      "@I1378@: Incomplete name - 'Margaret'",
+      "@I1386@: Incomplete name - 'Mary'",
+      "@I1388@: Incomplete name - 'Elizabeth'",
+      "@I1392@: Incomplete name - 'Mary'",
+      "@I1461@: Incomplete name - 'Unbekannt'"
+    ],
+    "orphaned": [
+      {
+        "type": "orphaned_individual",
+        "record": "@I1300@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      },
+      {
+        "type": "orphaned_individual",
+        "record": "@I1312@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      },
+      {
+        "type": "orphaned_individual",
+        "record": "@I1324@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      },
+      {
+        "type": "orphaned_individual",
+        "record": "@I1326@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      },
+      {
+        "type": "orphaned_individual",
+        "record": "@I1355@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      },
+      {
+        "type": "orphaned_individual",
+        "record": "@I1360@",
+        "severity": "warning",
+        "message": "Individual has no family connections"
+      }
+    ]
+  },
+  "recommendations": [
+    "Review 315 potential duplicate individuals",
+    "Consider standardizing 1347 unique place names for better consistency"
+  ]
+}

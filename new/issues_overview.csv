@@ -1,0 +1,8 @@
+Issue_ID,Category,Description,Representative_GEDCOM_Snippet,Recommended_Action
+DATE01,Date inconsistency,"Child born before parent's birth","1 BIRT 1820 (child) / 1 BIRT 1830 (parent)",Verify dates; correct after sourcing
+NAME01,Name field misuse,"Married surname recorded as maiden","1 NAME Mary Elizabeth /Welsh/","Move married surname to married name event or ALT NAME"
+SUFFIX01,Suffix placement,"Suffix stored in given name","1 NAME John II /Partridge/","Move ""II"" to NSFX tag"
+PLACE01,Place spelling,"Inconsistent place spelling variants","2 PLAC Blessenbach, Hessen Nassau, Preussen, Germany","Standardize to authoritative form"
+DUPLINK01,Duplicate links,"Individual linked to same parent twice","1 FAMC @F123@ (x2)",Remove duplicate FAMC
+MISSING01,Missing source,"Fact lacks citation","1 BIRT 12 MAR 1880","Locate and add at least one reliable source"
+

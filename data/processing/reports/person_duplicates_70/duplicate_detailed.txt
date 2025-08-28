@@ -1,0 +1,192 @@
+DETAILED DUPLICATE ANALYSIS
+==================================================
+
+MATCH #1 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I980@ - Stephen Stuart /Fitzgerald/
+  Sex: M
+  Birth: 1879 in Worle, Somerset, England
+  Death: SEP 1910 in Somerset, United Kingdom
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1325@ - Stephen Stuart /Fitzgerald/
+  Sex: M
+  Birth: 1879 in Worle, Somerset, England
+  Death: SEP 1910 in Somerset, United Kingdom
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #2 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I981@ - Frederick George Mayberry /Fitzgerald/
+  Sex: M
+  Birth: 17 SEP 1880 in Axbridge, Somerset, England
+  Death: 1955 in Plymouth, Devon, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1320@ - Frederick George Mayberry /Fitzgerald/
+  Sex: M
+  Birth: 17 SEP 1880 in Axbridge, Somerset, England
+  Death: 1955 in Plymouth, Devon, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #3 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I982@ - Walter Alexandria /Fitzgerald/
+  Sex: M
+  Birth: 8 JUL 1882 in Axbridge, Somerset, England
+  Death: 28 NOV 1948 in Plymouth, Devon, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1374@ - Walter Alexandria /Fitzgerald/
+  Sex: M
+  Birth: 8 JUL 1882 in Axbridge, Somerset, England
+  Death: 28 NOV 1948 in Plymouth, Devon, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #4 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I983@ - Gerald Archibald /Fitzgerald/
+  Sex: M
+  Birth: 1884 in Woodstock, Oxfordshire, England
+  Death: 1940 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1308@ - Gerald Archibald /Fitzgerald/
+  Sex: M
+  Birth: 1884 in Woodstock, Oxfordshire, England
+  Death: 1940 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #5 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I984@ - Geraldine Blanche Almyra /Fitzgerald/
+  Sex: F
+  Birth: 1886 in Woodstock, Oxfordshire, England
+  Death: 1918 in Berkhamsted, Hertfordshire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1311@ - Geraldine Blanche Almyra /Fitzgerald/
+  Sex: F
+  Birth: 1886 in Woodstock, Oxfordshire, England
+  Death: 1918 in Berkhamsted, Hertfordshire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #6 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I986@ - Hilda Maud Rosamund /Fitzgerald/
+  Sex: F
+  Birth: 24 FEB 1892 in Bristol, Gloucestershire, England
+  Death: OCT 1976 in Hastings, Sussex, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1332@ - Hilda Maud Rosamund /Fitzgerald/
+  Sex: F
+  Birth: 24 FEB 1892 in Bristol, Gloucestershire, England
+  Death: OCT 1976 in Hastings, Sussex, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #7 - HIGH CONFIDENCE (80.0%)
+------------------------------------------------------------
+Person 1: @I987@ - Stanley Montague /Fitzgerald/
+  Sex: M
+  Birth: 28 NOV 1893 in Bristol, Gloucestershire, England
+  Death: 14 MAY 1957 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1361@ - Stanley Montague /Fitzgerald/
+  Sex: M
+  Birth: 28 NOV 1893 in Bristol, Gloucestershire, England
+  Death: 14 MAY 1957 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar birth places (100.0%), Similar death places (100.0%)
+Recommendation: RECOMMENDED for automatic merge
+
+============================================================
+
+MATCH #8 - MEDIUM CONFIDENCE (70.0%)
+------------------------------------------------------------
+Person 1: @I988@ - Philip Bevan /Fitzgerald/
+  Sex: M
+  Birth: 24 NOV 1895 in Unknown place
+  Death: 8 FEB 1935 in Sutton, Surrey, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1339@ - Philip Bevan /Fitzgerald/
+  Sex: M
+  Birth: 24 NOV 1895 in Unknown place
+  Death: 8 FEB 1935 in Sutton, Surrey, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar death places (100.0%)
+Recommendation: MANUAL REVIEW suggested
+
+============================================================
+
+MATCH #9 - MEDIUM CONFIDENCE (70.0%)
+------------------------------------------------------------
+Person 1: @I989@ - Florence Margaret Joanna /Fitzgerald/
+  Sex: F
+  Birth: 1 AUG 1897 in Unknown place
+  Death: 13 FEB 1964 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Person 2: @I1353@ - Florence Margaret Joanna /Fitzgerald/
+  Sex: F
+  Birth: 1 AUG 1897 in Unknown place
+  Death: 13 FEB 1964 in Bristol, Gloucestershire, England
+  Families as spouse: 0
+  Families as child: 1
+
+Match reasons: Very similar names (100.0%), Same death year, Same sex, Similar death places (100.0%)
+Recommendation: MANUAL REVIEW suggested
+
+============================================================
+

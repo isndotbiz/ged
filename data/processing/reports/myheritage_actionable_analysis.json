@@ -1,0 +1,136 @@
+{
+  "summary": {
+    "type": "summary",
+    "count": 633,
+    "description": "MyHeritage found 633 total consistency issues"
+  },
+  "actionable_issues": {
+    "high_priority": [
+      {
+        "type": "child_after_parent_death",
+        "count": 11,
+        "priority": "High Priority - Date Logic Error",
+        "description": "Found 11 instances of child after parent death"
+      },
+      {
+        "type": "fact_after_death",
+        "count": 20,
+        "priority": "High Priority - Date Logic Error",
+        "description": "Found 20 instances of fact after death"
+      },
+      {
+        "type": "fact_before_birth",
+        "count": 15,
+        "priority": "High Priority - Date Logic Error",
+        "description": "Found 15 instances of fact before birth"
+      },
+      {
+        "type": "died_too_young_spouse",
+        "count": 2,
+        "priority": "High Priority - Date Logic Error",
+        "description": "Found 2 instances of died too young spouse"
+      },
+      {
+        "type": "suffix_in_first_name",
+        "count": 1,
+        "priority": "High Priority - Easy Fix",
+        "description": "Found 1 instances of suffix in first name"
+      },
+      {
+        "type": "suffix_in_last_name",
+        "count": 1,
+        "priority": "High Priority - Easy Fix",
+        "description": "Found 1 instances of suffix in last name"
+      },
+      {
+        "type": "duplicate_birth_facts",
+        "count": 175,
+        "priority": "High Priority - Remove Duplicates",
+        "description": "Found 175 instances of duplicate birth facts"
+      },
+      {
+        "type": "duplicate_death_facts",
+        "count": 158,
+        "priority": "High Priority - Remove Duplicates",
+        "description": "Found 158 instances of duplicate death facts"
+      },
+      {
+        "type": "inconsistent_surnames",
+        "count": 71,
+        "priority": "High Priority - Standardize Names",
+        "description": "Found 71 instances of inconsistent surnames"
+      },
+      {
+        "type": "inconsistent_places",
+        "count": 31,
+        "priority": "High Priority - Standardize Places",
+        "description": "Found 31 instances of inconsistent places"
+      }
+    ],
+    "medium_priority": [
+      {
+        "type": "extreme_age_at_death",
+        "count": 13,
+        "priority": "Medium Priority - Verify Dates",
+        "description": "Found 13 instances of extreme age at death"
+      },
+      {
+        "type": "parent_too_young",
+        "count": 51,
+        "priority": "Medium Priority - Verify Dates",
+        "description": "Found 51 instances of parent too young"
+      },
+      {
+        "type": "parent_too_old",
+        "count": 13,
+        "priority": "Medium Priority - Verify Dates",
+        "description": "Found 13 instances of parent too old"
+      },
+      {
+        "type": "married_too_young",
+        "count": 19,
+        "priority": "Medium Priority - Verify Dates",
+        "description": "Found 19 instances of married too young"
+      },
+      {
+        "type": "duplicate_marriages",
+        "count": 34,
+        "priority": "Medium Priority - Remove Duplicates",
+        "description": "Found 34 instances of duplicate marriages"
+      },
+      {
+        "type": "orphaned_individuals",
+        "count": 6,
+        "priority": "Medium Priority - Review Connections",
+        "description": "Found 6 instances of orphaned individuals"
+      }
+    ],
+    "low_priority": [
+      {
+        "type": "siblings_close_age",
+        "count": 6,
+        "priority": "Low Priority - Review for Twins",
+        "description": "Found 6 instances of siblings close age"
+      },
+      {
+        "type": "large_age_gap",
+        "count": 2,
+        "priority": "Low Priority - Verify if Accurate",
+        "description": "Found 2 instances of large age gap"
+      },
+      {
+        "type": "siblings_same_name",
+        "count": 4,
+        "priority": "Low Priority - Verify Distinction",
+        "description": "Found 4 instances of siblings same name"
+      }
+    ]
+  },
+  "review_required": [],
+  "statistics": {
+    "total_issue_types": 19,
+    "high_priority_count": 10,
+    "medium_priority_count": 6,
+    "low_priority_count": 3
+  }
+}

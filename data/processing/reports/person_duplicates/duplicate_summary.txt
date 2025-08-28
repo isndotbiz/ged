@@ -1,0 +1,16 @@
+PERSON DUPLICATE DETECTION SUMMARY
+==================================================
+
+Total individuals analyzed: 1469
+Total potential duplicates found: 0
+
+CONFIDENCE BREAKDOWN:
+  High confidence (≥95.0%): 0 pairs
+  Medium confidence (85.0%-94.9%): 0 pairs
+
+RECOMMENDED ACTIONS:
+1. Review high-confidence matches first
+2. Import GEDCOM into RootsMagic 10
+3. Use Tools > Merge > Find Duplicate People for safe merging
+4. Manually verify each match before merging
+5. Always backup before making changes
