@@ -1,0 +1,93 @@
+{
+  "merge_summary": {
+    "total_merges": 7,
+    "timestamp": "2025-08-25T02:48:08.145089",
+    "backups_created": 2
+  },
+  "detailed_merges": [
+    {
+      "timestamp": "2025-08-25T02:48:08.141704",
+      "primary_id": "@I980@",
+      "primary_name": "Stephen Stuart /Fitzgerald/",
+      "secondary_id": "@I1325@",
+      "secondary_name": "Stephen Stuart /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1325@",
+        "Updated all family references",
+        "Removed secondary record @I1325@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.141835",
+      "primary_id": "@I981@",
+      "primary_name": "Frederick George Mayberry /Fitzgerald/",
+      "secondary_id": "@I1320@",
+      "secondary_name": "Frederick George Mayberry /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1320@",
+        "Updated all family references",
+        "Removed secondary record @I1320@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.141950",
+      "primary_id": "@I982@",
+      "primary_name": "Walter Alexandria /Fitzgerald/",
+      "secondary_id": "@I1374@",
+      "secondary_name": "Walter Alexandria /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1374@",
+        "Updated all family references",
+        "Removed secondary record @I1374@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.142059",
+      "primary_id": "@I983@",
+      "primary_name": "Gerald Archibald /Fitzgerald/",
+      "secondary_id": "@I1308@",
+      "secondary_name": "Gerald Archibald /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1308@",
+        "Updated all family references",
+        "Removed secondary record @I1308@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.142166",
+      "primary_id": "@I984@",
+      "primary_name": "Geraldine Blanche Almyra /Fitzgerald/",
+      "secondary_id": "@I1311@",
+      "secondary_name": "Geraldine Blanche Almyra /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1311@",
+        "Updated all family references",
+        "Removed secondary record @I1311@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.142272",
+      "primary_id": "@I986@",
+      "primary_name": "Hilda Maud Rosamund /Fitzgerald/",
+      "secondary_id": "@I1332@",
+      "secondary_name": "Hilda Maud Rosamund /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1332@",
+        "Updated all family references",
+        "Removed secondary record @I1332@"
+      ]
+    },
+    {
+      "timestamp": "2025-08-25T02:48:08.142388",
+      "primary_id": "@I987@",
+      "primary_name": "Stanley Montague /Fitzgerald/",
+      "secondary_id": "@I1361@",
+      "secondary_name": "Stanley Montague /Fitzgerald/",
+      "preserved_data": [
+        "Added 18 lines from @I1361@",
+        "Updated all family references",
+        "Removed secondary record @I1361@"
+      ]
+    }
+  ]
+}

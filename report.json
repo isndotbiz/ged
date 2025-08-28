@@ -1,0 +1,711 @@
+{
+  "file": "yes.ged",
+  "encoding": "utf-8",
+  "issues": [
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1981\u20132020'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1994\u20131997'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1704 OR BEFORE 11 MAY  1776'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1704 OR BEFORE 11 MAY  1776'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1653\u20131655'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'MAY 1745 OR 1754'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1630\u20131634'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'BEF 20 JAN 1715/6'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'BEF 22 MAR 1689/90'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '31 JAN 1847.    WICK IN ABSON'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'AB 1735'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'CA 1570'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'CA 1550'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'OCT 1600/02'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1575/80'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1591 OR 1601'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'MAY 1705\u2013JUN 1705'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '20 OCT 1844 OR 14 OCT 1846'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '20 OCT 1844 OR 14 OCT 1846'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'APR 1649\u2013JUN 1649'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1620 OCT-DEC'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1657 MAR'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1653 JUN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1620 OCT-DEC'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1530 OR 1571'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1530 OR 1571'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1505 OR 1510 OR 1512'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1502 OR 25 MAR 1508'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1502 OR 25 MAR 1508'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '9 JUL 1523 OR 12 JUL 1551'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '9 JUL 1523 OR 12 JUL 1551'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'DECEASED'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'FEB 1639/40'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'BTN. 3 MAR AND 5 JUN 1710'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '9 ??? 1546'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '19 SEPTEMBRE 1683'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1491/1510'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '15 NOEMBERV 1656'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '15 NOEMBERV 1656'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'BEF 02 MAR 1570/71'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'BEF. MAR 02, 1570/71'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'JAN 1651\u2013MAR 1651'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '25 JAN 1524/1525'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '6 MAR 1626/7'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'AB 1735'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'UNKNOWN'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE '1522/25'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'N'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'N'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'N'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    },
+    {
+      "rule": "unrecognized_date",
+      "message": "Unrecognized DATE 'Y'",
+      "count": 1
+    }
+  ],
+  "summary": {
+    "unrecognized_date": 138
+  },
+  "rules": {
+    "note_prefix": "AutoFix:",
+    "merge_thresholds": {
+      "place_ratio": 92,
+      "date_ratio": 95
+    },
+    "merge_allowed_tags": [
+      "BIRT",
+      "DEAT",
+      "MARR"
+    ]
+  }
+}
