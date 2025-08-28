@@ -1,0 +1,38 @@
+{
+  "duplicates_found": 19,
+  "processing_results": {
+    "auto_merged": 1,
+    "requires_review": 18,
+    "errors": 0,
+    "merge_log": [
+      {
+        "primary_id": "@I858@",
+        "secondary_id": "@I1378@",
+        "merge_notes": [
+          "Added alternate name from @I1378@",
+          "Added BIRT from @I1378@",
+          "Added DEAT from @I1378@"
+        ],
+        "similarity": 100
+      }
+    ]
+  },
+  "output_results": {
+    "output_file": "/Users/jonathanmallinger/Projects/ged/data/merged/myheritage_deduped_fixed.ged",
+    "individuals_remaining": 1299,
+    "individuals_removed": 1,
+    "families": 645
+  },
+  "merge_log": [
+    {
+      "primary_id": "@I858@",
+      "secondary_id": "@I1378@",
+      "merge_notes": [
+        "Added alternate name from @I1378@",
+        "Added BIRT from @I1378@",
+        "Added DEAT from @I1378@"
+      ],
+      "similarity": 100
+    }
+  ]
+}

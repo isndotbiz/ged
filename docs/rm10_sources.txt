@@ -1,0 +1,31 @@
+# RootsMagic 10 Cleanup Sources for Merge
+
+## Primary Candidate (Best RM10 Work)
+**File**: /Users/jonathanmallinger/Documents/Family Tree Maker/JDMallinger.ged
+- **Date**: July 14, 2025 14:32:41  
+- **Size**: 684,414 bytes
+- **People**: 1,206 individuals (reduced from ~1460 - significant manual cleanup!)
+- **Date Integrity**: ✅ EXCELLENT - Has intact birth/death dates (1817, 8 APR 1776, etc.)
+- **Status**: This file represents your most recent RootsMagic 10 cleanup work
+- **Archive Location**: data/archive/JDMallinger.ged
+
+## Secondary Candidates (Alternative RM10 Work)
+**JDMallinger.ged.ged**: 1,187 people (archived)
+- Even more aggressive cleanup (219 fewer people than primary)
+- May have removed too much data
+
+## Comparison with Master
+- **Master file**: 1,469 people (data/master/master.ged)
+- **RM10 primary**: 1,206 people (263 people removed)
+- **Net reduction**: Your manual work removed 263 individuals (18% reduction)
+- **Goal**: Merge the RM10 improvements while preserving master's date integrity
+
+## Merge Strategy
+1. Use master.ged as baseline (pristine dates)
+2. Import non-date improvements from JDMallinger.ged
+3. Focus on preserving the 263-person reduction (your cleanup work)
+4. Keep all birth/death dates from master file
+5. Merge structural improvements, corrected names, etc.
+
+## Files to Avoid (Corrupted Dates)
+- 0819.ged, clean.ged, yes1.ged series (all have date corruption indicators)

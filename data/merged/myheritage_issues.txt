@@ -1,0 +1,99 @@
+Mallinger Web Site
+
+174
+
+Go PremiumPlus
+
+Home
+
+Family tree
+
+Discoveries
+
+Photos
+
+Jonathan Mallinger
+
+DNA
+
+Tree Consistency Checker
+
+Help
+
+Research
+
+final_merged_deduped
+
+239 consistency issues found (1,300 of 1,300 people)
+Multiple marriages of same couple (30)
+
+Alexander McQuilkan and his wife Catherine Thomson have 3 marriage facts
+Tip: Remove redundant marriage facts of Alexander McQuilkan or Catherine Thomson.
+
+View 29 more issues of this type
+
+Suﬃx in first name (3)
+
+First name of John Ii Partridge ends with the suﬃx 'Ii', which should be moved to the separate Suﬃx field
+Tip: Move the suﬃx from the first name of John Ii Partridge into the 'Suﬃx' field.
+✓ Move 'Ii' to Suﬃx
+
+View 2 more issues of this type
+
+Suﬃx in last name (2)
+
+Last name of John Varley Ii ends with the suﬃx 'Ii', which should be moved to the separate Suﬃx field
+Tip: Move the suﬃx from the last name of John Varley Ii into the 'Suﬃx' field.
+✓ Move 'Ii' to Suﬃx
+
+View one more issue of this type
+
+Multiple birth facts of same person (74)
+
+Helen Jean MacKay has 2 birth facts
+Tip: Remove redundant birth facts of Helen Jean MacKay.
+
+View 73 more issues of this type
+
+Multiple death facts of same person (52)
+
+Charles Mallinger has 2 death facts
+Tip: Remove redundant death facts of Charles Mallinger.
+
+View 51 more issues of this type
+
+Disconnected from tree (4)
+
+Ann Spong has no relatives in the family tree
+Tip: Connect Ann Spong to a parent, a partner or a child in the family tree
+Use the 'Connect to existing person' entry in the 'More' menu
+
+View 3 more issues of this type
+
+Siblings with same first name (3)
+John Norwood My Th Gr Uncle and his brother John Norwood have the same first name
+Tip: Correct the first names of John Norwood My Th Gr Uncle or John Norwood.
+If this is the same person, remove one of them.
+Ignore this issue if you are certain that the siblings had the same first name.
+
+View 2 more issues of this type
+
+Inconsistent last name spelling (64)
+
+Mary Ach has the last name 'Ach', which appears once in your tree, while a similar spelling 'Ash' appears 3 times
+Tip: Replace last name of Mary Ach with the more commonly used 'Ash'.
+✓ Change to 'Ash'
+
+View 63 more issues of this type
+
+Inconsistent place name spelling (7)
+Hugh Fraser Th Pggf has a Birth place 'Beauly, Inverness Shire, Scotland', which appears once in your tree, while a similar spelling 'Beauly,
+Inverness-Shire, Scotland' appears twice
+Tip: Replace the Birth place of Hugh Fraser Th Pggf with the more commonly used 'Beauly, Inverness-Shire, Scotland'.
+✓ Change to 'Beauly, Inverness-Shire, Scotland'
+
+View 6 more issues of this type
+
+English
+
+
