@@ -4,6 +4,7 @@ from pathlib import Path
 import click
 from .api import scan as api_scan, fix as api_fix, report as api_report
 from .deduplication import deduplicate_gedcom
+from .manual_review import ManualReviewSession
 
 @click.group()
 def main() -> None:
@@ -112,3 +113,14 @@ def dedupe(input_ged: Path, out_path: Path, threshold: float, auto_merge_thresho
         click.echo(f"Error during deduplication: {e}")
         if dry_run:
             out_path.unlink(missing_ok=True)
+
+@main.command()
+@click.argument("gedcom_file", type=click.Path(exists=True, path_type=Path))
+@click.option("--issues-file", type=click.Path(path_type=Path), help="JSON file to store review session")
+@click.option("--start-index", type=int, default=0, help="Issue index to start from")
+def review(gedcom_file: Path, issues_file, start_index: int):
+    """Interactive manual review of genealogical consistency issues."""
+    
+    session = ManualReviewSession(gedcom_file, issues_file)
+    session.current_index = start_index
+    session.run_interactive_session()
