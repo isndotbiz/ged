@@ -48,3 +48,24 @@ data/archive/
 *.tmp
 out/*.ged
 out/*.json
+
+# Large geographic data files (can be downloaded from GeoNames if needed)
+allCountries.txt
+allCountries.zip
+*.txt.large
+
+# Large cache and data files
+places_cache.csv.large
+unresolved_places*.txt
+
+
+# Python virtual environments
+venv/
+.venv/
+env/
+.env/
+
+# Large processing files that can be regenerated
+*.rmtree
+*.large
+
