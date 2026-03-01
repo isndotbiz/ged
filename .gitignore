@@ -76,3 +76,4 @@ env/
 
 # Local MCP config (machine-specific)
 .mcp.json
+compound-engineering.local.md
