@@ -74,3 +74,31 @@ scripts/master_gedcom_workflow.sh data/master/roots_master.ged
 - Output files in `out/` are excluded from git
 - The project processing run (Aug 2025) is complete; remaining open items are manual genealogical review (265 flagged issues, 365 potential duplicates)
 - Place geocoding cache: `fact/places_cache.csv`; unresolved places: `fact/unresolved_places.txt`
+
+## RAG Access
+
+RAG system on TrueNAS (canonical reference: `True_Nas` repo, `docs/state/RAG-REFERENCE.md`).
+
+| Context | URL |
+|---------|-----|
+| Tailscale | `http://100.67.89.29:8400` |
+| LAN / Docker | `http://10.0.0.89:8400` |
+
+**API Key:** `op://Research/RAG API Key/credential`
+**Auth header:** `x-api-key: <key>` (lowercase)
+**Response:** `{query, mode, count, duration_ms, results: [{id, collection, content, similarity, metadata}]}`
+
+**MCP tools** (preferred in Claude Code):
+- `mcp__rag__rag_search(query="...", collection="...")`
+- `mcp__rag__rag_ingest(collection="...", documents=[...])`
+- `mcp__rag__rag_collections()`
+
+31 collections, 11,458 docs, all `mxbai-embed-large` 1024-dim.
+
+**Key collections:** `ged` (125)
+
+## Canonical Stack Policy
+
+- Read `docs/state/STACK_CANONICAL.md` before editing RAG/orchestrator configuration.
+- Treat TrueNAS Apps as canonical data plane unless explicitly documented otherwise.
+- Use `op://` references for secrets; never embed literal credentials.
