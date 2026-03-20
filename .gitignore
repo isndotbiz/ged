@@ -78,3 +78,6 @@ env/
 .mcp.json
 compound-engineering.local.md
 GedFixApp/.build/
+GedFixKMP/.gradle/
+GedFixKMP/.build/
+GedFixKMP/composeApp/build/
