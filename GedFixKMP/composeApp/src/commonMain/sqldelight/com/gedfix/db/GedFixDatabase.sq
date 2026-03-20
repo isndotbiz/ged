@@ -1,0 +1,191 @@
+CREATE TABLE IF NOT EXISTS person (
+    id TEXT NOT NULL PRIMARY KEY,
+    xref TEXT NOT NULL UNIQUE,
+    givenName TEXT NOT NULL DEFAULT '',
+    surname TEXT NOT NULL DEFAULT '',
+    suffix TEXT NOT NULL DEFAULT '',
+    sex TEXT NOT NULL DEFAULT 'U',
+    isLiving INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS family (
+    id TEXT NOT NULL PRIMARY KEY,
+    xref TEXT NOT NULL UNIQUE,
+    partner1Xref TEXT NOT NULL DEFAULT '',
+    partner2Xref TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS childLink (
+    familyXref TEXT NOT NULL,
+    childXref TEXT NOT NULL,
+    childOrder INTEGER NOT NULL DEFAULT 0,
+    PRIMARY KEY (familyXref, childXref)
+);
+
+CREATE TABLE IF NOT EXISTS event (
+    id TEXT NOT NULL PRIMARY KEY,
+    ownerXref TEXT NOT NULL,
+    ownerType TEXT NOT NULL DEFAULT 'INDI',
+    eventType TEXT NOT NULL,
+    dateValue TEXT NOT NULL DEFAULT '',
+    place TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS event_owner ON event(ownerXref);
+
+CREATE TABLE IF NOT EXISTS place (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    normalized TEXT NOT NULL DEFAULT '',
+    latitude REAL,
+    longitude REAL,
+    eventCount INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS place_name ON place(name);
+
+CREATE TABLE IF NOT EXISTS source (
+    id TEXT NOT NULL PRIMARY KEY,
+    xref TEXT NOT NULL UNIQUE,
+    title TEXT NOT NULL DEFAULT '',
+    author TEXT NOT NULL DEFAULT '',
+    publisher TEXT NOT NULL DEFAULT '',
+    repository TEXT NOT NULL DEFAULT ''
+);
+
+-- Person queries
+selectAllPersons:
+SELECT * FROM person ORDER BY surname, givenName;
+
+selectPersonByXref:
+SELECT * FROM person WHERE xref = ?;
+
+searchPersons:
+SELECT * FROM person WHERE givenName LIKE ? OR surname LIKE ? ORDER BY surname, givenName;
+
+countPersons:
+SELECT COUNT(*) FROM person;
+
+insertPerson:
+INSERT INTO person(id, xref, givenName, surname, suffix, sex, isLiving)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updatePerson:
+UPDATE person SET givenName = ?, surname = ?, suffix = ?, sex = ?, isLiving = ? WHERE xref = ?;
+
+deletePerson:
+DELETE FROM person WHERE xref = ?;
+
+-- Family queries
+selectAllFamilies:
+SELECT * FROM family;
+
+selectFamilyByXref:
+SELECT * FROM family WHERE xref = ?;
+
+selectFamiliesAsSpouse:
+SELECT * FROM family WHERE partner1Xref = ? OR partner2Xref = ?;
+
+countFamilies:
+SELECT COUNT(*) FROM family;
+
+insertFamily:
+INSERT INTO family(id, xref, partner1Xref, partner2Xref) VALUES (?, ?, ?, ?);
+
+deleteFamily:
+DELETE FROM family WHERE xref = ?;
+
+-- ChildLink queries
+selectChildLinksForFamily:
+SELECT * FROM childLink WHERE familyXref = ? ORDER BY childOrder;
+
+selectChildLinksForChild:
+SELECT * FROM childLink WHERE childXref = ?;
+
+insertChildLink:
+INSERT INTO childLink(familyXref, childXref, childOrder) VALUES (?, ?, ?);
+
+deleteChildLink:
+DELETE FROM childLink WHERE familyXref = ? AND childXref = ?;
+
+deleteChildLinksForFamily:
+DELETE FROM childLink WHERE familyXref = ?;
+
+deleteChildLinksForChild:
+DELETE FROM childLink WHERE childXref = ?;
+
+-- Event queries
+selectEventsForOwner:
+SELECT * FROM event WHERE ownerXref = ? ORDER BY eventType;
+
+countEvents:
+SELECT COUNT(*) FROM event;
+
+selectAllEvents:
+SELECT * FROM event;
+
+insertEvent:
+INSERT INTO event(id, ownerXref, ownerType, eventType, dateValue, place, description)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+updateEvent:
+UPDATE event SET eventType = ?, dateValue = ?, place = ?, description = ? WHERE id = ?;
+
+deleteEvent:
+DELETE FROM event WHERE id = ?;
+
+deleteEventsForOwner:
+DELETE FROM event WHERE ownerXref = ?;
+
+-- Place queries
+selectAllPlaces:
+SELECT * FROM place ORDER BY eventCount DESC;
+
+countPlaces:
+SELECT COUNT(*) FROM place;
+
+insertPlace:
+INSERT INTO place(id, name, normalized, latitude, longitude, eventCount)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Source queries
+selectAllSources:
+SELECT * FROM source ORDER BY title;
+
+countSources:
+SELECT COUNT(*) FROM source;
+
+insertSource:
+INSERT INTO source(id, xref, title, author, publisher, repository)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- Bulk operations
+deleteAllPersons:
+DELETE FROM person;
+
+deleteAllFamilies:
+DELETE FROM family;
+
+deleteAllChildLinks:
+DELETE FROM childLink;
+
+deleteAllEvents:
+DELETE FROM event;
+
+deleteAllPlaces:
+DELETE FROM place;
+
+deleteAllSources:
+DELETE FROM source;
+
+-- Top surnames
+selectTopSurnames:
+SELECT surname, COUNT(*) AS cnt FROM person WHERE surname != '' GROUP BY surname ORDER BY cnt DESC LIMIT ?;
+
+-- Max xref helpers
+selectMaxPersonXref:
+SELECT xref FROM person WHERE xref LIKE '@I%' ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1;
+
+selectMaxFamilyXref:
+SELECT xref FROM family WHERE xref LIKE '@F%' ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1;
