@@ -13,8 +13,12 @@ struct ContentView: View {
             switch appState.selectedSection {
             case .overview:
                 OverviewView()
+            case .issues:
+                IssuesView()
             case .people:
                 PersonListView()
+            case .pedigree:
+                PedigreeChartView(rootXref: appState.selectedPersonXref)
             case .families:
                 FamilyListView()
             case .places:
@@ -50,6 +54,43 @@ struct ContentView: View {
         .overlay {
             if appState.isImporting {
                 ImportProgressOverlay()
+            }
+        }
+        .onChange(of: appState.showExportPanel) { _, show in
+            if show { exportGEDCOM(filterLiving: false) }
+        }
+        .onChange(of: appState.showExportPanelFiltered) { _, show in
+            if show { exportGEDCOM(filterLiving: true) }
+        }
+    }
+}
+
+extension ContentView {
+    func exportGEDCOM(filterLiving: Bool) {
+        let panel = NSSavePanel()
+        panel.title = "Export GEDCOM"
+        panel.allowedContentTypes = [.plainText]
+        panel.nameFieldStringValue = "export.ged"
+        panel.canCreateDirectories = true
+
+        panel.begin { response in
+            defer {
+                Task { @MainActor in
+                    appState.showExportPanel = false
+                    appState.showExportPanelFiltered = false
+                }
+            }
+            guard response == .OK, let url = panel.url else { return }
+
+            Task { @MainActor in
+                var exporter = GedcomExporter()
+                exporter.filterLiving = filterLiving
+                let content = exporter.export()
+                do {
+                    try content.write(to: url, atomically: true, encoding: .utf8)
+                } catch {
+                    print("Export error: \(error)")
+                }
             }
         }
     }

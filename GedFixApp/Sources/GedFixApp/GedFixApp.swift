@@ -23,6 +23,17 @@ struct GedFixApp: App {
                     appState.showImportPanel = true
                 }
                 .keyboardShortcut("o")
+
+                Divider()
+
+                Button("Export GEDCOM...") {
+                    appState.showExportPanel = true
+                }
+                .keyboardShortcut("e", modifiers: [.command, .shift])
+
+                Button("Export GEDCOM (Filter Living)...") {
+                    appState.showExportPanelFiltered = true
+                }
             }
         }
         .defaultSize(width: 1200, height: 800)
@@ -33,16 +44,21 @@ struct GedFixApp: App {
 @Observable
 final class AppState {
     var showImportPanel = false
+    var showExportPanel = false
+    var showExportPanelFiltered = false
     var isImporting = false
     var importProgress: String = ""
     var importedFileName: String = ""
     var selectedSection: SidebarSection = .people
     var selectedPersonXref: String?
     var navigationPath: [NavigationItem] = []
+    var issueCount: Int = 0
 
     enum SidebarSection: String, CaseIterable, Identifiable {
         case overview = "Overview"
+        case issues = "Issues"
         case people = "People"
+        case pedigree = "Pedigree"
         case families = "Families"
         case places = "Places"
         case sources = "Sources"
@@ -52,7 +68,9 @@ final class AppState {
         var icon: String {
             switch self {
             case .overview: return "chart.pie.fill"
+            case .issues: return "exclamationmark.triangle.fill"
             case .people: return "person.3.fill"
+            case .pedigree: return "chart.bar.doc.horizontal"
             case .families: return "house.fill"
             case .places: return "mappin.and.ellipse"
             case .sources: return "book.closed.fill"

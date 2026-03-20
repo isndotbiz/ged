@@ -6,6 +6,8 @@ struct PersonListView: View {
     @State private var searchText = ""
     @State private var sortBy: DatabaseService.PersonSort = .surname
     @State private var selectedPersonID: String?
+    @State private var showNewPerson = false
+    @State private var refreshToken = UUID()
 
     private var persons: [GedcomPerson] {
         db.fetchPersons(search: searchText, sortBy: sortBy)
@@ -22,9 +24,18 @@ struct PersonListView: View {
                 PersonRowView(person: person)
                     .tag(person.id)
             }
+            .id(refreshToken)
             .searchable(text: $searchText, prompt: "Search people")
             .navigationSplitViewColumnWidth(min: 280, ideal: 340, max: 500)
             .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    Button {
+                        showNewPerson = true
+                    } label: {
+                        Label("Add Person", systemImage: "plus")
+                    }
+                    .help("Add a new person")
+                }
                 ToolbarItem {
                     Picker("Sort", selection: $sortBy) {
                         Text("Surname").tag(DatabaseService.PersonSort.surname)
@@ -43,6 +54,18 @@ struct PersonListView: View {
                     Text("Choose someone from the list to see their details.")
                 }
             }
+        }
+        .sheet(isPresented: $showNewPerson) {
+            PersonEditorView(
+                person: nil,
+                onSave: { newPerson in
+                    try? db.insertPerson(newPerson)
+                    showNewPerson = false
+                    selectedPersonID = newPerson.id
+                    refreshToken = UUID()
+                },
+                onCancel: { showNewPerson = false }
+            )
         }
     }
 }

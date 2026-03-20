@@ -183,6 +183,180 @@ final class DatabaseService {
         }) ?? []
     }
 
+    // MARK: - Mutations
+
+    func updatePerson(_ person: GedcomPerson) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try person.update(db)
+        }
+        refreshCounts()
+    }
+
+    func insertPerson(_ person: GedcomPerson) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try person.insert(db)
+        }
+        refreshCounts()
+    }
+
+    func deletePerson(xref: String) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            // Delete events owned by this person
+            try GedcomEvent.filter(Column("ownerXref") == xref).deleteAll(db)
+            // Remove child links referencing this person
+            try GedcomChildLink.filter(Column("childXref") == xref).deleteAll(db)
+            // Remove families where this person is a partner (and their child links)
+            let partnerFamilies = try GedcomFamily.filter(
+                Column("partner1Xref") == xref || Column("partner2Xref") == xref
+            ).fetchAll(db)
+            for family in partnerFamilies {
+                try GedcomChildLink.filter(Column("familyXref") == family.xref).deleteAll(db)
+                try GedcomEvent.filter(Column("ownerXref") == family.xref).deleteAll(db)
+                try family.delete(db)
+            }
+            // Delete the person
+            try GedcomPerson.filter(Column("xref") == xref).deleteAll(db)
+        }
+        refreshCounts()
+    }
+
+    func insertEvent(_ event: GedcomEvent) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try event.insert(db)
+        }
+        refreshCounts()
+    }
+
+    func updateEvent(_ event: GedcomEvent) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try event.update(db)
+        }
+    }
+
+    func deleteEvent(id: String) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try GedcomEvent.filter(Column("id") == id).deleteAll(db)
+        }
+        refreshCounts()
+    }
+
+    func addChildToFamily(familyXref: String, childXref: String) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            let maxOrder = try GedcomChildLink
+                .filter(Column("familyXref") == familyXref)
+                .select(max(Column("childOrder")))
+                .fetchOne(db) as Int? ?? 0
+            let link = GedcomChildLink(familyXref: familyXref, childXref: childXref, childOrder: maxOrder + 1)
+            try link.insert(db)
+        }
+    }
+
+    func removeChildFromFamily(familyXref: String, childXref: String) throws {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        try db.write { db in
+            try GedcomChildLink.filter(
+                Column("familyXref") == familyXref && Column("childXref") == childXref
+            ).deleteAll(db)
+        }
+    }
+
+    func createFamily(partner1Xref: String, partner2Xref: String) throws -> GedcomFamily {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        let maxNum = try db.read { db -> Int in
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT xref FROM family WHERE xref LIKE '@F%'
+                ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1
+                """)
+            if let row = rows.first {
+                let xref: String = row["xref"]
+                let numStr = xref.replacingOccurrences(of: "@F", with: "").replacingOccurrences(of: "@", with: "")
+                return Int(numStr) ?? 0
+            }
+            return 0
+        }
+        let newXref = "@F\(maxNum + 1)@"
+        let family = GedcomFamily(
+            id: UUID().uuidString,
+            xref: newXref,
+            partner1Xref: partner1Xref,
+            partner2Xref: partner2Xref
+        )
+        try db.write { db in
+            try family.insert(db)
+        }
+        refreshCounts()
+        return family
+    }
+
+    func nextPersonXref() throws -> String {
+        guard let db = dbQueue else { throw DatabaseError(message: "No database open") }
+        let maxNum = try db.read { db -> Int in
+            let rows = try Row.fetchAll(db, sql: """
+                SELECT xref FROM person WHERE xref LIKE '@I%'
+                ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1
+                """)
+            if let row = rows.first {
+                let xref: String = row["xref"]
+                let numStr = xref.replacingOccurrences(of: "@I", with: "").replacingOccurrences(of: "@", with: "")
+                return Int(numStr) ?? 0
+            }
+            return 0
+        }
+        return "@I\(maxNum + 1)@"
+    }
+
+    func fetchAllPersons() -> [GedcomPerson] {
+        guard let db = dbQueue else { return [] }
+        return (try? db.read { try GedcomPerson.order(Column("surname"), Column("givenName")).fetchAll($0) }) ?? []
+    }
+
+    func fetchAllFamilies() -> [GedcomFamily] {
+        guard let db = dbQueue else { return [] }
+        return (try? db.read { try GedcomFamily.fetchAll($0) }) ?? []
+    }
+
+    func fetchAllEvents() -> [GedcomEvent] {
+        guard let db = dbQueue else { return [] }
+        return (try? db.read { try GedcomEvent.fetchAll($0) }) ?? []
+    }
+
+    func fetchAllChildLinks() -> [GedcomChildLink] {
+        guard let db = dbQueue else { return [] }
+        return (try? db.read { try GedcomChildLink.fetchAll($0) }) ?? []
+    }
+
+    func fetchAllSources() -> [GedcomSource] {
+        guard let db = dbQueue else { return [] }
+        return (try? db.read { try GedcomSource.fetchAll($0) }) ?? []
+    }
+
+    // MARK: - Pedigree Queries
+
+    func fetchParents(ofXref xref: String) -> (father: GedcomPerson?, mother: GedcomPerson?) {
+        let families = fetchFamiliesAsChild(forXref: xref)
+        guard let family = families.first else { return (nil, nil) }
+        let father = family.partner1Xref.isEmpty ? nil : fetchPerson(byXref: family.partner1Xref)
+        let mother = family.partner2Xref.isEmpty ? nil : fetchPerson(byXref: family.partner2Xref)
+        return (father, mother)
+    }
+
+    func fetchBirthEvent(forXref xref: String) -> GedcomEvent? {
+        let events = fetchEvents(forXref: xref)
+        return events.first(where: { $0.eventType == "BIRT" })
+    }
+
+    func fetchDeathEvent(forXref xref: String) -> GedcomEvent? {
+        let events = fetchEvents(forXref: xref)
+        return events.first(where: { $0.eventType == "DEAT" })
+    }
+
     enum PersonSort {
         case surname, givenName
     }

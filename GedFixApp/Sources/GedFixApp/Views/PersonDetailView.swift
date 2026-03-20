@@ -1,8 +1,16 @@
 import SwiftUI
 
 struct PersonDetailView: View {
-    let person: GedcomPerson
+    @State var person: GedcomPerson
     private let db = DatabaseService.shared
+
+    @State private var showEditPerson = false
+    @State private var showAddEvent = false
+    @State private var editingEvent: GedcomEvent?
+    @State private var showDeleteConfirm = false
+    @State private var showAddToFamily = false
+    @State private var showCreateFamily = false
+    @State private var refreshToken = UUID()
 
     private var events: [GedcomEvent] { db.fetchEvents(forXref: person.xref) }
     private var spouseFamilies: [GedcomFamily] { db.fetchFamiliesAsSpouse(forXref: person.xref) }
@@ -17,9 +25,7 @@ struct PersonDetailView: View {
                 Divider()
 
                 // Events
-                if !events.isEmpty {
-                    eventsSection
-                }
+                eventsSection
 
                 // Spouse/Partner families
                 if !spouseFamilies.isEmpty {
@@ -30,9 +36,92 @@ struct PersonDetailView: View {
                 if !parentFamilies.isEmpty {
                     parentFamiliesSection
                 }
+
+                // Family actions
+                familyActionsSection
             }
             .padding(24)
             .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .id(refreshToken)
+        .toolbar {
+            ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    showEditPerson = true
+                } label: {
+                    Label("Edit Person", systemImage: "pencil")
+                }
+
+                Button(role: .destructive) {
+                    showDeleteConfirm = true
+                } label: {
+                    Label("Delete Person", systemImage: "trash")
+                }
+            }
+        }
+        .sheet(isPresented: $showEditPerson) {
+            PersonEditorView(
+                person: person,
+                onSave: { updated in
+                    try? db.updatePerson(updated)
+                    person = updated
+                    showEditPerson = false
+                    refreshToken = UUID()
+                },
+                onCancel: { showEditPerson = false }
+            )
+        }
+        .sheet(isPresented: $showAddEvent) {
+            EventEditorView(
+                event: nil,
+                ownerXref: person.xref,
+                ownerType: "INDI",
+                onSave: { newEvent in
+                    try? db.insertEvent(newEvent)
+                    showAddEvent = false
+                    refreshToken = UUID()
+                },
+                onDelete: nil,
+                onCancel: { showAddEvent = false }
+            )
+        }
+        .sheet(item: $editingEvent) { event in
+            EventEditorView(
+                event: event,
+                ownerXref: person.xref,
+                ownerType: "INDI",
+                onSave: { updated in
+                    try? db.updateEvent(updated)
+                    editingEvent = nil
+                    refreshToken = UUID()
+                },
+                onDelete: {
+                    try? db.deleteEvent(id: event.id)
+                    editingEvent = nil
+                    refreshToken = UUID()
+                },
+                onCancel: { editingEvent = nil }
+            )
+        }
+        .alert("Delete Person?", isPresented: $showDeleteConfirm) {
+            Button("Delete", role: .destructive) {
+                try? db.deletePerson(xref: person.xref)
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This will permanently delete \(person.displayName) and remove them from all families. Their events will also be deleted.")
+        }
+        .sheet(isPresented: $showAddToFamily) {
+            AddToFamilySheet(person: person, onDone: {
+                showAddToFamily = false
+                refreshToken = UUID()
+            })
+        }
+        .sheet(isPresented: $showCreateFamily) {
+            CreateFamilySheet(person: person, onDone: {
+                showCreateFamily = false
+                refreshToken = UUID()
+            })
         }
     }
 
@@ -92,8 +181,25 @@ struct PersonDetailView: View {
 
     private var eventsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Label("Events", systemImage: "calendar")
-                .font(.headline)
+            HStack {
+                Label("Events", systemImage: "calendar")
+                    .font(.headline)
+                Spacer()
+                Button {
+                    showAddEvent = true
+                } label: {
+                    Label("Add Event", systemImage: "plus.circle")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.borderless)
+            }
+
+            if events.isEmpty {
+                Text("No events recorded.")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.vertical, 8)
+            }
 
             ForEach(events) { event in
                 HStack(spacing: 12) {
@@ -115,6 +221,17 @@ struct PersonDetailView: View {
                                 .foregroundStyle(.secondary)
                         }
                     }
+
+                    Spacer()
+
+                    Button {
+                        editingEvent = event
+                    } label: {
+                        Image(systemName: "pencil.circle")
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Edit event")
                 }
                 .padding(.vertical, 4)
 
@@ -218,5 +335,157 @@ struct PersonDetailView: View {
         }
         .padding()
         .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
+    }
+
+    // MARK: - Family Actions
+
+    private var familyActionsSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Family Actions", systemImage: "person.2.fill")
+                .font(.headline)
+
+            HStack(spacing: 12) {
+                Button {
+                    showAddToFamily = true
+                } label: {
+                    Label("Add as Child to Family", systemImage: "figure.and.child.holdinghands")
+                }
+
+                Button {
+                    showCreateFamily = true
+                } label: {
+                    Label("Create Family as Spouse", systemImage: "heart.fill")
+                }
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding()
+        .background(.background.secondary, in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+// MARK: - Add to Family Sheet
+
+struct AddToFamilySheet: View {
+    let person: GedcomPerson
+    let onDone: () -> Void
+    private let db = DatabaseService.shared
+
+    @State private var selectedFamilyXref: String = ""
+
+    private var families: [GedcomFamily] { db.fetchFamilies() }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Add \(person.displayName) as Child")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") { onDone() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Add") {
+                    if !selectedFamilyXref.isEmpty {
+                        try? db.addChildToFamily(familyXref: selectedFamilyXref, childXref: person.xref)
+                    }
+                    onDone()
+                }
+                .keyboardShortcut(.defaultAction)
+                .disabled(selectedFamilyXref.isEmpty)
+            }
+            .padding()
+
+            Divider()
+
+            List(families, selection: $selectedFamilyXref) { family in
+                HStack {
+                    VStack(alignment: .leading) {
+                        HStack(spacing: 4) {
+                            if let p1 = db.fetchPerson(byXref: family.partner1Xref) {
+                                Text(p1.displayName)
+                            }
+                            if !family.partner1Xref.isEmpty && !family.partner2Xref.isEmpty {
+                                Image(systemName: "heart.fill")
+                                    .font(.caption2)
+                                    .foregroundStyle(.pink)
+                            }
+                            if let p2 = db.fetchPerson(byXref: family.partner2Xref) {
+                                Text(p2.displayName)
+                            }
+                        }
+                        .fontWeight(.medium)
+                        Text(family.xref)
+                            .font(.caption)
+                            .foregroundStyle(.tertiary)
+                    }
+                }
+                .tag(family.xref)
+            }
+        }
+        .frame(width: 500, height: 400)
+    }
+}
+
+// MARK: - Create Family Sheet
+
+struct CreateFamilySheet: View {
+    let person: GedcomPerson
+    let onDone: () -> Void
+    private let db = DatabaseService.shared
+
+    @State private var selectedSpouseXref: String = ""
+    @State private var searchText: String = ""
+
+    private var availablePersons: [GedcomPerson] {
+        db.fetchPersons(search: searchText).filter { $0.xref != person.xref }
+    }
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Text("Create Family with \(person.displayName)")
+                    .font(.headline)
+                Spacer()
+                Button("Cancel") { onDone() }
+                    .keyboardShortcut(.cancelAction)
+                Button("Create") {
+                    let p1 = person.xref
+                    let p2 = selectedSpouseXref
+                    _ = try? db.createFamily(partner1Xref: p1, partner2Xref: p2)
+                    onDone()
+                }
+                .keyboardShortcut(.defaultAction)
+            }
+            .padding()
+
+            Divider()
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Select a spouse (optional):")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+
+                TextField("Search people...", text: $searchText)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+
+                List(availablePersons, selection: $selectedSpouseXref) { p in
+                    HStack(spacing: 8) {
+                        ZStack {
+                            Circle()
+                                .fill(p.sex == "M" ? Color.blue.opacity(0.15) : p.sex == "F" ? Color.pink.opacity(0.15) : Color.gray.opacity(0.15))
+                                .frame(width: 28, height: 28)
+                            Text(p.initials)
+                                .font(.caption2.bold())
+                                .foregroundStyle(p.sex == "M" ? .blue : p.sex == "F" ? .pink : .gray)
+                        }
+                        Text(p.displayName)
+                    }
+                    .tag(p.xref)
+                }
+            }
+        }
+        .frame(width: 500, height: 450)
     }
 }
