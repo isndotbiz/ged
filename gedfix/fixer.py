@@ -96,3 +96,62 @@ def fix_file(inp: Path, out: Path, level: str, backup_dir: Path | None, note_pre
         result["validation"] = validation_report
     
     return result
+
+
+def fix_gedcom_text(text: str, level: str = "standard", rules: dict | None = None) -> tuple[str, list[dict]]:
+    """Fix GEDCOM text in-memory and return (fixed_text, changes_list).
+
+    Each change is a dict with keys: rule, line, original, fixed.
+    """
+    if rules is None:
+        rules = load_rules()
+    level_config = rules.get("levels", {}).get(level, {})
+    note_prefix = rules.get("note_prefix", NOTE_PREFIX_DEFAULT)
+
+    changes: list[dict] = []
+    output_lines: list[str] = []
+    all_lines = text.splitlines()
+    text_joined = text  # for checking existing notes
+
+    for i, line in enumerate(all_lines):
+        stripped = " ".join(line.strip().split())
+
+        if stripped.startswith(("1 ", "2 ", "3 ")):
+            parts = stripped.split(" ", 2)
+            if len(parts) >= 3:
+                tag = parts[1]
+                orig_val = parts[2]
+                new_val = orig_val
+                notes: list[str] = []
+
+                if tag == "DATE" and level_config.get("fix_dates", True):
+                    new_val, notes = sanitize_date_value(orig_val, level)
+
+                elif tag == "NAME" and level_config.get("fix_names", True):
+                    new_val, name_notes = sanitize_name_value(orig_val, level)
+                    notes.extend(name_notes)
+
+                elif tag == "PLAC" and level_config.get("fix_places", False):
+                    new_val, place_notes = sanitize_place_value(orig_val, level)
+                    notes.extend(place_notes)
+
+                if new_val != orig_val:
+                    changes.append({"rule": "date_normalized" if tag == "DATE" else f"{tag.lower()}_normalized",
+                                    "line": stripped, "original": orig_val, "fixed": new_val})
+
+                output_lines.append(f"{parts[0]} {tag} {new_val}")
+
+                # Only add notes if an AutoFix note for this value doesn't already exist
+                for note in notes:
+                    note_marker = f'{note_prefix} {note} Original: "{orig_val}"'
+                    if note_marker in text_joined:
+                        continue  # already has this note — skip (idempotent)
+                    rule = "date_unrecognized_note" if "Unrecognized" in note else "autofix_note"
+                    changes.append({"rule": rule, "line": stripped, "original": orig_val, "note": note})
+                    output_lines.append(f"{parts[0]} NOTE {note_prefix} {note} Original: \"{orig_val}\"")
+
+                continue
+
+        output_lines.append(stripped)
+
+    return "\n".join(output_lines) + "\n", changes
