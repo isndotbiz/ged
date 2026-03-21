@@ -25,10 +25,22 @@ class AppViewModel(val db: DatabaseRepository) {
         private set
     var mediaCount by mutableStateOf(0)
         private set
+    var citationCount by mutableStateOf(0)
+        private set
+    var duplicateCount by mutableStateOf(0)
 
     var validatedCount by mutableStateOf(0)
         private set
     var unvalidatedCount by mutableStateOf(0)
+        private set
+
+    var bookmarkCount by mutableStateOf(0)
+        private set
+    var noteCount by mutableStateOf(0)
+        private set
+    var pendingTaskCount by mutableStateOf(0)
+        private set
+    var versionCount by mutableStateOf(0)
         private set
 
     var issueCount by mutableStateOf(0)
@@ -46,8 +58,13 @@ class AppViewModel(val db: DatabaseRepository) {
         placeCount = db.placeCount()
         sourceCount = db.sourceCount()
         mediaCount = db.mediaCount()
+        citationCount = db.citationCount()
         validatedCount = db.validatedPersonCount()
         unvalidatedCount = db.unvalidatedPersonCount()
+        bookmarkCount = db.bookmarkCount()
+        noteCount = db.noteCount()
+        pendingTaskCount = db.pendingTaskCount()
+        versionCount = db.versionCount()
     }
 
     val validationPercentage: Float
@@ -61,6 +78,12 @@ class AppViewModel(val db: DatabaseRepository) {
         try {
             val result = GedcomParser.parse(text)
             db.importParseResult(result)
+            val totalRecords = result.persons.size + result.families.size + result.events.size
+            db.recordVersion(
+                description = "Imported GEDCOM (${result.persons.size} persons, ${result.families.size} families)",
+                changeType = ChangeType.IMPORT,
+                changedRecords = totalRecords
+            )
             refreshCounts()
             selectedSection = SidebarSection.OVERVIEW
         } catch (e: Exception) {

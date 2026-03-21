@@ -279,12 +279,25 @@ enum class SidebarSection(val label: String) {
     ISSUES("Issues"),
     PEOPLE("People"),
     PEDIGREE("Pedigree"),
+    FAN_CHART("Fan Chart"),
+    DESCENDANT_CHART("Descendants"),
+    RELATIONSHIPS("Relationships"),
     FAMILIES("Families"),
     PLACES("Places"),
     SOURCES("Sources"),
     MEDIA("Media"),
+    MERGE("Merge"),
     VALIDATION("Validation"),
     REPORTS("Reports"),
+    BOOKMARKS("Bookmarks"),
+    NOTES("Notes"),
+    TASKS("Tasks"),
+    VERSION_HISTORY("Version History"),
+    IMAGE_DEDUPE("Image Dedupe"),
+    CLEANUP("Cleanup"),
+    CLOUD_SYNC("Cloud Sync"),
+    AI_CHAT("AI Chat"),
+    AI_SETTINGS("AI Settings"),
     SETTINGS("Settings");
 
     val iconName: String
@@ -295,12 +308,25 @@ enum class SidebarSection(val label: String) {
             ISSUES -> "warning"
             PEOPLE -> "people"
             PEDIGREE -> "tree"
+            FAN_CHART -> "fan"
+            DESCENDANT_CHART -> "descendants"
+            RELATIONSHIPS -> "relationship"
             FAMILIES -> "house"
             PLACES -> "pin"
             SOURCES -> "book"
             MEDIA -> "camera"
+            MERGE -> "merge"
             VALIDATION -> "verified_user"
             REPORTS -> "document"
+            BOOKMARKS -> "bookmark"
+            NOTES -> "note"
+            TASKS -> "checklist"
+            VERSION_HISTORY -> "history"
+            IMAGE_DEDUPE -> "image_dedupe"
+            CLEANUP -> "cleanup"
+            CLOUD_SYNC -> "cloud"
+            AI_CHAT -> "chat"
+            AI_SETTINGS -> "ai_settings"
             SETTINGS -> "gear"
         }
 }

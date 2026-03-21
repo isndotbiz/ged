@@ -88,3 +88,50 @@ val ChartBarColor = Color(0xFF2196F3)
 val ChartBarAltColor = Color(0xFF1976D2)
 val ChartSourcedColor = Color(0xFF4CAF50)
 val ChartUnsourcedColor = Color(0xFFFF9800)
+
+// AI section colors
+val AIChatIconColor = Color(0xFF7C4DFF)       // Deep Purple accent
+val AISettingsIconColor = Color(0xFF651FFF)    // Deep Purple
+val AIProviderConnected = Color(0xFF4CAF50)    // Green
+val AIProviderDisconnected = Color(0xFF9E9E9E) // Gray
+val AIProviderError = Color(0xFFF44336)        // Red
+val AIUserBubble = Color(0xFF1976D2)           // Blue
+val AIAssistantBubble = Color(0xFF424242)      // Dark gray
+
+// Research section colors
+val BookmarksIconColor = Color(0xFFFFB300)       // Amber
+val NotesIconColor = Color(0xFF5C6BC0)           // Indigo
+val TasksIconColor = Color(0xFF26A69A)           // Teal
+val TaskHighColor = Color(0xFFF44336)            // Red
+val TaskMediumColor = Color(0xFFFF9800)          // Orange
+val TaskLowColor = Color(0xFF4CAF50)             // Green
+val TaskDoneColor = Color(0xFF9E9E9E)            // Gray
+
+// Data quality section colors
+val VersionHistoryIconColor = Color(0xFF5C6BC0)  // Indigo
+val ImageDedupeIconColor = Color(0xFFAB47BC)     // Purple
+val CleanupIconColor = Color(0xFFEF5350)         // Red
+val CloudSyncIconColor = Color(0xFF29B6F6)       // Light Blue
+
+// Chart view section colors
+val FanChartIconColor = Color(0xFFAB47BC)        // Purple
+val DescendantChartIconColor = Color(0xFF26A69A)  // Teal
+val RelationshipIconColor = Color(0xFFEF5350)     // Red
+
+// Merge section colors
+val MergeIconColor = Color(0xFF00897B)         // Teal
+val MergeMatchColor = Color(0xFF4CAF50)        // Green - matching values
+val MergeConflictColor = Color(0xFFFF9800)     // Orange - conflicting values
+val MergeMatchBg = Color(0x264CAF50)           // Green at 15%
+val MergeConflictBg = Color(0x26FF9800)        // Orange at 15%
+val MergeSelectedBorder = Color(0xFF2196F3)    // Blue - selected value
+
+// Citation quality colors
+val CitationPrimaryColor = Color(0xFF4CAF50)       // Green
+val CitationSecondaryColor = Color(0xFFFF9800)     // Orange
+val CitationQuestionableColor = Color(0xFFF44336)  // Red
+val CitationUnknownColor = Color(0xFF9E9E9E)       // Gray
+val CitationPrimaryBg = Color(0x264CAF50)
+val CitationSecondaryBg = Color(0x26FF9800)
+val CitationQuestionableBg = Color(0x26F44336)
+val CitationUnknownBg = Color(0x269E9E9E)

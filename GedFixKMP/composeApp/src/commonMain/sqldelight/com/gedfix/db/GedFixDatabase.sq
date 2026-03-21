@@ -85,6 +85,9 @@ SELECT COUNT(*) FROM media;
 deleteAllMedia:
 DELETE FROM media;
 
+deleteMediaById:
+DELETE FROM media WHERE id = ?;
+
 searchMedia:
 SELECT * FROM media WHERE title LIKE ? OR filePath LIKE ? ORDER BY title;
 
@@ -309,3 +312,247 @@ SELECT * FROM childLink ORDER BY familyXref, childOrder;
 
 deleteAllSettings:
 DELETE FROM settings;
+
+-- AI Chat History table
+CREATE TABLE IF NOT EXISTS aiChatHistory (
+    id TEXT NOT NULL PRIMARY KEY,
+    provider TEXT NOT NULL,
+    model TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    personXref TEXT NOT NULL DEFAULT '',
+    timestamp TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS ai_chat_person ON aiChatHistory(personXref);
+CREATE INDEX IF NOT EXISTS ai_chat_timestamp ON aiChatHistory(timestamp);
+
+insertAIChatMessage:
+INSERT OR REPLACE INTO aiChatHistory(id, provider, model, role, content, personXref, timestamp)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectAllAIChatHistory:
+SELECT * FROM aiChatHistory ORDER BY timestamp ASC;
+
+selectAIChatForPerson:
+SELECT * FROM aiChatHistory WHERE personXref = ? ORDER BY timestamp ASC;
+
+deleteAllAIChatHistory:
+DELETE FROM aiChatHistory;
+
+-- Citation table
+CREATE TABLE IF NOT EXISTS citation (
+    id TEXT NOT NULL PRIMARY KEY,
+    sourceXref TEXT NOT NULL DEFAULT '',
+    personXref TEXT NOT NULL DEFAULT '',
+    eventId TEXT NOT NULL DEFAULT '',
+    page TEXT NOT NULL DEFAULT '',
+    quality TEXT NOT NULL DEFAULT 'UNKNOWN',
+    text TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS citation_person ON citation(personXref);
+CREATE INDEX IF NOT EXISTS citation_source ON citation(sourceXref);
+CREATE INDEX IF NOT EXISTS citation_event ON citation(eventId);
+
+insertCitation:
+INSERT OR REPLACE INTO citation(id, sourceXref, personXref, eventId, page, quality, text, note)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?);
+
+selectCitationsForPerson:
+SELECT * FROM citation WHERE personXref = ?;
+
+selectCitationsForSource:
+SELECT * FROM citation WHERE sourceXref = ?;
+
+selectCitationsForEvent:
+SELECT * FROM citation WHERE eventId = ?;
+
+countCitations:
+SELECT COUNT(*) FROM citation;
+
+countCitationsForSource:
+SELECT COUNT(*) FROM citation WHERE sourceXref = ?;
+
+deleteAllCitations:
+DELETE FROM citation;
+
+deleteCitation:
+DELETE FROM citation WHERE id = ?;
+
+updateCitationsPersonXref:
+UPDATE citation SET personXref = ? WHERE personXref = ?;
+
+-- Merge support queries
+updateEventsOwner:
+UPDATE event SET ownerXref = ? WHERE ownerXref = ?;
+
+updateFamilyPartner1:
+UPDATE family SET partner1Xref = ? WHERE partner1Xref = ?;
+
+updateFamilyPartner2:
+UPDATE family SET partner2Xref = ? WHERE partner2Xref = ?;
+
+updateChildLinkChild:
+UPDATE childLink SET childXref = ? WHERE childXref = ?;
+
+-- ============================================================
+-- Version Control
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS treeVersion (
+    id TEXT NOT NULL PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    description TEXT NOT NULL DEFAULT '',
+    changeType TEXT NOT NULL DEFAULT 'EDIT',
+    changedRecords INTEGER NOT NULL DEFAULT 0,
+    gedcomSnapshot TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS version_timestamp ON treeVersion(timestamp);
+
+insertVersion:
+INSERT INTO treeVersion(id, timestamp, description, changeType, changedRecords, gedcomSnapshot)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAllVersions:
+SELECT * FROM treeVersion ORDER BY timestamp DESC;
+
+selectVersionById:
+SELECT * FROM treeVersion WHERE id = ?;
+
+countVersions:
+SELECT COUNT(*) FROM treeVersion;
+
+deleteOldVersions:
+DELETE FROM treeVersion WHERE id NOT IN (SELECT id FROM treeVersion ORDER BY timestamp DESC LIMIT ?);
+
+deleteAllVersions:
+DELETE FROM treeVersion;
+
+-- ============================================================
+-- Notes
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS note (
+    id TEXT NOT NULL PRIMARY KEY,
+    ownerXref TEXT NOT NULL DEFAULT '',
+    ownerType TEXT NOT NULL DEFAULT 'INDI',
+    title TEXT NOT NULL DEFAULT '',
+    content TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT '',
+    updatedAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS note_owner ON note(ownerXref);
+
+insertNote:
+INSERT OR REPLACE INTO note(id, ownerXref, ownerType, title, content, createdAt, updatedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectNotesForOwner:
+SELECT * FROM note WHERE ownerXref = ? ORDER BY updatedAt DESC;
+
+selectAllNotes:
+SELECT * FROM note ORDER BY updatedAt DESC;
+
+countNotes:
+SELECT COUNT(*) FROM note;
+
+countNotesForOwner:
+SELECT COUNT(*) FROM note WHERE ownerXref = ?;
+
+deleteNote:
+DELETE FROM note WHERE id = ?;
+
+deleteAllNotes:
+DELETE FROM note;
+
+searchNotes:
+SELECT * FROM note WHERE title LIKE ? OR content LIKE ? ORDER BY updatedAt DESC;
+
+-- ============================================================
+-- Research Tasks
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS researchTask (
+    id TEXT NOT NULL PRIMARY KEY,
+    personXref TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    status TEXT NOT NULL DEFAULT 'TODO',
+    priority TEXT NOT NULL DEFAULT 'MEDIUM',
+    dueDate TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT '',
+    completedAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS task_person ON researchTask(personXref);
+CREATE INDEX IF NOT EXISTS task_status ON researchTask(status);
+
+insertTask:
+INSERT OR REPLACE INTO researchTask(id, personXref, title, description, status, priority, dueDate, createdAt, completedAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllTasks:
+SELECT * FROM researchTask ORDER BY
+    CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END,
+    createdAt DESC;
+
+selectTasksForPerson:
+SELECT * FROM researchTask WHERE personXref = ? ORDER BY
+    CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END,
+    createdAt DESC;
+
+selectTasksByStatus:
+SELECT * FROM researchTask WHERE status = ? ORDER BY
+    CASE priority WHEN 'HIGH' THEN 0 WHEN 'MEDIUM' THEN 1 WHEN 'LOW' THEN 2 ELSE 3 END,
+    createdAt DESC;
+
+countTasks:
+SELECT COUNT(*) FROM researchTask;
+
+countPendingTasks:
+SELECT COUNT(*) FROM researchTask WHERE status != 'DONE';
+
+deleteTask:
+DELETE FROM researchTask WHERE id = ?;
+
+deleteAllTasks:
+DELETE FROM researchTask;
+
+-- ============================================================
+-- Bookmarks
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS bookmark (
+    id TEXT NOT NULL PRIMARY KEY,
+    personXref TEXT NOT NULL,
+    label TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS bookmark_person ON bookmark(personXref);
+
+insertBookmark:
+INSERT OR REPLACE INTO bookmark(id, personXref, label, createdAt)
+VALUES (?, ?, ?, ?);
+
+selectAllBookmarks:
+SELECT * FROM bookmark ORDER BY createdAt DESC;
+
+isBookmarked:
+SELECT COUNT(*) FROM bookmark WHERE personXref = ?;
+
+deleteBookmark:
+DELETE FROM bookmark WHERE id = ?;
+
+deleteBookmarkByPerson:
+DELETE FROM bookmark WHERE personXref = ?;
+
+countBookmarks:
+SELECT COUNT(*) FROM bookmark;
+
+deleteAllBookmarks:
+DELETE FROM bookmark;

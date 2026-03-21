@@ -18,6 +18,7 @@ import androidx.compose.ui.unit.sp
 import com.gedfix.models.GedcomPerson
 import com.gedfix.models.PersonSort
 import com.gedfix.ui.theme.*
+import com.gedfix.viewmodel.AIViewModel
 import com.gedfix.viewmodel.AppViewModel
 import com.gedfix.viewmodel.PersonViewModel
 
@@ -28,7 +29,8 @@ import com.gedfix.viewmodel.PersonViewModel
 @Composable
 fun PersonListScreen(
     appViewModel: AppViewModel,
-    personViewModel: PersonViewModel
+    personViewModel: PersonViewModel,
+    aiViewModel: AIViewModel? = null
 ) {
     val persons = personViewModel.persons
 
@@ -104,6 +106,7 @@ fun PersonListScreen(
             PersonDetailScreen(
                 person = selectedPerson,
                 personViewModel = personViewModel,
+                aiViewModel = aiViewModel,
                 modifier = Modifier.fillMaxSize()
             )
         } else {

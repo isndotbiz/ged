@@ -14,11 +14,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.gedfix.models.GedcomMedia
-import com.gedfix.models.GedcomPerson
-import com.gedfix.models.ResearchSuggestionEngine
+import com.gedfix.models.*
 import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
+import com.gedfix.viewmodel.AIViewModel
 import com.gedfix.viewmodel.PersonViewModel
 import java.awt.Desktop
 import java.net.URI
@@ -30,11 +29,17 @@ import java.net.URI
 fun PersonDetailScreen(
     person: GedcomPerson,
     personViewModel: PersonViewModel,
+    aiViewModel: AIViewModel? = null,
     modifier: Modifier = Modifier
 ) {
     val events = personViewModel.fetchEvents(person.xref)
     val spouseFamilies = personViewModel.fetchFamiliesAsSpouse(person.xref)
     val parentFamilies = personViewModel.fetchFamiliesAsChild(person.xref)
+    val citations = personViewModel.fetchCitationsForPerson(person.xref)
+    val sources = personViewModel.fetchAllSources()
+    var showCitationDialog by remember { mutableStateOf(false) }
+    var citationEventId by remember { mutableStateOf("") }
+    var editingCitation by remember { mutableStateOf<Citation?>(null) }
     val scrollState = rememberScrollState()
 
     val sexColor = when (person.sex) {
@@ -171,6 +176,11 @@ fun PersonDetailScreen(
 
         HorizontalDivider()
 
+        // AI Analysis section (only shown when AI is configured)
+        if (aiViewModel != null) {
+            AskAISection(person = person, events = events, aiViewModel = aiViewModel)
+        }
+
         // Validation callout for unvalidated persons
         if (!person.isValidated) {
             Surface(
@@ -299,6 +309,7 @@ fun PersonDetailScreen(
                 }
 
                 for ((index, event) in events.withIndex()) {
+                    val eventCitations = citations.filter { it.eventId == event.id }
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
                         verticalAlignment = Alignment.Top
@@ -310,7 +321,38 @@ fun PersonDetailScreen(
                         )
 
                         Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(event.displayType, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(event.displayType, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                                if (eventCitations.isNotEmpty()) {
+                                    val bestQuality = eventCitations.minByOrNull { it.quality.ordinal }?.quality
+                                    val badgeColor = when (bestQuality) {
+                                        CitationQuality.PRIMARY -> CitationPrimaryColor
+                                        CitationQuality.SECONDARY -> CitationSecondaryColor
+                                        CitationQuality.QUESTIONABLE -> CitationQuestionableColor
+                                        else -> CitationUnknownColor
+                                    }
+                                    val badgeBg = when (bestQuality) {
+                                        CitationQuality.PRIMARY -> CitationPrimaryBg
+                                        CitationQuality.SECONDARY -> CitationSecondaryBg
+                                        CitationQuality.QUESTIONABLE -> CitationQuestionableBg
+                                        else -> CitationUnknownBg
+                                    }
+                                    Surface(
+                                        shape = RoundedCornerShape(10.dp),
+                                        color = badgeBg
+                                    ) {
+                                        Text(
+                                            "${eventCitations.size} cite${if (eventCitations.size != 1) "s" else ""}",
+                                            fontSize = 10.sp,
+                                            color = badgeColor,
+                                            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                        )
+                                    }
+                                }
+                            }
                             if (event.dateValue.isNotEmpty()) {
                                 Text(event.dateValue, fontSize = 13.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
@@ -319,6 +361,12 @@ fun PersonDetailScreen(
                             }
                         }
 
+                        TextButton(onClick = {
+                            citationEventId = event.id
+                            showCitationDialog = true
+                        }) {
+                            Text("+Cite", fontSize = 11.sp)
+                        }
                         TextButton(onClick = { personViewModel.editingEvent = event }) {
                             Text("\u270E", fontSize = 14.sp)
                         }
@@ -403,6 +451,151 @@ fun PersonDetailScreen(
                 }
             }
         }
+
+        // Citations section
+        if (citations.isNotEmpty()) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Citations (${citations.size})",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        TextButton(onClick = {
+                            citationEventId = ""
+                            showCitationDialog = true
+                        }) {
+                            Text("+ Add Citation")
+                        }
+                    }
+
+                    for ((index, citation) in citations.withIndex()) {
+                        val qualityColor = when (citation.quality) {
+                            CitationQuality.PRIMARY -> CitationPrimaryColor
+                            CitationQuality.SECONDARY -> CitationSecondaryColor
+                            CitationQuality.QUESTIONABLE -> CitationQuestionableColor
+                            CitationQuality.UNKNOWN -> CitationUnknownColor
+                        }
+                        val qualityBg = when (citation.quality) {
+                            CitationQuality.PRIMARY -> CitationPrimaryBg
+                            CitationQuality.SECONDARY -> CitationSecondaryBg
+                            CitationQuality.QUESTIONABLE -> CitationQuestionableBg
+                            CitationQuality.UNKNOWN -> CitationUnknownBg
+                        }
+                        val sourceTitle = sources.firstOrNull { it.xref == citation.sourceXref }?.title ?: citation.sourceXref
+                        val eventLabel = events.firstOrNull { it.id == citation.eventId }?.displayType ?: ""
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(10.dp),
+                            verticalAlignment = Alignment.Top
+                        ) {
+                            // Quality indicator
+                            Surface(
+                                shape = RoundedCornerShape(10.dp),
+                                color = qualityBg
+                            ) {
+                                Text(
+                                    when (citation.quality) {
+                                        CitationQuality.PRIMARY -> "\u2713"
+                                        CitationQuality.SECONDARY -> "\u25CB"
+                                        CitationQuality.QUESTIONABLE -> "?"
+                                        CitationQuality.UNKNOWN -> "-"
+                                    },
+                                    fontSize = 12.sp,
+                                    color = qualityColor,
+                                    modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+                                )
+                            }
+
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    sourceTitle.ifEmpty { "(No source)" },
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 13.sp
+                                )
+                                if (eventLabel.isNotEmpty()) {
+                                    Text(
+                                        "Event: $eventLabel",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (citation.page.isNotEmpty()) {
+                                    Text(
+                                        "p. ${citation.page}",
+                                        fontSize = 11.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                if (citation.text.isNotEmpty()) {
+                                    Text(
+                                        citation.text,
+                                        fontSize = 12.sp,
+                                        color = MaterialTheme.colorScheme.onSurface,
+                                        maxLines = 2
+                                    )
+                                }
+                                Text(
+                                    citation.quality.display,
+                                    fontSize = 10.sp,
+                                    color = qualityColor
+                                )
+                            }
+
+                            TextButton(onClick = {
+                                editingCitation = citation
+                                citationEventId = citation.eventId
+                            }) {
+                                Text("\u270E", fontSize = 14.sp)
+                            }
+                        }
+
+                        if (index < citations.size - 1) {
+                            HorizontalDivider(modifier = Modifier.padding(start = 36.dp))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Citation editor dialog
+    if (showCitationDialog || editingCitation != null) {
+        CitationEditorDialog(
+            citation = editingCitation,
+            personXref = person.xref,
+            eventId = citationEventId,
+            sources = sources,
+            onSave = { citation ->
+                personViewModel.saveCitation(citation)
+                showCitationDialog = false
+                editingCitation = null
+            },
+            onDismiss = {
+                showCitationDialog = false
+                editingCitation = null
+            },
+            onDelete = if (editingCitation != null) {
+                {
+                    personViewModel.deleteCitation(editingCitation!!.id)
+                    editingCitation = null
+                }
+            } else null
+        )
     }
 
     // Edit person dialog
@@ -477,6 +670,141 @@ fun PersonDetailScreen(
             onDismiss = { personViewModel.editingEvent = null },
             onDelete = { personViewModel.deleteEvent(event.id) }
         )
+    }
+}
+
+@Composable
+private fun AskAISection(
+    person: GedcomPerson,
+    events: List<com.gedfix.models.GedcomEvent>,
+    aiViewModel: AIViewModel
+) {
+    var aiResponse by remember(person.xref) { mutableStateOf<String?>(null) }
+    var aiError by remember(person.xref) { mutableStateOf<String?>(null) }
+    var isLoading by remember(person.xref) { mutableStateOf(false) }
+    var expanded by remember(person.xref) { mutableStateOf(false) }
+
+    val hasApiKey = aiViewModel.getApiKey(aiViewModel.activeProvider).isNotBlank()
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = AIChatIconColor.copy(alpha = 0.08f)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("\u2604", fontSize = 16.sp)
+                    Text(
+                        "Ask AI",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = AIChatIconColor
+                    )
+                    Text(
+                        "(${aiViewModel.activeProvider.displayName})",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+
+                if (!hasApiKey) {
+                    Text(
+                        "No API key",
+                        fontSize = 12.sp,
+                        color = WarningColor
+                    )
+                }
+            }
+
+            // Quick action buttons
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                val queries = listOf(
+                    "Analyze completeness" to "Analyze this person's record completeness. What information is missing? What should be researched next?",
+                    "Research steps" to "Suggest specific research steps for this person. What records should I search and where?",
+                    "Find contradictions" to "Look for any contradictions or inconsistencies in this person's record. Are there any data quality concerns?",
+                    "Evaluate evidence" to "Evaluate the evidence for this person's key life events. How well-supported are the dates and places?"
+                )
+
+                for ((label, query) in queries) {
+                    OutlinedButton(
+                        onClick = {
+                            isLoading = true
+                            aiError = null
+                            expanded = true
+                            aiViewModel.askAboutPerson(
+                                person = person,
+                                events = events,
+                                query = query,
+                                onResult = { result ->
+                                    aiResponse = result
+                                    isLoading = false
+                                },
+                                onError = { error ->
+                                    aiError = error
+                                    isLoading = false
+                                }
+                            )
+                        },
+                        enabled = hasApiKey && !isLoading,
+                        contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp)
+                    ) {
+                        Text(label, fontSize = 12.sp)
+                    }
+                }
+            }
+
+            // Response area
+            if (expanded && (isLoading || aiResponse != null || aiError != null)) {
+                HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                if (isLoading) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(14.dp),
+                            strokeWidth = 2.dp
+                        )
+                        Text(
+                            "Analyzing with ${aiViewModel.activeProvider.displayName}...",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+
+                aiError?.let { error ->
+                    Text(
+                        text = error,
+                        fontSize = 13.sp,
+                        color = CriticalColor
+                    )
+                }
+
+                aiResponse?.let { response ->
+                    Text(
+                        text = response,
+                        fontSize = 13.sp,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        lineHeight = 20.sp
+                    )
+                }
+            }
+        }
     }
 }
 

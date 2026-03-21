@@ -2,6 +2,7 @@ package com.gedfix.db
 
 import app.cash.sqldelight.db.SqlDriver
 import com.gedfix.models.*
+import java.time.Instant
 
 /**
  * Platform-specific SQLite driver factory.
@@ -30,6 +31,7 @@ class DatabaseRepository(driverFactory: DriverFactory) {
         queries.deleteAllPlaces()
         queries.deleteAllSources()
         queries.deleteAllMedia()
+        queries.deleteAllCitations()
 
         for (person in result.persons) {
             queries.insertPerson(
@@ -442,6 +444,283 @@ class DatabaseRepository(driverFactory: DriverFactory) {
         val pattern = "%$query%"
         return queries.searchMedia(pattern, pattern).executeAsList().map { it.toModel() }
     }
+
+    // MARK: - AI Chat History
+
+    fun insertAIChatMessage(msg: com.gedfix.models.AIChatMessage) {
+        queries.insertAIChatMessage(
+            id = msg.id,
+            provider = msg.provider,
+            model = msg.model,
+            role = msg.role,
+            content = msg.content,
+            personXref = msg.personXref,
+            timestamp = msg.timestamp
+        )
+    }
+
+    fun fetchAIChatHistory(): List<com.gedfix.models.AIChatMessage> {
+        return queries.selectAllAIChatHistory().executeAsList().map {
+            com.gedfix.models.AIChatMessage(
+                id = it.id,
+                provider = it.provider,
+                model = it.model,
+                role = it.role,
+                content = it.content,
+                personXref = it.personXref,
+                timestamp = it.timestamp
+            )
+        }
+    }
+
+    fun fetchAIChatForPerson(personXref: String): List<com.gedfix.models.AIChatMessage> {
+        return queries.selectAIChatForPerson(personXref).executeAsList().map {
+            com.gedfix.models.AIChatMessage(
+                id = it.id,
+                provider = it.provider,
+                model = it.model,
+                role = it.role,
+                content = it.content,
+                personXref = it.personXref,
+                timestamp = it.timestamp
+            )
+        }
+    }
+
+    fun clearAIChatHistory() {
+        queries.deleteAllAIChatHistory()
+    }
+
+    // MARK: - Citation queries
+
+    fun citationCount(): Int = queries.countCitations().executeAsOne().toInt()
+
+    fun fetchCitationsForPerson(personXref: String): List<com.gedfix.models.Citation> {
+        return queries.selectCitationsForPerson(personXref).executeAsList().map { it.toCitationModel() }
+    }
+
+    fun fetchCitationsForSource(sourceXref: String): List<com.gedfix.models.Citation> {
+        return queries.selectCitationsForSource(sourceXref).executeAsList().map { it.toCitationModel() }
+    }
+
+    fun fetchCitationsForEvent(eventId: String): List<com.gedfix.models.Citation> {
+        return queries.selectCitationsForEvent(eventId).executeAsList().map { it.toCitationModel() }
+    }
+
+    fun citationCountForSource(sourceXref: String): Int {
+        return queries.countCitationsForSource(sourceXref).executeAsOne().toInt()
+    }
+
+    fun insertCitation(citation: com.gedfix.models.Citation) {
+        queries.insertCitation(
+            id = citation.id,
+            sourceXref = citation.sourceXref,
+            personXref = citation.personXref,
+            eventId = citation.eventId,
+            page = citation.page,
+            quality = citation.quality.name,
+            text = citation.text,
+            note = citation.note
+        )
+    }
+
+    fun deleteCitation(id: String) {
+        queries.deleteCitation(id)
+    }
+
+    fun deleteAllCitations() {
+        queries.deleteAllCitations()
+    }
+
+    // MARK: - Media delete
+
+    fun deleteMedia(id: String) {
+        queries.deleteMediaById(id)
+    }
+
+    // MARK: - Version Control
+
+    fun insertVersion(version: com.gedfix.models.TreeVersion) {
+        queries.insertVersion(
+            id = version.id,
+            timestamp = version.timestamp,
+            description = version.description,
+            changeType = version.changeType.toString(),
+            changedRecords = version.changedRecords.toLong(),
+            gedcomSnapshot = version.gedcomSnapshot
+        )
+    }
+
+    fun fetchAllVersions(): List<com.gedfix.models.TreeVersion> {
+        return queries.selectAllVersions().executeAsList().map { it.toVersionModel() }
+    }
+
+    fun fetchVersionById(id: String): com.gedfix.models.TreeVersion? {
+        return queries.selectVersionById(id).executeAsOneOrNull()?.toVersionModel()
+    }
+
+    fun versionCount(): Int = queries.countVersions().executeAsOne().toInt()
+
+    fun deleteOldVersions(keepCount: Int) {
+        queries.deleteOldVersions(keepCount.toLong())
+    }
+
+    /**
+     * Record a version snapshot after any tree mutation.
+     */
+    fun recordVersion(description: String, changeType: com.gedfix.models.ChangeType, changedRecords: Int) {
+        val snapshot = GedcomExporter(this).export()
+        val version = com.gedfix.models.TreeVersion(
+            id = kotlin.uuid.Uuid.random().toString(),
+            timestamp = java.time.Instant.now().toString(),
+            description = description,
+            changeType = changeType,
+            changedRecords = changedRecords,
+            gedcomSnapshot = snapshot
+        )
+        insertVersion(version)
+    }
+
+    // MARK: - Notes
+
+    fun insertNote(note: ResearchNote) {
+        queries.insertNote(
+            id = note.id,
+            ownerXref = note.ownerXref,
+            ownerType = note.ownerType,
+            title = note.title,
+            content = note.content,
+            createdAt = note.createdAt,
+            updatedAt = note.updatedAt
+        )
+    }
+
+    fun fetchNotesForOwner(ownerXref: String): List<ResearchNote> {
+        return queries.selectNotesForOwner(ownerXref).executeAsList().map { it.toNoteModel() }
+    }
+
+    fun fetchAllNotes(): List<ResearchNote> {
+        return queries.selectAllNotes().executeAsList().map { it.toNoteModel() }
+    }
+
+    fun noteCount(): Int = queries.countNotes().executeAsOne().toInt()
+
+    fun noteCountForOwner(ownerXref: String): Int = queries.countNotesForOwner(ownerXref).executeAsOne().toInt()
+
+    fun deleteNote(id: String) {
+        queries.deleteNote(id)
+    }
+
+    fun searchNotes(query: String): List<ResearchNote> {
+        val pattern = "%$query%"
+        return queries.searchNotes(pattern, pattern).executeAsList().map { it.toNoteModel() }
+    }
+
+    // MARK: - Research Tasks
+
+    fun insertTask(task: com.gedfix.models.ResearchTask) {
+        queries.insertTask(
+            id = task.id,
+            personXref = task.personXref,
+            title = task.title,
+            description = task.description,
+            status = task.status.name,
+            priority = task.priority.name,
+            dueDate = task.dueDate,
+            createdAt = task.createdAt,
+            completedAt = task.completedAt
+        )
+    }
+
+    fun fetchAllTasks(): List<com.gedfix.models.ResearchTask> {
+        return queries.selectAllTasks().executeAsList().map { it.toTaskModel() }
+    }
+
+    fun fetchTasksForPerson(personXref: String): List<com.gedfix.models.ResearchTask> {
+        return queries.selectTasksForPerson(personXref).executeAsList().map { it.toTaskModel() }
+    }
+
+    fun fetchTasksByStatus(status: com.gedfix.models.TaskStatus): List<com.gedfix.models.ResearchTask> {
+        return queries.selectTasksByStatus(status.name).executeAsList().map { it.toTaskModel() }
+    }
+
+    fun taskCount(): Int = queries.countTasks().executeAsOne().toInt()
+
+    fun pendingTaskCount(): Int = queries.countPendingTasks().executeAsOne().toInt()
+
+    fun deleteTask(id: String) {
+        queries.deleteTask(id)
+    }
+
+    // MARK: - Bookmarks
+
+    fun insertBookmark(bookmark: PersonBookmark) {
+        queries.insertBookmark(
+            id = bookmark.id,
+            personXref = bookmark.personXref,
+            label = bookmark.label,
+            createdAt = bookmark.createdAt
+        )
+    }
+
+    fun fetchAllBookmarks(): List<PersonBookmark> {
+        return queries.selectAllBookmarks().executeAsList().map {
+            PersonBookmark(
+                id = it.id,
+                personXref = it.personXref,
+                label = it.label,
+                createdAt = it.createdAt
+            )
+        }
+    }
+
+    fun isBookmarked(personXref: String): Boolean {
+        return queries.isBookmarked(personXref).executeAsOne() > 0
+    }
+
+    fun deleteBookmark(id: String) {
+        queries.deleteBookmark(id)
+    }
+
+    fun removeBookmarkByPerson(personXref: String) {
+        queries.deleteBookmarkByPerson(personXref)
+    }
+
+    fun bookmarkCount(): Int = queries.countBookmarks().executeAsOne().toInt()
+
+    // MARK: - Merge operations
+
+    /**
+     * Merge two persons: keep one, transfer all data from removed to kept, then delete removed.
+     * This is a critical operation - it moves events, family links, citations, and child links.
+     */
+    fun mergePersons(keepXref: String, removeXref: String, mergedData: GedcomPerson) {
+        // 1. Update the kept person with merged data
+        queries.updatePerson(
+            givenName = mergedData.givenName,
+            surname = mergedData.surname,
+            suffix = mergedData.suffix,
+            sex = mergedData.sex,
+            isLiving = if (mergedData.isLiving) 1L else 0L,
+            xref = keepXref
+        )
+
+        // 2. Move all events from removed person to kept person
+        queries.updateEventsOwner(keepXref, removeXref)
+
+        // 3. Update all family links (HUSB/WIFE) from removed to kept
+        queries.updateFamilyPartner1(keepXref, removeXref)
+        queries.updateFamilyPartner2(keepXref, removeXref)
+
+        // 4. Update all child links from removed to kept
+        queries.updateChildLinkChild(keepXref, removeXref)
+
+        // 5. Update all citations from removed to kept
+        queries.updateCitationsPersonXref(keepXref, removeXref)
+
+        // 6. Delete the removed person record
+        queries.deletePerson(removeXref)
+    }
 }
 
 // MARK: - Row-to-Model mapping extensions
@@ -503,4 +782,46 @@ private fun com.gedfix.db.Media.toModel(): GedcomMedia = GedcomMedia(
     format = format,
     title = title,
     description = description
+)
+
+private fun com.gedfix.db.Citation.toCitationModel(): com.gedfix.models.Citation = com.gedfix.models.Citation(
+    id = id,
+    sourceXref = sourceXref,
+    personXref = personXref,
+    eventId = eventId,
+    page = page,
+    quality = com.gedfix.models.CitationQuality.fromString(quality),
+    text = text,
+    note = note
+)
+
+private fun com.gedfix.db.TreeVersion.toVersionModel(): com.gedfix.models.TreeVersion = com.gedfix.models.TreeVersion(
+    id = id,
+    timestamp = timestamp,
+    description = description,
+    changeType = com.gedfix.models.ChangeType.fromString(changeType),
+    changedRecords = changedRecords.toInt(),
+    gedcomSnapshot = gedcomSnapshot
+)
+
+private fun com.gedfix.db.Note.toNoteModel(): ResearchNote = ResearchNote(
+    id = id,
+    ownerXref = ownerXref,
+    ownerType = ownerType,
+    title = title,
+    content = content,
+    createdAt = createdAt,
+    updatedAt = updatedAt
+)
+
+private fun com.gedfix.db.ResearchTask.toTaskModel(): com.gedfix.models.ResearchTask = com.gedfix.models.ResearchTask(
+    id = id,
+    personXref = personXref,
+    title = title,
+    description = description,
+    status = com.gedfix.models.TaskStatus.fromString(status),
+    priority = com.gedfix.models.TaskPriority.fromString(priority),
+    dueDate = dueDate,
+    createdAt = createdAt,
+    completedAt = completedAt
 )

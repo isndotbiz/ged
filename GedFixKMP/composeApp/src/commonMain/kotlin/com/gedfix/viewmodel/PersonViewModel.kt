@@ -35,6 +35,8 @@ class PersonViewModel(private val db: DatabaseRepository) {
     fun fetchFamiliesAsChild(xref: String): List<GedcomFamily> = db.fetchFamiliesAsChild(xref)
     fun fetchChildLinks(familyXref: String): List<GedcomChildLink> = db.fetchChildLinks(familyXref)
     fun fetchMediaForOwner(xref: String): List<GedcomMedia> = db.fetchMediaForOwner(xref)
+    fun fetchCitationsForPerson(xref: String): List<Citation> = db.fetchCitationsForPerson(xref)
+    fun fetchAllSources(): List<GedcomSource> = db.fetchAllSources()
 
     fun createPerson(givenName: String, surname: String, suffix: String, sex: String, isLiving: Boolean) {
         val xref = db.nextPersonXref()
@@ -90,6 +92,16 @@ class PersonViewModel(private val db: DatabaseRepository) {
     fun deleteEvent(id: String) {
         db.deleteEvent(id)
         editingEvent = null
+        refreshToken++
+    }
+
+    fun saveCitation(citation: Citation) {
+        db.insertCitation(citation)
+        refreshToken++
+    }
+
+    fun deleteCitation(id: String) {
+        db.deleteCitation(id)
         refreshToken++
     }
 }
