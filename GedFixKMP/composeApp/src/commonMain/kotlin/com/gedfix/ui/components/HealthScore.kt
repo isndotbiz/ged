@@ -17,7 +17,8 @@ import androidx.compose.ui.unit.sp
 import com.gedfix.ui.theme.*
 
 /**
- * Circular health score indicator showing tree quality as a percentage.
+ * Thin circular health score indicator.
+ * Apple-style: understated, not dominating.
  */
 @Composable
 fun HealthScoreIndicator(
@@ -29,14 +30,14 @@ fun HealthScoreIndicator(
         score >= 50.0 -> HealthOkColor
         else -> HealthBadColor
     }
-    val trackColor = MaterialTheme.colorScheme.outlineVariant
+    val trackColor = MaterialTheme.colorScheme.outline.copy(alpha = 0.2f)
 
     Box(
-        modifier = modifier.size(64.dp),
+        modifier = modifier.size(56.dp),
         contentAlignment = Alignment.Center
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-            val strokeWidth = 8.dp.toPx()
+            val strokeWidth = 5.dp.toPx()
             val radius = (size.minDimension - strokeWidth) / 2
             val topLeft = Offset(
                 (size.width - radius * 2) / 2,
@@ -70,14 +71,9 @@ fun HealthScoreIndicator(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "${score.toInt()}",
-                fontSize = 22.sp,
+                fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurface
-            )
-            Text(
-                text = "%",
-                fontSize = 10.sp,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

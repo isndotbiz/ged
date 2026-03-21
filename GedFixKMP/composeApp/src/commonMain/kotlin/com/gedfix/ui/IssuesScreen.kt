@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.sp
 import com.gedfix.models.*
 import com.gedfix.ui.components.HealthScoreIndicator
 import com.gedfix.ui.theme.*
+import com.gedfix.ui.theme.Spacing
 import com.gedfix.viewmodel.AppViewModel
 
 /**
@@ -66,8 +67,8 @@ fun IssuesScreen(viewModel: AppViewModel) {
     }
 
     LazyColumn(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
     ) {
         // Header
         item {
@@ -79,20 +80,20 @@ fun IssuesScreen(viewModel: AppViewModel) {
                 Column {
                     Text(
                         text = "Tree Consistency Checker",
-                        fontSize = 28.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.headlineLarge
                     )
                     if (hasAnalyzed) {
                         Text(
                             text = "${activeIssues.size} issues found",
-                            fontSize = 14.sp,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 }
                 Button(
                     onClick = { runAnalysis() },
-                    enabled = !isAnalyzing && viewModel.personCount > 0
+                    enabled = !isAnalyzing && viewModel.personCount > 0,
+                    shape = RoundedCornerShape(12.dp)
                 ) {
                     if (isAnalyzing) {
                         CircularProgressIndicator(

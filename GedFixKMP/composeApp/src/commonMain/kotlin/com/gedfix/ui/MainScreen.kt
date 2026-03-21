@@ -4,7 +4,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.gedfix.models.SidebarSection
@@ -13,8 +12,9 @@ import com.gedfix.viewmodel.AppViewModel
 import com.gedfix.viewmodel.PersonViewModel
 
 /**
- * Main screen with NavigationRail-style sidebar + content area.
- * Desktop uses permanent sidebar; mobile would use NavigationBar (future).
+ * Main screen: Apple-style sidebar (220dp) + content area.
+ * Subtle 0.5dp divider at low alpha between sidebar and content.
+ * Content area has generous 24dp padding via individual screens.
  */
 @Composable
 fun MainScreen(
@@ -24,17 +24,21 @@ fun MainScreen(
     val aiViewModel = remember { AIViewModel(appViewModel.db) }
 
     Row(modifier = Modifier.fillMaxSize()) {
-        // Sidebar
+        // Sidebar - fixed 220dp width, no elevation
         Surface(
-            modifier = Modifier.fillMaxHeight(),
-            color = MaterialTheme.colorScheme.surface,
-            tonalElevation = 1.dp
+            modifier = Modifier
+                .fillMaxHeight()
+                .width(220.dp),
+            color = MaterialTheme.colorScheme.surface
         ) {
             SidebarContent(viewModel = appViewModel)
         }
 
-        // Vertical divider
-        VerticalDivider()
+        // Subtle divider
+        VerticalDivider(
+            thickness = 0.5.dp,
+            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.15f)
+        )
 
         // Content area
         Surface(

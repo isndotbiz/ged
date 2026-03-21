@@ -20,6 +20,7 @@ import com.gedfix.models.*
 import com.gedfix.ui.components.eventTypeColor
 import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
+import com.gedfix.ui.theme.Spacing
 import com.gedfix.viewmodel.AppViewModel
 
 /**
@@ -90,8 +91,8 @@ fun TimelineScreen(appViewModel: AppViewModel) {
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
     ) {
         // Header
         Row(
@@ -102,8 +103,7 @@ fun TimelineScreen(appViewModel: AppViewModel) {
             Column {
                 Text(
                     text = "Timeline",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 if (filteredEntries.isNotEmpty()) {
@@ -355,26 +355,23 @@ private fun TimelineEventRow(
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
         horizontalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // Timeline rail: dot + connector
+        // Timeline rail: thin 2dp line + 10dp color-coded dot
         Column(
-            modifier = Modifier.width(40.dp).padding(start = 16.dp),
+            modifier = Modifier.width(36.dp).padding(start = 14.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Connector line (top)
             Box(
                 modifier = Modifier
                     .width(2.dp)
                     .height(8.dp)
                     .background(ConnectorColor)
             )
-            // Event dot
             Box(
                 modifier = Modifier
-                    .size(12.dp)
+                    .size(10.dp)
                     .clip(CircleShape)
                     .background(color)
             )
-            // Connector line (bottom)
             Box(
                 modifier = Modifier
                     .width(2.dp)

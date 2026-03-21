@@ -17,6 +17,7 @@ import com.gedfix.models.*
 import com.gedfix.ui.components.eventTypeColor
 import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
+import com.gedfix.ui.theme.Spacing
 import com.gedfix.viewmodel.AppViewModel
 
 /**
@@ -51,14 +52,13 @@ fun SearchScreen(
     }
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        modifier = Modifier.fillMaxSize().padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
     ) {
         // Header
         Text(
             text = "Search",
-            fontSize = 28.sp,
-            fontWeight = FontWeight.Bold,
+            style = MaterialTheme.typography.headlineLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
 

@@ -1,62 +1,143 @@
 package com.gedfix.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF1976D2),
+/**
+ * Apple-polished light color scheme.
+ * Muted, not saturated. Think Apple Notes meets Finder.
+ */
+private val GedFixLightColors = lightColorScheme(
+    primary = Color(0xFF007AFF),
     onPrimary = Color.White,
-    primaryContainer = Color(0xFFBBDEFB),
-    onPrimaryContainer = Color(0xFF002171),
-    secondary = Color(0xFF7B1FA2),
+    primaryContainer = Color(0xFFD6EAFF),
+    onPrimaryContainer = Color(0xFF002D5E),
+    secondary = Color(0xFF5856D6),
     onSecondary = Color.White,
-    secondaryContainer = Color(0xFFE1BEE7),
-    onSecondaryContainer = Color(0xFF4A0072),
-    tertiary = Color(0xFF00796B),
+    secondaryContainer = Color(0xFFE8E7FF),
+    onSecondaryContainer = Color(0xFF1C1B5E),
+    tertiary = Color(0xFF34C759),
     onTertiary = Color.White,
-    tertiaryContainer = Color(0xFFB2DFDB),
-    onTertiaryContainer = Color(0xFF00251A),
-    error = Color(0xFFD32F2F),
+    tertiaryContainer = Color(0xFFD4F5DD),
+    onTertiaryContainer = Color(0xFF00391A),
+    error = Color(0xFFFF3B30),
     onError = Color.White,
-    errorContainer = Color(0xFFFFCDD2),
-    onErrorContainer = Color(0xFF601010),
-    background = Color(0xFFFAFAFA),
-    onBackground = Color(0xFF1C1B1F),
-    surface = Color.White,
-    onSurface = Color(0xFF1C1B1F),
-    surfaceVariant = Color(0xFFF5F5F5),
-    onSurfaceVariant = Color(0xFF49454F),
-    outline = Color(0xFFCAC4D0),
-    outlineVariant = Color(0xFFE7E0EC)
+    errorContainer = Color(0xFFFFDAD6),
+    onErrorContainer = Color(0xFF410002),
+    background = Color(0xFFF8F8FA),
+    onBackground = Color(0xFF1C1C1E),
+    surface = Color(0xFFFFFFFF),
+    onSurface = Color(0xFF1C1C1E),
+    surfaceVariant = Color(0xFFF2F2F7),
+    onSurfaceVariant = Color(0xFF636366),
+    outline = Color(0xFFE5E5EA),
+    outlineVariant = Color(0xFFD1D1D6),
+    inverseSurface = Color(0xFF2C2C2E),
+    inverseOnSurface = Color(0xFFF2F2F7),
+    surfaceTint = Color(0xFF007AFF)
 )
 
-private val DarkColorScheme = darkColorScheme(
-    primary = Color(0xFF90CAF9),
-    onPrimary = Color(0xFF002171),
-    primaryContainer = Color(0xFF1565C0),
-    onPrimaryContainer = Color(0xFFBBDEFB),
-    secondary = Color(0xFFCE93D8),
-    onSecondary = Color(0xFF4A0072),
-    secondaryContainer = Color(0xFF6A1B9A),
-    onSecondaryContainer = Color(0xFFE1BEE7),
-    tertiary = Color(0xFF80CBC4),
-    onTertiary = Color(0xFF00251A),
-    tertiaryContainer = Color(0xFF00695C),
-    onTertiaryContainer = Color(0xFFB2DFDB),
-    error = Color(0xFFEF9A9A),
-    onError = Color(0xFF601010),
-    errorContainer = Color(0xFFC62828),
-    onErrorContainer = Color(0xFFFFCDD2),
-    background = Color(0xFF121212),
-    onBackground = Color(0xFFE6E1E5),
-    surface = Color(0xFF1E1E1E),
-    onSurface = Color(0xFFE6E1E5),
-    surfaceVariant = Color(0xFF2C2C2C),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    outline = Color(0xFF938F99),
-    outlineVariant = Color(0xFF49454F)
+/**
+ * Apple-polished dark color scheme.
+ * Native macOS dark mode feel.
+ */
+private val GedFixDarkColors = darkColorScheme(
+    primary = Color(0xFF0A84FF),
+    onPrimary = Color.White,
+    primaryContainer = Color(0xFF003A70),
+    onPrimaryContainer = Color(0xFFD6EAFF),
+    secondary = Color(0xFF5E5CE6),
+    onSecondary = Color.White,
+    secondaryContainer = Color(0xFF2E2D6E),
+    onSecondaryContainer = Color(0xFFE8E7FF),
+    tertiary = Color(0xFF30D158),
+    onTertiary = Color.White,
+    tertiaryContainer = Color(0xFF004D20),
+    onTertiaryContainer = Color(0xFFD4F5DD),
+    error = Color(0xFFFF453A),
+    onError = Color.White,
+    errorContainer = Color(0xFF5C0008),
+    onErrorContainer = Color(0xFFFFDAD6),
+    background = Color(0xFF1C1C1E),
+    onBackground = Color(0xFFF2F2F7),
+    surface = Color(0xFF2C2C2E),
+    onSurface = Color(0xFFF2F2F7),
+    surfaceVariant = Color(0xFF3A3A3C),
+    onSurfaceVariant = Color(0xFFAEAEB2),
+    outline = Color(0xFF48484A),
+    outlineVariant = Color(0xFF3A3A3C),
+    inverseSurface = Color(0xFFF2F2F7),
+    inverseOnSurface = Color(0xFF2C2C2E),
+    surfaceTint = Color(0xFF0A84FF)
+)
+
+/**
+ * Custom typography scale. Apple SF-inspired sizing and weights.
+ */
+val GedFixTypography = Typography(
+    headlineLarge = TextStyle(
+        fontWeight = FontWeight.Bold,
+        fontSize = 28.sp,
+        letterSpacing = (-0.5).sp,
+        lineHeight = 34.sp
+    ),
+    headlineMedium = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
+        lineHeight = 28.sp
+    ),
+    titleLarge = TextStyle(
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 18.sp,
+        lineHeight = 24.sp
+    ),
+    titleMedium = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 16.sp,
+        lineHeight = 22.sp
+    ),
+    bodyLarge = TextStyle(
+        fontSize = 15.sp,
+        lineHeight = 22.sp
+    ),
+    bodyMedium = TextStyle(
+        fontSize = 14.sp,
+        lineHeight = 20.sp
+    ),
+    bodySmall = TextStyle(
+        fontSize = 12.sp,
+        lineHeight = 16.sp
+    ),
+    labelLarge = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 13.sp,
+        letterSpacing = 0.1.sp
+    ),
+    labelMedium = TextStyle(
+        fontWeight = FontWeight.Medium,
+        fontSize = 12.sp
+    ),
+    labelSmall = TextStyle(
+        fontSize = 11.sp,
+        letterSpacing = 0.5.sp
+    )
+)
+
+/**
+ * Rounded shapes following Apple HIG corner radii.
+ */
+val GedFixShapes = Shapes(
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(24.dp)
 )
 
 @Composable
@@ -64,11 +145,12 @@ fun GedFixTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) DarkColorScheme else LightColorScheme
+    val colorScheme = if (darkTheme) GedFixDarkColors else GedFixLightColors
 
     MaterialTheme(
         colorScheme = colorScheme,
-        typography = Typography(),
+        typography = GedFixTypography,
+        shapes = GedFixShapes,
         content = content
     )
 }

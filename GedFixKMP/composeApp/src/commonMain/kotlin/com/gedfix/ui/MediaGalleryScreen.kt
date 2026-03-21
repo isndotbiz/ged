@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gedfix.models.GedcomMedia
 import com.gedfix.ui.theme.*
+import com.gedfix.ui.theme.Spacing
 import com.gedfix.viewmodel.AppViewModel
 import java.io.File
 
@@ -59,8 +60,8 @@ fun MediaGalleryScreen(viewModel: AppViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
     ) {
         // Header
         Row(
@@ -71,13 +72,12 @@ fun MediaGalleryScreen(viewModel: AppViewModel) {
             Column {
                 Text(
                     text = "Media Gallery",
-                    fontSize = 28.sp,
-                    fontWeight = FontWeight.Bold,
+                    style = MaterialTheme.typography.headlineLarge,
                     color = MaterialTheme.colorScheme.onBackground
                 )
                 Text(
                     text = "${allMedia.size} items",
-                    fontSize = 14.sp,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }

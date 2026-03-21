@@ -16,6 +16,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gedfix.models.*
 import com.gedfix.ui.theme.*
+import com.gedfix.ui.theme.Spacing
 import com.gedfix.viewmodel.AppViewModel
 
 /**
@@ -134,8 +135,8 @@ fun MergeScreen(viewModel: AppViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+            .padding(Spacing.lg),
+        verticalArrangement = Arrangement.spacedBy(Spacing.md)
     ) {
         // Header
         Row(
@@ -144,7 +145,7 @@ fun MergeScreen(viewModel: AppViewModel) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Column {
-                Text("Merge Duplicates", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+                Text("Merge Duplicates", style = MaterialTheme.typography.headlineLarge)
                 if (hasAnalyzed) {
                     Text(
                         "${activePairs.size} potential duplicate${if (activePairs.size != 1) "s" else ""} remaining",

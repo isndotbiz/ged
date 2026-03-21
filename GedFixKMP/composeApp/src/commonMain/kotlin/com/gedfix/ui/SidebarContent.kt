@@ -17,7 +17,12 @@ import com.gedfix.ui.theme.*
 import com.gedfix.viewmodel.AppViewModel
 
 /**
- * Sidebar with navigation items: Overview, Issues, People, Pedigree, Families, Places, Sources.
+ * Apple-style sidebar navigation.
+ * - No background color on items (transparent)
+ * - Selected item has subtle rounded highlight (Finder-like)
+ * - Section headers in small caps, muted
+ * - Icons at 16dp, consistent spacing
+ * - Badge counts in small pills
  */
 @Composable
 fun SidebarContent(
@@ -28,32 +33,23 @@ fun SidebarContent(
 
     LazyColumn(
         modifier = modifier
-            .width(240.dp)
             .fillMaxHeight()
-            .padding(8.dp),
-        verticalArrangement = Arrangement.spacedBy(2.dp)
+            .padding(horizontal = 8.dp, vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(1.dp)
     ) {
+        // App title
         item {
             Text(
                 text = "GedFix",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleLarge,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 16.dp)
             )
         }
 
-        item {
-            Text(
-                text = "TREE",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
-            )
-        }
+        // TREE section
+        item { SidebarSectionHeader("Tree") }
 
-        // Tree sections (core navigation)
         val treeSections = sections.filter {
             it != SidebarSection.AI_CHAT && it != SidebarSection.AI_SETTINGS && it != SidebarSection.SETTINGS &&
             it != SidebarSection.BOOKMARKS && it != SidebarSection.NOTES && it != SidebarSection.TASKS &&
@@ -61,242 +57,142 @@ fun SidebarContent(
             it != SidebarSection.CLEANUP && it != SidebarSection.CLOUD_SYNC
         }
         items(treeSections) { section ->
-            val isSelected = viewModel.selectedSection == section
-            val iconColor = sectionIconColor(section, viewModel)
-            val badge = sectionBadge(section, viewModel)
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.selectedSection = section },
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = sectionIcon(section),
-                        fontSize = 16.sp,
-                        color = iconColor
-                    )
-                    Text(
-                        text = section.label,
-                        fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (badge.isNotEmpty()) {
-                        Text(
-                            text = badge,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-
-        // Research section header
-        item {
-            Text(
-                text = "RESEARCH",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            SidebarNavItem(
+                section = section,
+                isSelected = viewModel.selectedSection == section,
+                iconColor = sectionIconColor(section, viewModel),
+                badge = sectionBadge(section, viewModel),
+                onClick = { viewModel.selectedSection = section }
             )
         }
+
+        // RESEARCH section
+        item { SidebarSectionHeader("Research") }
 
         val researchSections = listOf(
             SidebarSection.BOOKMARKS, SidebarSection.NOTES, SidebarSection.TASKS
         )
         items(researchSections) { section ->
-            val isSelected = viewModel.selectedSection == section
-            val iconColor = sectionIconColor(section, viewModel)
-            val badge = sectionBadge(section, viewModel)
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.selectedSection = section },
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = sectionIcon(section),
-                        fontSize = 16.sp,
-                        color = iconColor
-                    )
-                    Text(
-                        text = section.label,
-                        fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (badge.isNotEmpty()) {
-                        Text(
-                            text = badge,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-
-        // Data Quality section header
-        item {
-            Text(
-                text = "DATA QUALITY",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            SidebarNavItem(
+                section = section,
+                isSelected = viewModel.selectedSection == section,
+                iconColor = sectionIconColor(section, viewModel),
+                badge = sectionBadge(section, viewModel),
+                onClick = { viewModel.selectedSection = section }
             )
         }
+
+        // DATA QUALITY section
+        item { SidebarSectionHeader("Data Quality") }
 
         val dataQualitySections = listOf(
             SidebarSection.VERSION_HISTORY, SidebarSection.IMAGE_DEDUPE,
             SidebarSection.CLEANUP, SidebarSection.CLOUD_SYNC
         )
         items(dataQualitySections) { section ->
-            val isSelected = viewModel.selectedSection == section
-            val iconColor = sectionIconColor(section, viewModel)
-            val badge = sectionBadge(section, viewModel)
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.selectedSection = section },
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = sectionIcon(section),
-                        fontSize = 16.sp,
-                        color = iconColor
-                    )
-                    Text(
-                        text = section.label,
-                        fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (badge.isNotEmpty()) {
-                        Text(
-                            text = badge,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        }
-
-        // AI section header
-        item {
-            Text(
-                text = "AI",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
+            SidebarNavItem(
+                section = section,
+                isSelected = viewModel.selectedSection == section,
+                iconColor = sectionIconColor(section, viewModel),
+                badge = sectionBadge(section, viewModel),
+                onClick = { viewModel.selectedSection = section }
             )
         }
 
+        // AI section
+        item { SidebarSectionHeader("AI") }
+
         val aiSections = listOf(SidebarSection.AI_CHAT, SidebarSection.AI_SETTINGS)
         items(aiSections) { section ->
-            val isSelected = viewModel.selectedSection == section
-            val iconColor = sectionIconColor(section, viewModel)
-            val badge = sectionBadge(section, viewModel)
-
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.selectedSection = section },
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    Text(
-                        text = sectionIcon(section),
-                        fontSize = 16.sp,
-                        color = iconColor
-                    )
-                    Text(
-                        text = section.label,
-                        fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
-                    )
-                    if (badge.isNotEmpty()) {
-                        Text(
-                            text = badge,
-                            fontSize = 12.sp,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                    }
-                }
-            }
+            SidebarNavItem(
+                section = section,
+                isSelected = viewModel.selectedSection == section,
+                iconColor = sectionIconColor(section, viewModel),
+                badge = sectionBadge(section, viewModel),
+                onClick = { viewModel.selectedSection = section }
+            )
         }
 
-        // Settings section (always last)
+        // Settings (always last)
         item {
-            val isSelected = viewModel.selectedSection == SidebarSection.SETTINGS
-            Surface(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { viewModel.selectedSection = SidebarSection.SETTINGS },
-                shape = RoundedCornerShape(8.dp),
-                color = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                else MaterialTheme.colorScheme.surface
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+            Spacer(modifier = Modifier.height(4.dp))
+            SidebarNavItem(
+                section = SidebarSection.SETTINGS,
+                isSelected = viewModel.selectedSection == SidebarSection.SETTINGS,
+                iconColor = sectionIconColor(SidebarSection.SETTINGS, viewModel),
+                badge = "",
+                onClick = { viewModel.selectedSection = SidebarSection.SETTINGS }
+            )
+        }
+    }
+}
+
+/**
+ * Section header: understated, small caps, muted.
+ */
+@Composable
+private fun SidebarSectionHeader(title: String) {
+    Text(
+        text = title.uppercase(),
+        fontSize = 11.sp,
+        fontWeight = FontWeight.SemiBold,
+        letterSpacing = 0.8.sp,
+        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 12.dp)
+    )
+}
+
+/**
+ * Single sidebar nav item: Finder-style.
+ * No background when unselected. Subtle rounded highlight when selected.
+ */
+@Composable
+private fun SidebarNavItem(
+    section: SidebarSection,
+    isSelected: Boolean,
+    iconColor: androidx.compose.ui.graphics.Color,
+    badge: String,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(8.dp),
+        color = if (isSelected)
+            MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
+        else
+            MaterialTheme.colorScheme.surface.copy(alpha = 0f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = sectionIcon(section),
+                fontSize = 15.sp,
+                color = if (isSelected) MaterialTheme.colorScheme.primary else iconColor.copy(alpha = 0.7f)
+            )
+            Text(
+                text = section.label,
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            if (badge.isNotEmpty()) {
+                Surface(
+                    shape = RoundedCornerShape(10.dp),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.08f)
                 ) {
                     Text(
-                        text = sectionIcon(SidebarSection.SETTINGS),
-                        fontSize = 16.sp,
-                        color = sectionIconColor(SidebarSection.SETTINGS, viewModel)
-                    )
-                    Text(
-                        text = SidebarSection.SETTINGS.label,
-                        fontSize = 14.sp,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        color = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                        else MaterialTheme.colorScheme.onSurface,
-                        modifier = Modifier.weight(1f)
+                        text = badge,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }
             }
@@ -305,32 +201,32 @@ fun SidebarContent(
 }
 
 private fun sectionIcon(section: SidebarSection): String = when (section) {
-    SidebarSection.OVERVIEW -> "\u2302"  // House
-    SidebarSection.SEARCH -> "\u2315"    // Magnifying glass
-    SidebarSection.TIMELINE -> "\u231A"  // Clock
-    SidebarSection.ISSUES -> "\u26A0"    // Warning
-    SidebarSection.PEOPLE -> "\u263A"    // Person
-    SidebarSection.PEDIGREE -> "\u2042"  // Tree-like
-    SidebarSection.FAN_CHART -> "\u25D4"  // Circle with fill (fan)
-    SidebarSection.DESCENDANT_CHART -> "\u2193"  // Down arrow (descendants)
-    SidebarSection.RELATIONSHIPS -> "\u2194"  // Left-right arrow (relationship)
-    SidebarSection.FAMILIES -> "\u2665"  // Heart
-    SidebarSection.PLACES -> "\u2316"    // Pin
-    SidebarSection.SOURCES -> "\u2261"   // Book-like
-    SidebarSection.MEDIA -> "\u25A3"     // Image
-    SidebarSection.MERGE -> "\u21C4"     // Merge arrows
-    SidebarSection.VALIDATION -> "\u2611" // Checkmark box
-    SidebarSection.REPORTS -> "\u2637"   // Document
-    SidebarSection.BOOKMARKS -> "\u2605" // Star
-    SidebarSection.NOTES -> "\u2709"     // Note/envelope
-    SidebarSection.TASKS -> "\u2610"     // Checkbox
-    SidebarSection.VERSION_HISTORY -> "\u21BA" // Circular arrow (history)
-    SidebarSection.IMAGE_DEDUPE -> "\u229A"    // Circled ring (dedupe)
-    SidebarSection.CLEANUP -> "\u2702"         // Scissors (cleanup)
-    SidebarSection.CLOUD_SYNC -> "\u2601"      // Cloud
-    SidebarSection.AI_CHAT -> "\u2604"   // Chat bubble
-    SidebarSection.AI_SETTINGS -> "\u2318" // AI gear
-    SidebarSection.SETTINGS -> "\u2699"  // Gear
+    SidebarSection.OVERVIEW -> "\u2302"
+    SidebarSection.SEARCH -> "\u2315"
+    SidebarSection.TIMELINE -> "\u231A"
+    SidebarSection.ISSUES -> "\u26A0"
+    SidebarSection.PEOPLE -> "\u263A"
+    SidebarSection.PEDIGREE -> "\u2042"
+    SidebarSection.FAN_CHART -> "\u25D4"
+    SidebarSection.DESCENDANT_CHART -> "\u2193"
+    SidebarSection.RELATIONSHIPS -> "\u2194"
+    SidebarSection.FAMILIES -> "\u2665"
+    SidebarSection.PLACES -> "\u2316"
+    SidebarSection.SOURCES -> "\u2261"
+    SidebarSection.MEDIA -> "\u25A3"
+    SidebarSection.MERGE -> "\u21C4"
+    SidebarSection.VALIDATION -> "\u2611"
+    SidebarSection.REPORTS -> "\u2637"
+    SidebarSection.BOOKMARKS -> "\u2605"
+    SidebarSection.NOTES -> "\u2709"
+    SidebarSection.TASKS -> "\u2610"
+    SidebarSection.VERSION_HISTORY -> "\u21BA"
+    SidebarSection.IMAGE_DEDUPE -> "\u229A"
+    SidebarSection.CLEANUP -> "\u2702"
+    SidebarSection.CLOUD_SYNC -> "\u2601"
+    SidebarSection.AI_CHAT -> "\u2604"
+    SidebarSection.AI_SETTINGS -> "\u2318"
+    SidebarSection.SETTINGS -> "\u2699"
 }
 
 private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (section) {
