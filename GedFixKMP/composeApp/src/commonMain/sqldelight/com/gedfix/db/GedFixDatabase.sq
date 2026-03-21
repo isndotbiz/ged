@@ -56,6 +56,38 @@ CREATE TABLE IF NOT EXISTS source (
     repository TEXT NOT NULL DEFAULT ''
 );
 
+CREATE TABLE IF NOT EXISTS media (
+    id TEXT NOT NULL PRIMARY KEY,
+    xref TEXT NOT NULL DEFAULT '',
+    ownerXref TEXT NOT NULL DEFAULT '',
+    filePath TEXT NOT NULL DEFAULT '',
+    format TEXT NOT NULL DEFAULT '',
+    title TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS media_owner ON media(ownerXref);
+
+-- Media queries
+insertMedia:
+INSERT OR REPLACE INTO media(id, xref, ownerXref, filePath, format, title, description)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectAllMedia:
+SELECT * FROM media ORDER BY title;
+
+selectMediaForOwner:
+SELECT * FROM media WHERE ownerXref = ?;
+
+countMedia:
+SELECT COUNT(*) FROM media;
+
+deleteAllMedia:
+DELETE FROM media;
+
+searchMedia:
+SELECT * FROM media WHERE title LIKE ? OR filePath LIKE ? ORDER BY title;
+
 -- Person queries
 selectAllPersons:
 SELECT * FROM person ORDER BY surname, givenName;
@@ -192,6 +224,57 @@ SELECT xref FROM person WHERE xref LIKE '@I%' ORDER BY CAST(SUBSTR(xref, 3, LENG
 selectMaxFamilyXref:
 SELECT xref FROM family WHERE xref LIKE '@F%' ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1;
 
+-- Global search queries
+searchPlaces:
+SELECT * FROM place WHERE name LIKE ? ORDER BY eventCount DESC LIMIT 30;
+
+searchSources:
+SELECT * FROM source WHERE title LIKE ? OR author LIKE ? ORDER BY title LIMIT 30;
+
+searchEvents:
+SELECT * FROM event WHERE dateValue LIKE ? OR place LIKE ? ORDER BY dateValue LIMIT 50;
+
+-- Timeline queries
+selectEventsWithPersonName:
+SELECT event.*, person.givenName AS personGivenName, person.surname AS personSurname
+FROM event
+LEFT JOIN person ON event.ownerXref = person.xref
+WHERE event.ownerType = 'INDI'
+ORDER BY event.dateValue;
+
+selectEventsForPersonTimeline:
+SELECT event.*, person.givenName AS personGivenName, person.surname AS personSurname
+FROM event
+LEFT JOIN person ON event.ownerXref = person.xref
+WHERE event.ownerXref = ? AND event.ownerType = 'INDI'
+ORDER BY event.dateValue;
+
+-- Statistics queries
+countEventsByType:
+SELECT eventType, COUNT(*) AS cnt FROM event GROUP BY eventType ORDER BY cnt DESC;
+
+countEventsByDecade:
+SELECT
+  CASE
+    WHEN dateValue LIKE '%/%' THEN (CAST(SUBSTR(dateValue, -4) AS INTEGER) / 10) * 10
+    ELSE (CAST(SUBSTR(dateValue, LENGTH(dateValue) - 3) AS INTEGER) / 10) * 10
+  END AS decade,
+  COUNT(*) AS cnt
+FROM event
+WHERE dateValue != ''
+GROUP BY decade
+HAVING decade > 0
+ORDER BY decade;
+
+selectTopPlaces:
+SELECT name, eventCount FROM place WHERE eventCount > 0 ORDER BY eventCount DESC LIMIT 20;
+
+countSourcedPersons:
+SELECT COUNT(*) FROM person WHERE sourceCount > 0;
+
+countUnsourcedPersons:
+SELECT COUNT(*) FROM person WHERE sourceCount = 0;
+
 -- Validation queries
 countValidatedPersons:
 SELECT COUNT(*) FROM person WHERE sourceCount > 0;
@@ -204,3 +287,25 @@ SELECT * FROM person WHERE sourceCount = 0 ORDER BY surname, givenName;
 
 selectValidatedPersons:
 SELECT * FROM person WHERE sourceCount > 0 ORDER BY surname, givenName;
+
+-- Settings table
+CREATE TABLE IF NOT EXISTS settings (
+    key TEXT NOT NULL PRIMARY KEY,
+    value TEXT NOT NULL DEFAULT ''
+);
+
+insertSetting:
+INSERT OR REPLACE INTO settings(key, value) VALUES (?, ?);
+
+selectSetting:
+SELECT value FROM settings WHERE key = ?;
+
+selectAllSettings:
+SELECT * FROM settings;
+
+-- All child links query
+selectAllChildLinks:
+SELECT * FROM childLink ORDER BY familyXref, childOrder;
+
+deleteAllSettings:
+DELETE FROM settings;

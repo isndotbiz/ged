@@ -43,6 +43,7 @@ val StatFamiliesColor = Color(0xFFE91E63)
 val StatEventsColor = Color(0xFFFF9800)
 val StatPlacesColor = Color(0xFF4CAF50)
 val StatSourcesColor = Color(0xFF9C27B0)
+val StatMediaColor = Color(0xFF00BCD4)
 
 // Surface/background
 val CardSurfaceLight = Color(0xFFF5F5F5)
@@ -64,3 +65,26 @@ val ValidatedBgColor = Color(0x264CAF50)    // Green at 15%
 val UnvalidatedColor = Color(0xFFFF9800)    // Orange
 val UnvalidatedBgColor = Color(0x26FF9800)  // Orange at 15%
 val ValidationIconColor = Color(0xFF4CAF50) // Green for sidebar
+
+// New section colors
+val SearchIconColor = Color(0xFF607D8B)     // Blue Gray
+val TimelineIconColor = Color(0xFF795548)   // Brown
+val MediaIconColor = Color(0xFF00BCD4)      // Cyan
+val ReportsIconColor = Color(0xFF3F51B5)    // Indigo
+val SettingsIconColor = Color(0xFF757575)   // Gray
+
+// Timeline event type colors
+val BirthEventColor = Color(0xFF2196F3)     // Blue
+val DeathEventColor = Color(0xFF757575)     // Gray
+val MarriageEventColor = Color(0xFFE91E63)  // Pink
+val BurialEventColor = Color(0xFF795548)    // Brown
+val ReligiousEventColor = Color(0xFF9C27B0) // Purple
+val ResidenceEventColor = Color(0xFF4CAF50) // Green
+val MigrationEventColor = Color(0xFFFF9800) // Orange
+val DefaultEventColor = Color(0xFF607D8B)   // Blue Gray
+
+// Chart colors
+val ChartBarColor = Color(0xFF2196F3)
+val ChartBarAltColor = Color(0xFF1976D2)
+val ChartSourcedColor = Color(0xFF4CAF50)
+val ChartUnsourcedColor = Color(0xFFFF9800)

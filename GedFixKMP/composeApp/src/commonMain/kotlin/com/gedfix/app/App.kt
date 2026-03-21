@@ -14,8 +14,8 @@ import com.gedfix.viewmodel.PersonViewModel
  * with ViewModels and navigation.
  */
 @Composable
-fun App(driverFactory: DriverFactory) {
-    val db = remember { DatabaseRepository(driverFactory) }
+fun App(driverFactory: DriverFactory, existingDb: DatabaseRepository? = null) {
+    val db = remember { existingDb ?: DatabaseRepository(driverFactory) }
     val appViewModel = remember { AppViewModel(db) }
     val personViewModel = remember { PersonViewModel(db) }
 

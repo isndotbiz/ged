@@ -34,6 +34,7 @@ class PersonViewModel(private val db: DatabaseRepository) {
     fun fetchFamiliesAsSpouse(xref: String): List<GedcomFamily> = db.fetchFamiliesAsSpouse(xref)
     fun fetchFamiliesAsChild(xref: String): List<GedcomFamily> = db.fetchFamiliesAsChild(xref)
     fun fetchChildLinks(familyXref: String): List<GedcomChildLink> = db.fetchChildLinks(familyXref)
+    fun fetchMediaForOwner(xref: String): List<GedcomMedia> = db.fetchMediaForOwner(xref)
 
     fun createPerson(givenName: String, surname: String, suffix: String, sex: String, isLiving: Boolean) {
         val xref = db.nextPersonXref()

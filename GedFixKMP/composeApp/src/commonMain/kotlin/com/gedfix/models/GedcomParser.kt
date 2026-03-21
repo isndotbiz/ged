@@ -36,13 +36,14 @@ object GedcomParser {
         val events = mutableListOf<GedcomEvent>()
         val placesDict = mutableMapOf<String, GedcomPlace>()
         val sources = mutableListOf<GedcomSource>()
+        val media = mutableListOf<GedcomMedia>()
 
         for (record in records) {
             val header = record.firstOrNull() ?: continue
 
             when {
                 header.tag == "INDI" && header.xref != null -> {
-                    val (person, personEvents) = parseINDI(xref = header.xref, lines = record)
+                    val (person, personEvents, personMedia) = parseINDI(xref = header.xref, lines = record)
                     persons.add(person)
                     for (evt in personEvents) {
                         events.add(evt)
@@ -50,6 +51,7 @@ object GedcomParser {
                             trackPlace(evt.place, placesDict)
                         }
                     }
+                    media.addAll(personMedia)
                 }
                 header.tag == "FAM" && header.xref != null -> {
                     val (family, links, famEvents) = parseFAM(xref = header.xref, lines = record)
@@ -65,6 +67,10 @@ object GedcomParser {
                 header.tag == "SOUR" && header.xref != null -> {
                     val source = parseSOUR(xref = header.xref, lines = record)
                     sources.add(source)
+                }
+                header.tag == "OBJE" && header.xref != null -> {
+                    val mediaItem = parseOBJE(xref = header.xref, ownerXref = "", lines = record)
+                    media.add(mediaItem)
                 }
             }
         }
@@ -98,6 +104,7 @@ object GedcomParser {
             events = events.toList(),
             places = placesDict.values.toList(),
             sources = sources.toList(),
+            media = media.toList(),
             lineCount = rawLines.size
         )
     }
@@ -153,18 +160,26 @@ object GedcomParser {
 
     // MARK: - INDI Parsing
 
-    private fun parseINDI(xref: String, lines: List<GedLine>): Pair<GedcomPerson, List<GedcomEvent>> {
+    private fun parseINDI(xref: String, lines: List<GedLine>): Triple<GedcomPerson, List<GedcomEvent>, List<GedcomMedia>> {
         var givenName = ""
         var surname = ""
         var suffix = ""
         var sex = "U"
         val events = mutableListOf<GedcomEvent>()
+        val mediaItems = mutableListOf<GedcomMedia>()
         var sourCount = 0
         var obiCount = 0
 
         var currentTag: String? = null
         var currentDate = ""
         var currentPlace = ""
+
+        // Track inline OBJE sub-tags
+        var inObje = false
+        var objeFile = ""
+        var objeForm = ""
+        var objeTitl = ""
+        var objeNote = ""
 
         for (line in lines.drop(1)) {
             if (line.level == 1) {
@@ -174,6 +189,24 @@ object GedcomParser {
                         events.add(makeEvent(owner = xref, ownerType = "INDI", type = tag, date = currentDate, place = currentPlace))
                     }
                 }
+                // Flush previous inline OBJE
+                if (inObje && objeFile.isNotEmpty()) {
+                    mediaItems.add(GedcomMedia(
+                        id = Uuid.random().toString(),
+                        xref = "",
+                        ownerXref = xref,
+                        filePath = objeFile,
+                        format = objeForm,
+                        title = objeTitl,
+                        description = objeNote
+                    ))
+                }
+                inObje = false
+                objeFile = ""
+                objeForm = ""
+                objeTitl = ""
+                objeNote = ""
+
                 currentTag = line.tag
                 currentDate = ""
                 currentPlace = ""
@@ -191,17 +224,29 @@ object GedcomParser {
                         sex = line.value.trim()
                     }
                     "SOUR" -> sourCount++
-                    "OBJE" -> obiCount++
+                    "OBJE" -> {
+                        obiCount++
+                        inObje = true
+                    }
                 }
             } else if (line.level == 2) {
-                when (line.tag) {
-                    "DATE" -> currentDate = line.value
-                    "PLAC" -> currentPlace = line.value
-                    "GIVN" -> if (givenName.isEmpty()) givenName = line.value
-                    "SURN" -> if (surname.isEmpty()) surname = line.value
-                    "NSFX" -> if (suffix.isEmpty()) suffix = line.value
-                    "SOUR" -> sourCount++
-                    "OBJE" -> obiCount++
+                if (inObje) {
+                    when (line.tag) {
+                        "FILE" -> objeFile = line.value
+                        "FORM" -> objeForm = line.value
+                        "TITL" -> objeTitl = line.value
+                        "NOTE" -> objeNote = line.value
+                    }
+                } else {
+                    when (line.tag) {
+                        "DATE" -> currentDate = line.value
+                        "PLAC" -> currentPlace = line.value
+                        "GIVN" -> if (givenName.isEmpty()) givenName = line.value
+                        "SURN" -> if (surname.isEmpty()) surname = line.value
+                        "NSFX" -> if (suffix.isEmpty()) suffix = line.value
+                        "SOUR" -> sourCount++
+                        "OBJE" -> obiCount++
+                    }
                 }
             }
         }
@@ -211,6 +256,18 @@ object GedcomParser {
             if (isEventTag(tag)) {
                 events.add(makeEvent(owner = xref, ownerType = "INDI", type = tag, date = currentDate, place = currentPlace))
             }
+        }
+        // Flush last inline OBJE
+        if (inObje && objeFile.isNotEmpty()) {
+            mediaItems.add(GedcomMedia(
+                id = Uuid.random().toString(),
+                xref = "",
+                ownerXref = xref,
+                filePath = objeFile,
+                format = objeForm,
+                title = objeTitl,
+                description = objeNote
+            ))
         }
 
         val person = GedcomPerson(
@@ -225,7 +282,7 @@ object GedcomParser {
             mediaCount = obiCount,
             isValidated = sourCount > 0
         )
-        return Pair(person, events)
+        return Triple(person, events, mediaItems)
     }
 
     // MARK: - FAM Parsing
@@ -309,6 +366,41 @@ object GedcomParser {
             author = author,
             publisher = publisher,
             repository = repository
+        )
+    }
+
+    // MARK: - OBJE Parsing
+
+    private fun parseOBJE(xref: String, ownerXref: String, lines: List<GedLine>): GedcomMedia {
+        var filePath = ""
+        var format = ""
+        var title = ""
+        var description = ""
+
+        for (line in lines.drop(1)) {
+            if (line.level == 1) {
+                when (line.tag) {
+                    "FILE" -> filePath = line.value
+                    "FORM" -> format = line.value
+                    "TITL" -> title = line.value
+                    "NOTE" -> description = line.value
+                }
+            } else if (line.level == 2) {
+                when (line.tag) {
+                    "FORM" -> if (format.isEmpty()) format = line.value
+                    "TITL" -> if (title.isEmpty()) title = line.value
+                }
+            }
+        }
+
+        return GedcomMedia(
+            id = Uuid.random().toString(),
+            xref = xref,
+            ownerXref = ownerXref,
+            filePath = filePath,
+            format = format,
+            title = title,
+            description = description
         )
     }
 

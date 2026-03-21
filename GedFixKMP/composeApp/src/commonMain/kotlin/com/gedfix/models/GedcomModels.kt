@@ -119,6 +119,37 @@ data class GedcomSource(
     val repository: String
 )
 
+// MARK: - Media
+
+data class GedcomMedia(
+    val id: String,
+    val xref: String,          // @M123@ or empty for inline
+    val ownerXref: String,     // person/family xref this media belongs to
+    val filePath: String,      // FILE tag value
+    val format: String,        // FORM tag value (jpg, png, pdf, etc.)
+    val title: String,         // TITL tag value
+    val description: String    // NOTE under OBJE
+) {
+    val isImage: Boolean
+        get() = format.lowercase() in setOf("jpg", "jpeg", "png", "gif", "bmp", "tiff", "tif", "webp")
+
+    val isPdf: Boolean
+        get() = format.lowercase() == "pdf"
+
+    val displayTitle: String
+        get() = title.ifEmpty { filePath.substringAfterLast('/').substringAfterLast('\\').ifEmpty { "(Untitled)" } }
+
+    val formatBadge: String
+        get() = format.uppercase().ifEmpty { "FILE" }
+
+    val placeholderIcon: String
+        get() = when {
+            isImage -> "\uD83D\uDCF7" // Camera
+            isPdf -> "\uD83D\uDCC4"   // Page
+            else -> "\uD83D\uDCC1"    // Folder
+        }
+}
+
 // MARK: - Issue Models
 
 data class TreeIssue(
@@ -183,6 +214,45 @@ enum class IssueSeverity(val label: String) : Comparable<IssueSeverity> {
         }
 }
 
+// MARK: - Global Search Results
+
+data class GlobalSearchResults(
+    val persons: List<GedcomPerson> = emptyList(),
+    val places: List<GedcomPlace> = emptyList(),
+    val sources: List<GedcomSource> = emptyList(),
+    val events: List<GedcomEvent> = emptyList()
+) {
+    val totalCount: Int get() = persons.size + places.size + sources.size + events.size
+    val isEmpty: Boolean get() = totalCount == 0
+}
+
+// MARK: - Timeline Entry
+
+data class TimelineEntry(
+    val event: GedcomEvent,
+    val personName: String,
+    val personXref: String
+) {
+    val year: Int? get() {
+        val yearRegex = Regex("""\b(\d{4})\b""")
+        return yearRegex.find(event.dateValue)?.groupValues?.get(1)?.toIntOrNull()
+    }
+
+    val decade: Int? get() = year?.let { (it / 10) * 10 }
+}
+
+// MARK: - Statistics Models
+
+data class EventTypeCount(
+    val eventType: String,
+    val count: Int
+)
+
+data class DecadeCount(
+    val decade: Int,
+    val count: Int
+)
+
 // MARK: - Parse Result
 
 data class GedcomParseResult(
@@ -192,6 +262,7 @@ data class GedcomParseResult(
     val events: List<GedcomEvent>,
     val places: List<GedcomPlace>,
     val sources: List<GedcomSource>,
+    val media: List<GedcomMedia>,
     val lineCount: Int
 )
 
@@ -203,23 +274,47 @@ enum class PersonSort {
 
 enum class SidebarSection(val label: String) {
     OVERVIEW("Overview"),
+    SEARCH("Search"),
+    TIMELINE("Timeline"),
     ISSUES("Issues"),
     PEOPLE("People"),
     PEDIGREE("Pedigree"),
     FAMILIES("Families"),
     PLACES("Places"),
     SOURCES("Sources"),
-    VALIDATION("Validation");
+    MEDIA("Media"),
+    VALIDATION("Validation"),
+    REPORTS("Reports"),
+    SETTINGS("Settings");
 
     val iconName: String
         get() = when (this) {
             OVERVIEW -> "dashboard"
+            SEARCH -> "search"
+            TIMELINE -> "timeline"
             ISSUES -> "warning"
             PEOPLE -> "people"
             PEDIGREE -> "tree"
             FAMILIES -> "house"
             PLACES -> "pin"
             SOURCES -> "book"
+            MEDIA -> "camera"
             VALIDATION -> "verified_user"
+            REPORTS -> "document"
+            SETTINGS -> "gear"
         }
+}
+
+// MARK: - Settings Enums
+
+enum class DateDisplayFormat(val label: String) {
+    RAW("GEDCOM Raw"),
+    HUMAN_READABLE("Human Readable"),
+    LOCALE("Locale Default")
+}
+
+enum class NameDisplayFormat(val label: String) {
+    GIVEN_SURNAME("Given Surname"),
+    SURNAME_GIVEN_COMMA("Surname, Given"),
+    SURNAME_GIVEN("Surname Given")
 }

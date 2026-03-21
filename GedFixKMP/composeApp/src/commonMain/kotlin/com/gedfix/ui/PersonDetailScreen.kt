@@ -14,8 +14,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.gedfix.models.GedcomMedia
 import com.gedfix.models.GedcomPerson
 import com.gedfix.models.ResearchSuggestionEngine
+import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
 import com.gedfix.viewmodel.PersonViewModel
 import java.awt.Desktop
@@ -265,6 +267,9 @@ fun PersonDetailScreen(
             }
         }
 
+        // Photos & Media section
+        PersonMediaSection(person = person, personViewModel = personViewModel)
+
         // Events section
         Surface(
             shape = RoundedCornerShape(12.dp),
@@ -475,15 +480,139 @@ fun PersonDetailScreen(
     }
 }
 
-private fun eventTypeIcon(type: String): String = when (type) {
-    "BIRT" -> "\u2740"  // Flower (birth)
-    "DEAT" -> "\u2620"  // Skull (death)
-    "MARR" -> "\u2665"  // Heart
-    "BURI" -> "\u271D"  // Cross
-    "CHR", "BAPM" -> "\u2741" // Droplet-like
-    "RESI", "CENS" -> "\u2302" // House
-    "IMMI", "EMIG" -> "\u2708" // Airplane
-    "NATU" -> "\u2691"  // Flag
-    "DIV" -> "\u2194"   // Arrows
-    else -> "\u2606"    // Star
+@Composable
+private fun PersonMediaSection(
+    person: GedcomPerson,
+    personViewModel: PersonViewModel
+) {
+    val mediaItems = remember(person.xref) {
+        personViewModel.fetchMediaForOwner(person.xref)
+    }
+    var selectedMedia by remember { mutableStateOf<GedcomMedia?>(null) }
+
+    if (mediaItems.isNotEmpty()) {
+        val imageCount = mediaItems.count { it.isImage }
+        val docCount = mediaItems.count { !it.isImage }
+
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant
+        ) {
+            Column(
+                modifier = Modifier.padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "\uD83D\uDCF7 Photos & Media",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = MediaIconColor.copy(alpha = 0.15f)
+                        ) {
+                            val countText = buildList {
+                                if (imageCount > 0) add("$imageCount photo${if (imageCount != 1) "s" else ""}")
+                                if (docCount > 0) add("$docCount document${if (docCount != 1) "s" else ""}")
+                            }.joinToString(", ")
+                            Text(
+                                text = countText,
+                                fontSize = 11.sp,
+                                color = MediaIconColor,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+                }
+
+                // Horizontal scrolling row of thumbnails
+                androidx.compose.foundation.lazy.LazyRow(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(mediaItems.size) { index ->
+                        val media = mediaItems[index]
+                        Surface(
+                            modifier = Modifier
+                                .size(100.dp)
+                                .clip(RoundedCornerShape(8.dp)),
+                            color = MaterialTheme.colorScheme.surface,
+                            onClick = { selectedMedia = media }
+                        ) {
+                            Box(contentAlignment = Alignment.Center) {
+                                val thumbnail = remember(media.filePath) {
+                                    loadImageFromFile(media)
+                                }
+                                if (thumbnail != null) {
+                                    androidx.compose.foundation.Image(
+                                        bitmap = thumbnail,
+                                        contentDescription = media.displayTitle,
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                                    )
+                                } else {
+                                    Text(
+                                        text = media.placeholderIcon,
+                                        fontSize = 28.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                                    )
+                                }
+                                // Format badge
+                                Surface(
+                                    modifier = Modifier
+                                        .align(Alignment.BottomEnd)
+                                        .padding(4.dp),
+                                    shape = RoundedCornerShape(4.dp),
+                                    color = MaterialTheme.colorScheme.inverseSurface.copy(alpha = 0.7f)
+                                ) {
+                                    Text(
+                                        text = media.formatBadge,
+                                        fontSize = 8.sp,
+                                        color = MaterialTheme.colorScheme.inverseOnSurface,
+                                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Media viewer dialog
+        selectedMedia?.let { media ->
+            MediaViewerDialog(
+                media = media,
+                allMedia = mediaItems,
+                ownerName = person.displayName,
+                onDismiss = { selectedMedia = null },
+                onNavigate = { selectedMedia = it },
+                onNavigateToPerson = { }
+            )
+        }
+    }
 }
+
+private fun loadImageFromFile(media: GedcomMedia): androidx.compose.ui.graphics.ImageBitmap? {
+    if (!media.isImage) return null
+    return try {
+        val file = java.io.File(media.filePath)
+        if (file.exists() && file.isFile) {
+            file.inputStream().buffered().use { stream ->
+                androidx.compose.ui.res.loadImageBitmap(stream)
+            }
+        } else null
+    } catch (_: Exception) {
+        null
+    }
+}
+
+// eventTypeIcon moved to com.gedfix.ui.components.EventTypeUtils

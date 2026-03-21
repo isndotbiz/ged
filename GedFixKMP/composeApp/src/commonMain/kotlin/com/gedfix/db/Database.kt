@@ -29,6 +29,7 @@ class DatabaseRepository(driverFactory: DriverFactory) {
         queries.deleteAllPersons()
         queries.deleteAllPlaces()
         queries.deleteAllSources()
+        queries.deleteAllMedia()
 
         for (person in result.persons) {
             queries.insertPerson(
@@ -87,6 +88,17 @@ class DatabaseRepository(driverFactory: DriverFactory) {
                 author = source.author,
                 publisher = source.publisher,
                 repository = source.repository
+            )
+        }
+        for (media in result.media) {
+            queries.insertMedia(
+                id = media.id,
+                xref = media.xref,
+                ownerXref = media.ownerXref,
+                filePath = media.filePath,
+                format = media.format,
+                title = media.title,
+                description = media.description
             )
         }
     }
@@ -296,6 +308,84 @@ class DatabaseRepository(driverFactory: DriverFactory) {
         return "@I${maxNum + 1}@"
     }
 
+    // MARK: - Global Search
+
+    fun globalSearch(query: String): GlobalSearchResults {
+        val pattern = "%$query%"
+        return GlobalSearchResults(
+            persons = queries.searchPersons(pattern, pattern).executeAsList().map { it.toModel() },
+            places = queries.searchPlaces(pattern).executeAsList().map { it.toModel() },
+            sources = queries.searchSources(pattern, pattern).executeAsList().map { it.toModel() },
+            events = queries.searchEvents(pattern, pattern).executeAsList().map { it.toModel() }
+        )
+    }
+
+    // MARK: - Timeline queries
+
+    fun fetchAllEventsWithPersons(): List<TimelineEntry> {
+        return queries.selectEventsWithPersonName().executeAsList().map { row ->
+            TimelineEntry(
+                event = GedcomEvent(
+                    id = row.id,
+                    ownerXref = row.ownerXref,
+                    ownerType = row.ownerType,
+                    eventType = row.eventType,
+                    dateValue = row.dateValue,
+                    place = row.place,
+                    description = row.description
+                ),
+                personName = listOf(row.personGivenName ?: "", row.personSurname ?: "")
+                    .filter { it.isNotEmpty() }.joinToString(" "),
+                personXref = row.ownerXref
+            )
+        }
+    }
+
+    fun fetchEventsForPersonTimeline(xref: String): List<TimelineEntry> {
+        return queries.selectEventsForPersonTimeline(xref).executeAsList().map { row ->
+            TimelineEntry(
+                event = GedcomEvent(
+                    id = row.id,
+                    ownerXref = row.ownerXref,
+                    ownerType = row.ownerType,
+                    eventType = row.eventType,
+                    dateValue = row.dateValue,
+                    place = row.place,
+                    description = row.description
+                ),
+                personName = listOf(row.personGivenName ?: "", row.personSurname ?: "")
+                    .filter { it.isNotEmpty() }.joinToString(" "),
+                personXref = row.ownerXref
+            )
+        }
+    }
+
+    // MARK: - Statistics queries
+
+    fun fetchEventTypeCounts(): List<EventTypeCount> {
+        return queries.countEventsByType().executeAsList().map {
+            EventTypeCount(eventType = it.eventType, count = it.cnt.toInt())
+        }
+    }
+
+    fun fetchDecadeCounts(): List<DecadeCount> {
+        return queries.countEventsByDecade().executeAsList().mapNotNull { row ->
+            val decade = row.decade
+            if (decade != null && decade > 0) {
+                DecadeCount(decade = decade.toInt(), count = row.cnt.toInt())
+            } else null
+        }
+    }
+
+    fun fetchTopPlaces(limit: Int = 20): List<Pair<String, Int>> {
+        return queries.selectTopPlaces().executeAsList().map {
+            Pair(it.name, it.eventCount.toInt())
+        }
+    }
+
+    fun sourcedPersonCount(): Int = queries.countSourcedPersons().executeAsOne().toInt()
+    fun unsourcedPersonCount(): Int = queries.countUnsourcedPersons().executeAsOne().toInt()
+
     // MARK: - Pedigree queries
 
     fun fetchParents(ofXref: String): Pair<GedcomPerson?, GedcomPerson?> {
@@ -312,6 +402,45 @@ class DatabaseRepository(driverFactory: DriverFactory) {
 
     fun fetchDeathEvent(forXref: String): GedcomEvent? {
         return fetchEvents(forXref).firstOrNull { it.eventType == "DEAT" }
+    }
+
+    // MARK: - All child links (for export)
+
+    fun fetchAllChildLinksFlat(): List<GedcomChildLink> {
+        return queries.selectAllChildLinks().executeAsList().map {
+            GedcomChildLink(familyXref = it.familyXref, childXref = it.childXref, childOrder = it.childOrder.toInt())
+        }
+    }
+
+    // MARK: - Settings queries
+
+    fun getSetting(key: String): String? {
+        return queries.selectSetting(key).executeAsOneOrNull()
+    }
+
+    fun setSetting(key: String, value: String) {
+        queries.insertSetting(key, value)
+    }
+
+    fun getAllSettings(): Map<String, String> {
+        return queries.selectAllSettings().executeAsList().associate { it.key to it.value_ }
+    }
+
+    // MARK: - Media queries
+
+    fun mediaCount(): Int = queries.countMedia().executeAsOne().toInt()
+
+    fun fetchAllMedia(): List<GedcomMedia> {
+        return queries.selectAllMedia().executeAsList().map { it.toModel() }
+    }
+
+    fun fetchMediaForOwner(ownerXref: String): List<GedcomMedia> {
+        return queries.selectMediaForOwner(ownerXref).executeAsList().map { it.toModel() }
+    }
+
+    fun searchMedia(query: String): List<GedcomMedia> {
+        val pattern = "%$query%"
+        return queries.searchMedia(pattern, pattern).executeAsList().map { it.toModel() }
     }
 }
 
@@ -364,4 +493,14 @@ private fun com.gedfix.db.Source.toModel(): GedcomSource = GedcomSource(
     author = author,
     publisher = publisher,
     repository = repository
+)
+
+private fun com.gedfix.db.Media.toModel(): GedcomMedia = GedcomMedia(
+    id = id,
+    xref = xref,
+    ownerXref = ownerXref,
+    filePath = filePath,
+    format = format,
+    title = title,
+    description = description
 )

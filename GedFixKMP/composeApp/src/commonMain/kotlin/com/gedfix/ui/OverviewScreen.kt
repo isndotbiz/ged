@@ -13,7 +13,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.graphics.Color
 import com.gedfix.ui.components.StatCard
+import com.gedfix.ui.components.eventTypeColor
+import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
 import com.gedfix.viewmodel.AppViewModel
 
@@ -77,6 +80,13 @@ fun OverviewScreen(viewModel: AppViewModel) {
                 count = viewModel.sourceCount,
                 iconText = "\u2261",
                 color = StatSourcesColor,
+                modifier = Modifier.weight(1f)
+            )
+            StatCard(
+                title = "Media",
+                count = viewModel.mediaCount,
+                iconText = "\u25A3",
+                color = StatMediaColor,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -146,6 +156,174 @@ fun OverviewScreen(viewModel: AppViewModel) {
                                 fontWeight = FontWeight.Medium,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
+                        }
+                    }
+                }
+            }
+        }
+
+        // Event type breakdown
+        if (viewModel.eventCount > 0) {
+            val eventTypeCounts = viewModel.db.fetchEventTypeCounts()
+            if (eventTypeCounts.isNotEmpty()) {
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Event Type Breakdown",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    val maxEventCount = eventTypeCounts.firstOrNull()?.count ?: 1
+                    for (etc in eventTypeCounts) {
+                        val displayType = com.gedfix.models.GedcomEvent(
+                            id = "", ownerXref = "", ownerType = "", eventType = etc.eventType,
+                            dateValue = "", place = "", description = ""
+                        ).displayType
+                        val color = eventTypeColor(etc.eventType)
+                        HorizontalBarRow(
+                            label = displayType,
+                            value = etc.count,
+                            maxValue = maxEventCount,
+                            barColor = color,
+                            icon = eventTypeIcon(etc.eventType),
+                            iconColor = color
+                        )
+                    }
+                }
+            }
+        }
+
+        // Decade distribution
+        if (viewModel.eventCount > 0) {
+            val decadeCounts = viewModel.db.fetchDecadeCounts()
+            if (decadeCounts.isNotEmpty()) {
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Events by Decade",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    val maxDecadeCount = decadeCounts.maxOfOrNull { it.count } ?: 1
+                    for (dc in decadeCounts) {
+                        HorizontalBarRow(
+                            label = "${dc.decade}s",
+                            value = dc.count,
+                            maxValue = maxDecadeCount,
+                            barColor = ChartBarColor
+                        )
+                    }
+                }
+            }
+        }
+
+        // Top places
+        if (viewModel.placeCount > 0) {
+            val topPlaces = viewModel.db.fetchTopPlaces(15)
+            if (topPlaces.isNotEmpty()) {
+                HorizontalDivider()
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(
+                        text = "Top Places",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.onBackground
+                    )
+                    val maxPlaceCount = topPlaces.firstOrNull()?.second ?: 1
+                    for ((placeName, count) in topPlaces) {
+                        HorizontalBarRow(
+                            label = placeName,
+                            value = count,
+                            maxValue = maxPlaceCount,
+                            barColor = PlacesIconColor
+                        )
+                    }
+                }
+            }
+        }
+
+        // Source coverage
+        if (viewModel.personCount > 0) {
+            val sourced = viewModel.db.sourcedPersonCount()
+            val unsourced = viewModel.db.unsourcedPersonCount()
+            val total = sourced + unsourced
+            if (total > 0) {
+                HorizontalDivider()
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Text(
+                            text = "Source Coverage",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+
+                        // Stacked bar
+                        val sourcedFraction = sourced.toFloat() / total.toFloat()
+                        Row(
+                            modifier = Modifier.fillMaxWidth().height(24.dp)
+                                .clip(RoundedCornerShape(6.dp))
+                        ) {
+                            if (sourcedFraction > 0f) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .weight(sourcedFraction)
+                                        .background(ChartSourcedColor)
+                                )
+                            }
+                            if (sourcedFraction < 1f) {
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxHeight()
+                                        .weight(1f - sourcedFraction)
+                                        .background(ChartUnsourcedColor)
+                                )
+                            }
+                        }
+
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(24.dp)
+                        ) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(12.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(ChartSourcedColor)
+                                )
+                                Text(
+                                    "$sourced sourced (${String.format("%.0f", sourcedFraction * 100)}%)",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Box(
+                                    modifier = Modifier.size(12.dp)
+                                        .clip(RoundedCornerShape(3.dp))
+                                        .background(ChartUnsourcedColor)
+                                )
+                                Text(
+                                    "$unsourced unsourced (${String.format("%.0f", (1f - sourcedFraction) * 100)}%)",
+                                    fontSize = 13.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -230,5 +408,62 @@ fun OverviewScreen(viewModel: AppViewModel) {
                 }
             }
         }
+    }
+}
+
+/**
+ * Reusable horizontal bar chart row for statistics display.
+ */
+@Composable
+internal fun HorizontalBarRow(
+    label: String,
+    value: Int,
+    maxValue: Int,
+    barColor: Color,
+    icon: String? = null,
+    iconColor: Color? = null,
+    labelWidth: Int = 140
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        if (icon != null) {
+            Text(
+                text = icon,
+                fontSize = 14.sp,
+                color = iconColor ?: barColor,
+                modifier = Modifier.width(20.dp)
+            )
+        }
+        Text(
+            text = label,
+            fontWeight = FontWeight.Medium,
+            fontSize = 13.sp,
+            modifier = Modifier.width(labelWidth.dp),
+            color = MaterialTheme.colorScheme.onSurface,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+        Box(
+            modifier = Modifier
+                .weight(1f)
+                .height(18.dp)
+        ) {
+            Box(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .fillMaxWidth(fraction = if (maxValue > 0) value.toFloat() / maxValue.toFloat() else 0f)
+                    .clip(RoundedCornerShape(4.dp))
+                    .background(barColor.copy(alpha = 0.7f))
+            )
+        }
+        Text(
+            text = value.toString(),
+            fontSize = 12.sp,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(40.dp)
+        )
     }
 }

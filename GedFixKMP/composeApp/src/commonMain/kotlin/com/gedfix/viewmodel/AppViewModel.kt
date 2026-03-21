@@ -23,6 +23,8 @@ class AppViewModel(val db: DatabaseRepository) {
         private set
     var sourceCount by mutableStateOf(0)
         private set
+    var mediaCount by mutableStateOf(0)
+        private set
 
     var validatedCount by mutableStateOf(0)
         private set
@@ -43,6 +45,7 @@ class AppViewModel(val db: DatabaseRepository) {
         eventCount = db.eventCount()
         placeCount = db.placeCount()
         sourceCount = db.sourceCount()
+        mediaCount = db.mediaCount()
         validatedCount = db.validatedPersonCount()
         unvalidatedCount = db.unvalidatedPersonCount()
     }

@@ -38,13 +38,18 @@ fun MainScreen(
         ) {
             when (appViewModel.selectedSection) {
                 SidebarSection.OVERVIEW -> OverviewScreen(appViewModel)
+                SidebarSection.SEARCH -> SearchScreen(appViewModel)
+                SidebarSection.TIMELINE -> TimelineScreen(appViewModel)
                 SidebarSection.ISSUES -> IssuesScreen(appViewModel)
                 SidebarSection.PEOPLE -> PersonListScreen(appViewModel, personViewModel)
                 SidebarSection.PEDIGREE -> PedigreeScreen(appViewModel)
                 SidebarSection.FAMILIES -> FamilyListScreen(appViewModel)
                 SidebarSection.PLACES -> PlaceListScreen(appViewModel)
                 SidebarSection.SOURCES -> SourceListScreen(appViewModel)
+                SidebarSection.MEDIA -> MediaGalleryScreen(appViewModel)
                 SidebarSection.VALIDATION -> ValidationScreen(appViewModel, personViewModel)
+                SidebarSection.REPORTS -> ReportsScreen(appViewModel)
+                SidebarSection.SETTINGS -> SettingsScreen(appViewModel)
             }
         }
     }

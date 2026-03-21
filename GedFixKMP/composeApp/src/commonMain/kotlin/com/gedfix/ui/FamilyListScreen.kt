@@ -18,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gedfix.models.GedcomFamily
+import com.gedfix.ui.components.eventTypeIcon
 import com.gedfix.ui.theme.*
 import com.gedfix.viewmodel.AppViewModel
 
@@ -218,11 +219,4 @@ private fun PartnerCard(person: com.gedfix.models.GedcomPerson) {
     }
 }
 
-private fun eventTypeIcon(type: String): String = when (type) {
-    "BIRT" -> "\u2740"
-    "DEAT" -> "\u2620"
-    "MARR" -> "\u2665"
-    "BURI" -> "\u271D"
-    "DIV" -> "\u2194"
-    else -> "\u2606"
-}
+// eventTypeIcon moved to com.gedfix.ui.components.EventTypeUtils

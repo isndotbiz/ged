@@ -98,34 +98,49 @@ fun SidebarContent(
 }
 
 private fun sectionIcon(section: SidebarSection): String = when (section) {
-    SidebarSection.OVERVIEW -> "\u2302" // House
-    SidebarSection.ISSUES -> "\u26A0"   // Warning
-    SidebarSection.PEOPLE -> "\u263A"   // Person
-    SidebarSection.PEDIGREE -> "\u2042" // Tree-like
-    SidebarSection.FAMILIES -> "\u2665" // Heart
-    SidebarSection.PLACES -> "\u2316"   // Pin
-    SidebarSection.SOURCES -> "\u2261"  // Book-like
+    SidebarSection.OVERVIEW -> "\u2302"  // House
+    SidebarSection.SEARCH -> "\u2315"    // Magnifying glass
+    SidebarSection.TIMELINE -> "\u231A"  // Clock
+    SidebarSection.ISSUES -> "\u26A0"    // Warning
+    SidebarSection.PEOPLE -> "\u263A"    // Person
+    SidebarSection.PEDIGREE -> "\u2042"  // Tree-like
+    SidebarSection.FAMILIES -> "\u2665"  // Heart
+    SidebarSection.PLACES -> "\u2316"    // Pin
+    SidebarSection.SOURCES -> "\u2261"   // Book-like
+    SidebarSection.MEDIA -> "\u25A3"     // Image
     SidebarSection.VALIDATION -> "\u2611" // Checkmark box
+    SidebarSection.REPORTS -> "\u2637"   // Document
+    SidebarSection.SETTINGS -> "\u2699"  // Gear
 }
 
 private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (section) {
     SidebarSection.OVERVIEW -> OverviewIconColor
+    SidebarSection.SEARCH -> SearchIconColor
+    SidebarSection.TIMELINE -> TimelineIconColor
     SidebarSection.ISSUES -> if (vm.issueCount > 0) IssuesActiveColor else IssuesIconColor
     SidebarSection.PEOPLE -> PeopleIconColor
     SidebarSection.PEDIGREE -> PedigreeIconColor
     SidebarSection.FAMILIES -> FamiliesIconColor
     SidebarSection.PLACES -> PlacesIconColor
     SidebarSection.SOURCES -> SourcesIconColor
+    SidebarSection.MEDIA -> MediaIconColor
     SidebarSection.VALIDATION -> ValidationIconColor
+    SidebarSection.REPORTS -> ReportsIconColor
+    SidebarSection.SETTINGS -> SettingsIconColor
 }
 
 private fun sectionBadge(section: SidebarSection, vm: AppViewModel): String = when (section) {
     SidebarSection.OVERVIEW -> ""
+    SidebarSection.SEARCH -> ""
+    SidebarSection.TIMELINE -> ""
     SidebarSection.ISSUES -> if (vm.issueCount > 0) vm.issueCount.toString() else ""
     SidebarSection.PEOPLE -> if (vm.personCount > 0) vm.personCount.toString() else ""
     SidebarSection.PEDIGREE -> ""
     SidebarSection.FAMILIES -> if (vm.familyCount > 0) vm.familyCount.toString() else ""
     SidebarSection.PLACES -> if (vm.placeCount > 0) vm.placeCount.toString() else ""
     SidebarSection.SOURCES -> if (vm.sourceCount > 0) vm.sourceCount.toString() else ""
+    SidebarSection.MEDIA -> if (vm.mediaCount > 0) vm.mediaCount.toString() else ""
     SidebarSection.VALIDATION -> if (vm.unvalidatedCount > 0) vm.unvalidatedCount.toString() else ""
+    SidebarSection.REPORTS -> ""
+    SidebarSection.SETTINGS -> ""
 }
