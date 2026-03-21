@@ -556,3 +556,52 @@ SELECT COUNT(*) FROM bookmark;
 
 deleteAllBookmarks:
 DELETE FROM bookmark;
+
+-- ============================================================
+-- Handle Everything
+-- ============================================================
+
+updateMediaFilePath:
+UPDATE media SET filePath = ?, title = ? WHERE id = ?;
+
+updateMediaOwner:
+UPDATE media SET ownerXref = ? WHERE id = ?;
+
+updateEventPlace:
+UPDATE event SET place = ? WHERE place = ?;
+
+updatePersonSurname:
+UPDATE person SET surname = ? WHERE surname = ?;
+
+-- Handle Everything run history
+CREATE TABLE IF NOT EXISTS handleEverythingRun (
+    id TEXT NOT NULL PRIMARY KEY,
+    timestamp TEXT NOT NULL,
+    backupPath TEXT NOT NULL DEFAULT '',
+    versionId TEXT NOT NULL DEFAULT '',
+    report TEXT NOT NULL DEFAULT '',
+    fileRenames TEXT NOT NULL DEFAULT '',
+    fixesApplied INTEGER NOT NULL DEFAULT 0,
+    fixesNeedReview INTEGER NOT NULL DEFAULT 0,
+    duplicatesRemoved INTEGER NOT NULL DEFAULT 0,
+    filesRenamed INTEGER NOT NULL DEFAULT 0,
+    spaceSavedBytes INTEGER NOT NULL DEFAULT 0
+);
+
+CREATE INDEX IF NOT EXISTS her_timestamp ON handleEverythingRun(timestamp);
+
+insertHandleEverythingRun:
+INSERT INTO handleEverythingRun(id, timestamp, backupPath, versionId, report, fileRenames, fixesApplied, fixesNeedReview, duplicatesRemoved, filesRenamed, spaceSavedBytes)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllHandleEverythingRuns:
+SELECT * FROM handleEverythingRun ORDER BY timestamp DESC;
+
+selectHandleEverythingRunById:
+SELECT * FROM handleEverythingRun WHERE id = ?;
+
+countHandleEverythingRuns:
+SELECT COUNT(*) FROM handleEverythingRun;
+
+deleteHandleEverythingRun:
+DELETE FROM handleEverythingRun WHERE id = ?;

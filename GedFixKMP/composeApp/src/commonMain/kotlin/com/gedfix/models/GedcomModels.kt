@@ -274,6 +274,7 @@ enum class PersonSort {
 
 enum class SidebarSection(val label: String) {
     OVERVIEW("Overview"),
+    HANDLE_EVERYTHING("Handle Everything"),
     SEARCH("Search"),
     TIMELINE("Timeline"),
     ISSUES("Issues"),
@@ -303,6 +304,7 @@ enum class SidebarSection(val label: String) {
     val iconName: String
         get() = when (this) {
             OVERVIEW -> "dashboard"
+            HANDLE_EVERYTHING -> "magic_wand"
             SEARCH -> "search"
             TIMELINE -> "timeline"
             ISSUES -> "warning"

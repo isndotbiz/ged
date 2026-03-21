@@ -47,10 +47,20 @@ fun SidebarContent(
             )
         }
 
+        // HANDLE EVERYTHING - prominent, top-level
+        item {
+            HandleEverythingSidebarItem(
+                isSelected = viewModel.selectedSection == SidebarSection.HANDLE_EVERYTHING,
+                onClick = { viewModel.selectedSection = SidebarSection.HANDLE_EVERYTHING }
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+        }
+
         // TREE section
         item { SidebarSectionHeader("Tree") }
 
         val treeSections = sections.filter {
+            it != SidebarSection.HANDLE_EVERYTHING &&
             it != SidebarSection.AI_CHAT && it != SidebarSection.AI_SETTINGS && it != SidebarSection.SETTINGS &&
             it != SidebarSection.BOOKMARKS && it != SidebarSection.NOTES && it != SidebarSection.TASKS &&
             it != SidebarSection.VERSION_HISTORY && it != SidebarSection.IMAGE_DEDUPE &&
@@ -200,8 +210,48 @@ private fun SidebarNavItem(
     }
 }
 
+/**
+ * Premium sidebar item for Handle Everything - stands out from regular nav items.
+ */
+@Composable
+private fun HandleEverythingSidebarItem(
+    isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Surface(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+        shape = RoundedCornerShape(10.dp),
+        color = if (isSelected)
+            HandleEverythingIconColor.copy(alpha = 0.15f)
+        else
+            HandleEverythingIconColor.copy(alpha = 0.06f)
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Text(
+                text = "\u2728", // Sparkles
+                fontSize = 16.sp,
+                color = HandleEverythingIconColor
+            )
+            Text(
+                text = "Handle Everything",
+                style = MaterialTheme.typography.bodyMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = if (isSelected) HandleEverythingIconColor
+                else MaterialTheme.colorScheme.onSurface
+            )
+        }
+    }
+}
+
 private fun sectionIcon(section: SidebarSection): String = when (section) {
     SidebarSection.OVERVIEW -> "\u2302"
+    SidebarSection.HANDLE_EVERYTHING -> "\u2728"
     SidebarSection.SEARCH -> "\u2315"
     SidebarSection.TIMELINE -> "\u231A"
     SidebarSection.ISSUES -> "\u26A0"
@@ -231,6 +281,7 @@ private fun sectionIcon(section: SidebarSection): String = when (section) {
 
 private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (section) {
     SidebarSection.OVERVIEW -> OverviewIconColor
+    SidebarSection.HANDLE_EVERYTHING -> HandleEverythingIconColor
     SidebarSection.SEARCH -> SearchIconColor
     SidebarSection.TIMELINE -> TimelineIconColor
     SidebarSection.ISSUES -> if (vm.issueCount > 0) IssuesActiveColor else IssuesIconColor
@@ -260,6 +311,7 @@ private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (
 
 private fun sectionBadge(section: SidebarSection, vm: AppViewModel): String = when (section) {
     SidebarSection.OVERVIEW -> ""
+    SidebarSection.HANDLE_EVERYTHING -> ""
     SidebarSection.SEARCH -> ""
     SidebarSection.TIMELINE -> ""
     SidebarSection.ISSUES -> if (vm.issueCount > 0) vm.issueCount.toString() else ""

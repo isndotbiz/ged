@@ -47,6 +47,7 @@ fun MainScreen(
         ) {
             when (appViewModel.selectedSection) {
                 SidebarSection.OVERVIEW -> OverviewScreen(appViewModel)
+                SidebarSection.HANDLE_EVERYTHING -> HandleEverythingScreen(appViewModel)
                 SidebarSection.SEARCH -> SearchScreen(appViewModel)
                 SidebarSection.TIMELINE -> TimelineScreen(appViewModel)
                 SidebarSection.ISSUES -> IssuesScreen(appViewModel)

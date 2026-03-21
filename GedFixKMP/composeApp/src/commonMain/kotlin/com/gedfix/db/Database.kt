@@ -688,6 +688,78 @@ class DatabaseRepository(driverFactory: DriverFactory) {
 
     fun bookmarkCount(): Int = queries.countBookmarks().executeAsOne().toInt()
 
+    // MARK: - Handle Everything
+
+    fun updateMediaFilePath(id: String, filePath: String, title: String) {
+        queries.updateMediaFilePath(filePath, title, id)
+    }
+
+    fun updateMediaOwner(id: String, ownerXref: String) {
+        queries.updateMediaOwner(ownerXref, id)
+    }
+
+    fun updateEventPlace(oldPlace: String, newPlace: String) {
+        queries.updateEventPlace(newPlace, oldPlace)
+    }
+
+    fun updatePersonSurname(oldSurname: String, newSurname: String) {
+        queries.updatePersonSurname(newSurname, oldSurname)
+    }
+
+    fun insertHandleEverythingRun(run: com.gedfix.services.HandleEverythingRun) {
+        queries.insertHandleEverythingRun(
+            id = run.id,
+            timestamp = run.timestamp,
+            backupPath = run.backupPath,
+            versionId = run.versionId,
+            report = run.report,
+            fileRenames = run.fileRenames,
+            fixesApplied = run.fixesApplied.toLong(),
+            fixesNeedReview = run.fixesNeedReview.toLong(),
+            duplicatesRemoved = run.duplicatesRemoved.toLong(),
+            filesRenamed = run.filesRenamed.toLong(),
+            spaceSavedBytes = run.spaceSavedBytes
+        )
+    }
+
+    fun fetchAllHandleEverythingRuns(): List<com.gedfix.services.HandleEverythingRun> {
+        return queries.selectAllHandleEverythingRuns().executeAsList().map {
+            com.gedfix.services.HandleEverythingRun(
+                id = it.id,
+                timestamp = it.timestamp,
+                backupPath = it.backupPath,
+                versionId = it.versionId,
+                report = it.report,
+                fileRenames = it.fileRenames,
+                fixesApplied = it.fixesApplied.toInt(),
+                fixesNeedReview = it.fixesNeedReview.toInt(),
+                duplicatesRemoved = it.duplicatesRemoved.toInt(),
+                filesRenamed = it.filesRenamed.toInt(),
+                spaceSavedBytes = it.spaceSavedBytes
+            )
+        }
+    }
+
+    fun fetchHandleEverythingRunById(id: String): com.gedfix.services.HandleEverythingRun? {
+        return queries.selectHandleEverythingRunById(id).executeAsOneOrNull()?.let {
+            com.gedfix.services.HandleEverythingRun(
+                id = it.id,
+                timestamp = it.timestamp,
+                backupPath = it.backupPath,
+                versionId = it.versionId,
+                report = it.report,
+                fileRenames = it.fileRenames,
+                fixesApplied = it.fixesApplied.toInt(),
+                fixesNeedReview = it.fixesNeedReview.toInt(),
+                duplicatesRemoved = it.duplicatesRemoved.toInt(),
+                filesRenamed = it.filesRenamed.toInt(),
+                spaceSavedBytes = it.spaceSavedBytes
+            )
+        }
+    }
+
+    fun handleEverythingRunCount(): Int = queries.countHandleEverythingRuns().executeAsOne().toInt()
+
     // MARK: - Merge operations
 
     /**

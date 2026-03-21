@@ -32,6 +32,9 @@ val InfoColor = Color(0xFF007AFF)
 // Sidebar section colors — muted, understated
 // ============================================================
 val OverviewIconColor = Color(0xFF8E7CC3)
+val HandleEverythingIconColor = Color(0xFFFFB800)
+val HandleEverythingGradientStart = Color(0xFFFFB800)
+val HandleEverythingGradientEnd = Color(0xFFFF6B00)
 val IssuesIconColor = Color(0xFFE8944A)
 val IssuesActiveColor = Color(0xFFE05A4F)
 val PeopleIconColor = Color(0xFF4A90D9)
