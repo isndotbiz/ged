@@ -12,7 +12,10 @@ data class GedcomPerson(
     var surname: String,
     var suffix: String,
     var sex: String, // M, F, U
-    var isLiving: Boolean
+    var isLiving: Boolean,
+    val sourceCount: Int = 0,
+    val mediaCount: Int = 0,
+    val isValidated: Boolean = false
 ) {
     val displayName: String
         get() = listOf(givenName, surname, suffix)
@@ -205,7 +208,8 @@ enum class SidebarSection(val label: String) {
     PEDIGREE("Pedigree"),
     FAMILIES("Families"),
     PLACES("Places"),
-    SOURCES("Sources");
+    SOURCES("Sources"),
+    VALIDATION("Validation");
 
     val iconName: String
         get() = when (this) {
@@ -216,5 +220,6 @@ enum class SidebarSection(val label: String) {
             FAMILIES -> "house"
             PLACES -> "pin"
             SOURCES -> "book"
+            VALIDATION -> "verified_user"
         }
 }

@@ -44,6 +44,7 @@ fun MainScreen(
                 SidebarSection.FAMILIES -> FamilyListScreen(appViewModel)
                 SidebarSection.PLACES -> PlaceListScreen(appViewModel)
                 SidebarSection.SOURCES -> SourceListScreen(appViewModel)
+                SidebarSection.VALIDATION -> ValidationScreen(appViewModel, personViewModel)
             }
         }
     }

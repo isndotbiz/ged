@@ -105,6 +105,7 @@ private fun sectionIcon(section: SidebarSection): String = when (section) {
     SidebarSection.FAMILIES -> "\u2665" // Heart
     SidebarSection.PLACES -> "\u2316"   // Pin
     SidebarSection.SOURCES -> "\u2261"  // Book-like
+    SidebarSection.VALIDATION -> "\u2611" // Checkmark box
 }
 
 private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (section) {
@@ -115,6 +116,7 @@ private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (
     SidebarSection.FAMILIES -> FamiliesIconColor
     SidebarSection.PLACES -> PlacesIconColor
     SidebarSection.SOURCES -> SourcesIconColor
+    SidebarSection.VALIDATION -> ValidationIconColor
 }
 
 private fun sectionBadge(section: SidebarSection, vm: AppViewModel): String = when (section) {
@@ -125,4 +127,5 @@ private fun sectionBadge(section: SidebarSection, vm: AppViewModel): String = wh
     SidebarSection.FAMILIES -> if (vm.familyCount > 0) vm.familyCount.toString() else ""
     SidebarSection.PLACES -> if (vm.placeCount > 0) vm.placeCount.toString() else ""
     SidebarSection.SOURCES -> if (vm.sourceCount > 0) vm.sourceCount.toString() else ""
+    SidebarSection.VALIDATION -> if (vm.unvalidatedCount > 0) vm.unvalidatedCount.toString() else ""
 }

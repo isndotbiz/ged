@@ -24,6 +24,11 @@ class AppViewModel(val db: DatabaseRepository) {
     var sourceCount by mutableStateOf(0)
         private set
 
+    var validatedCount by mutableStateOf(0)
+        private set
+    var unvalidatedCount by mutableStateOf(0)
+        private set
+
     var issueCount by mutableStateOf(0)
 
     var isImporting by mutableStateOf(false)
@@ -38,7 +43,14 @@ class AppViewModel(val db: DatabaseRepository) {
         eventCount = db.eventCount()
         placeCount = db.placeCount()
         sourceCount = db.sourceCount()
+        validatedCount = db.validatedPersonCount()
+        unvalidatedCount = db.unvalidatedPersonCount()
     }
+
+    val validationPercentage: Float
+        get() = if (personCount > 0) validatedCount.toFloat() / personCount.toFloat() * 100f else 0f
+
+    fun fetchUnvalidatedPersons(): List<GedcomPerson> = db.fetchUnvalidatedPersons()
 
     fun importGedcom(text: String) {
         isImporting = true

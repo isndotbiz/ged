@@ -38,7 +38,9 @@ class DatabaseRepository(driverFactory: DriverFactory) {
                 surname = person.surname,
                 suffix = person.suffix,
                 sex = person.sex,
-                isLiving = if (person.isLiving) 1L else 0L
+                isLiving = if (person.isLiving) 1L else 0L,
+                sourceCount = person.sourceCount.toLong(),
+                mediaCount = person.mediaCount.toLong()
             )
         }
         for (family in result.families) {
@@ -124,7 +126,9 @@ class DatabaseRepository(driverFactory: DriverFactory) {
             surname = person.surname,
             suffix = person.suffix,
             sex = person.sex,
-            isLiving = if (person.isLiving) 1L else 0L
+            isLiving = if (person.isLiving) 1L else 0L,
+            sourceCount = person.sourceCount.toLong(),
+            mediaCount = person.mediaCount.toLong()
         )
     }
 
@@ -261,6 +265,19 @@ class DatabaseRepository(driverFactory: DriverFactory) {
         return queries.selectAllSources().executeAsList().map { it.toModel() }
     }
 
+    // MARK: - Validation queries
+
+    fun validatedPersonCount(): Int = queries.countValidatedPersons().executeAsOne().toInt()
+    fun unvalidatedPersonCount(): Int = queries.countUnvalidatedPersons().executeAsOne().toInt()
+
+    fun fetchUnvalidatedPersons(): List<GedcomPerson> {
+        return queries.selectUnvalidatedPersons().executeAsList().map { it.toModel() }
+    }
+
+    fun fetchValidatedPersons(): List<GedcomPerson> {
+        return queries.selectValidatedPersons().executeAsList().map { it.toModel() }
+    }
+
     // MARK: - Top Surnames
 
     fun fetchTopSurnames(limit: Int = 10): List<Pair<String, Int>> {
@@ -308,7 +325,10 @@ private fun com.gedfix.db.Person.toModel(): GedcomPerson = GedcomPerson(
     surname = surname,
     suffix = suffix,
     sex = sex,
-    isLiving = isLiving != 0L
+    isLiving = isLiving != 0L,
+    sourceCount = sourceCount.toInt(),
+    mediaCount = mediaCount.toInt(),
+    isValidated = sourceCount > 0
 )
 
 private fun com.gedfix.db.Family.toModel(): GedcomFamily = GedcomFamily(

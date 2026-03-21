@@ -15,8 +15,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gedfix.models.GedcomPerson
+import com.gedfix.models.ResearchSuggestionEngine
 import com.gedfix.ui.theme.*
 import com.gedfix.viewmodel.PersonViewModel
+import java.awt.Desktop
+import java.net.URI
 
 /**
  * Person detail view with events, families, parents, edit/delete buttons.
@@ -95,6 +98,32 @@ fun PersonDetailScreen(
                                 )
                             }
                         }
+                        // Validation badge
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = if (person.isValidated) ValidatedBgColor else UnvalidatedBgColor
+                        ) {
+                            Text(
+                                text = if (person.isValidated) "\u2713 Validated" else "\u26A0 Needs Source",
+                                fontSize = 12.sp,
+                                color = if (person.isValidated) ValidatedColor else UnvalidatedColor,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp)
+                            )
+                        }
+                    }
+
+                    // Source and media counts
+                    Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        Text(
+                            "${person.sourceCount} source${if (person.sourceCount != 1) "s" else ""}",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                        Text(
+                            "${person.mediaCount} media",
+                            fontSize = 13.sp,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
                     }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -139,6 +168,102 @@ fun PersonDetailScreen(
         }
 
         HorizontalDivider()
+
+        // Validation callout for unvalidated persons
+        if (!person.isValidated) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = UnvalidatedBgColor
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        "\u26A0 No Source Citations",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = UnvalidatedColor
+                    )
+                    Text(
+                        "This person has no source citations. Add a source to validate this record and improve your tree's research quality.",
+                        fontSize = 14.sp,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+            }
+
+            // Research suggestions
+            val suggestions = ResearchSuggestionEngine.suggestionsFor(person, events)
+            if (suggestions.isNotEmpty()) {
+                var expandedResearch by remember { mutableStateOf(false) }
+                Surface(
+                    shape = RoundedCornerShape(12.dp),
+                    color = MaterialTheme.colorScheme.surfaceVariant
+                ) {
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                "Research Suggestions",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.SemiBold
+                            )
+                            TextButton(onClick = { expandedResearch = !expandedResearch }) {
+                                Text(if (expandedResearch) "Collapse" else "Expand (${suggestions.size})")
+                            }
+                        }
+
+                        if (expandedResearch) {
+                            for ((index, suggestion) in suggestions.withIndex()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Text(
+                                        text = suggestion.icon,
+                                        fontSize = 16.sp,
+                                        color = MaterialTheme.colorScheme.primary
+                                    )
+                                    Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                        Text(suggestion.title, fontWeight = FontWeight.Medium, fontSize = 14.sp)
+                                        Text(
+                                            suggestion.description,
+                                            fontSize = 12.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                        Text(
+                                            suggestion.source,
+                                            fontSize = 11.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                                        )
+                                    }
+                                    OutlinedButton(
+                                        onClick = {
+                                            try {
+                                                Desktop.getDesktop().browse(URI(suggestion.url))
+                                            } catch (_: Exception) { }
+                                        }
+                                    ) {
+                                        Text("Search", fontSize = 12.sp)
+                                    }
+                                }
+                                if (index < suggestions.size - 1) {
+                                    HorizontalDivider()
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
 
         // Events section
         Surface(

@@ -81,6 +81,77 @@ fun OverviewScreen(viewModel: AppViewModel) {
             )
         }
 
+        // Validation coverage card
+        if (viewModel.personCount > 0) {
+            Surface(
+                shape = RoundedCornerShape(12.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            "Validation Coverage",
+                            fontSize = 18.sp,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            "${String.format("%.0f", viewModel.validationPercentage)}%",
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = if (viewModel.validationPercentage >= 80f) HealthGoodColor
+                                else if (viewModel.validationPercentage >= 50f) HealthOkColor
+                                else HealthBadColor
+                        )
+                    }
+
+                    LinearProgressIndicator(
+                        progress = { viewModel.validatedCount.toFloat() / viewModel.personCount.toFloat() },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(8.dp)
+                            .clip(RoundedCornerShape(4.dp)),
+                        color = HealthGoodColor,
+                        trackColor = HealthGoodColor.copy(alpha = 0.15f),
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(
+                            "\u2713 ${viewModel.validatedCount} validated",
+                            fontSize = 13.sp,
+                            color = HealthGoodColor,
+                            fontWeight = FontWeight.Medium
+                        )
+                        Surface(
+                            onClick = {
+                                viewModel.selectedSection = com.gedfix.models.SidebarSection.VALIDATION
+                            },
+                            shape = RoundedCornerShape(8.dp),
+                            color = WarningColor.copy(alpha = 0.15f)
+                        ) {
+                            Text(
+                                "\u26A0 ${viewModel.unvalidatedCount} need sources",
+                                fontSize = 13.sp,
+                                color = WarningColor,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Top surnames
         if (topSurnames.isNotEmpty()) {
             HorizontalDivider()

@@ -81,6 +81,18 @@ fun PersonCard(
                         )
                     }
                 }
+                // Validation badge
+                Surface(
+                    shape = RoundedCornerShape(4.dp),
+                    color = if (person.isValidated) ValidatedBgColor else UnvalidatedBgColor
+                ) {
+                    Text(
+                        text = if (person.isValidated) "\u2713" else "\u26A0",
+                        fontSize = 9.sp,
+                        color = if (person.isValidated) ValidatedColor else UnvalidatedColor,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp)
+                    )
+                }
             }
 
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

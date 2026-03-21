@@ -206,6 +206,11 @@ private fun PersonRow(
                             color = LivingBadgeColor
                         )
                     }
+                    Text(
+                        text = if (person.isValidated) "\u2713" else "\u26A0",
+                        fontSize = 10.sp,
+                        color = if (person.isValidated) ValidatedColor else UnvalidatedColor
+                    )
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (birthDate.isNotEmpty()) {

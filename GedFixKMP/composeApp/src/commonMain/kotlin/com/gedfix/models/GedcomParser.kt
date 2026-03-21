@@ -159,6 +159,8 @@ object GedcomParser {
         var suffix = ""
         var sex = "U"
         val events = mutableListOf<GedcomEvent>()
+        var sourCount = 0
+        var obiCount = 0
 
         var currentTag: String? = null
         var currentDate = ""
@@ -188,6 +190,8 @@ object GedcomParser {
                     "SEX" -> {
                         sex = line.value.trim()
                     }
+                    "SOUR" -> sourCount++
+                    "OBJE" -> obiCount++
                 }
             } else if (line.level == 2) {
                 when (line.tag) {
@@ -196,6 +200,8 @@ object GedcomParser {
                     "GIVN" -> if (givenName.isEmpty()) givenName = line.value
                     "SURN" -> if (surname.isEmpty()) surname = line.value
                     "NSFX" -> if (suffix.isEmpty()) suffix = line.value
+                    "SOUR" -> sourCount++
+                    "OBJE" -> obiCount++
                 }
             }
         }
@@ -214,7 +220,10 @@ object GedcomParser {
             surname = surname.trim(),
             suffix = suffix.trim(),
             sex = sex,
-            isLiving = false // set later
+            isLiving = false, // set later
+            sourceCount = sourCount,
+            mediaCount = obiCount,
+            isValidated = sourCount > 0
         )
         return Pair(person, events)
     }

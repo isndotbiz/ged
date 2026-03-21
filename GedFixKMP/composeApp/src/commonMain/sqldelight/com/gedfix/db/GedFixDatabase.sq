@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS person (
     surname TEXT NOT NULL DEFAULT '',
     suffix TEXT NOT NULL DEFAULT '',
     sex TEXT NOT NULL DEFAULT 'U',
-    isLiving INTEGER NOT NULL DEFAULT 0
+    isLiving INTEGER NOT NULL DEFAULT 0,
+    sourceCount INTEGER NOT NULL DEFAULT 0,
+    mediaCount INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS family (
@@ -68,8 +70,8 @@ countPersons:
 SELECT COUNT(*) FROM person;
 
 insertPerson:
-INSERT INTO person(id, xref, givenName, surname, suffix, sex, isLiving)
-VALUES (?, ?, ?, ?, ?, ?, ?);
+INSERT INTO person(id, xref, givenName, surname, suffix, sex, isLiving, sourceCount, mediaCount)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updatePerson:
 UPDATE person SET givenName = ?, surname = ?, suffix = ?, sex = ?, isLiving = ? WHERE xref = ?;
@@ -189,3 +191,16 @@ SELECT xref FROM person WHERE xref LIKE '@I%' ORDER BY CAST(SUBSTR(xref, 3, LENG
 
 selectMaxFamilyXref:
 SELECT xref FROM family WHERE xref LIKE '@F%' ORDER BY CAST(SUBSTR(xref, 3, LENGTH(xref) - 3) AS INTEGER) DESC LIMIT 1;
+
+-- Validation queries
+countValidatedPersons:
+SELECT COUNT(*) FROM person WHERE sourceCount > 0;
+
+countUnvalidatedPersons:
+SELECT COUNT(*) FROM person WHERE sourceCount = 0;
+
+selectUnvalidatedPersons:
+SELECT * FROM person WHERE sourceCount = 0 ORDER BY surname, givenName;
+
+selectValidatedPersons:
+SELECT * FROM person WHERE sourceCount > 0 ORDER BY surname, givenName;

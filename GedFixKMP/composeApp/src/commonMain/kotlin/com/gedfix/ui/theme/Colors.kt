@@ -57,3 +57,10 @@ val AutoFixBadgeBg = Color(0x264CAF50)
 // Living badge
 val LivingBadgeColor = Color(0xFF4CAF50)
 val LivingBadgeBg = Color(0x264CAF50)
+
+// Validation badge colors
+val ValidatedColor = Color(0xFF4CAF50)      // Green
+val ValidatedBgColor = Color(0x264CAF50)    // Green at 15%
+val UnvalidatedColor = Color(0xFFFF9800)    // Orange
+val UnvalidatedBgColor = Color(0x26FF9800)  // Orange at 15%
+val ValidationIconColor = Color(0xFF4CAF50) // Green for sidebar
