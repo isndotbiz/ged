@@ -146,6 +146,7 @@
 <div class="flex h-screen select-none" style="background: var(--paper);">
   <!-- Sidebar — dark archive panel -->
   <nav
+    aria-label="Main navigation"
     class="flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in"
     style="width: var(--sidebar-width); background: var(--sidebar-bg);"
   >
