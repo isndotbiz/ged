@@ -115,6 +115,8 @@
     if (history.length) { const x = history.pop()!; history = [...history]; loadTree(x); }
   }
 
+  const svgCache = new Map<string, string>();
+
   // ===== Placeholder images =====
   function crestSvg(name: string, sex: string): string {
     const h = [...name].reduce((a, c) => ((a << 5) - a + c.charCodeAt(0)) | 0, 0);
