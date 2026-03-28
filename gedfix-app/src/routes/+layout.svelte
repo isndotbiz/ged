@@ -180,6 +180,7 @@
           {#each section.items as item}
             <a
               href={item.path}
+              aria-current={isActive(item.path, $page.url.pathname) ? 'page' : undefined}
               class="nav-link flex items-center gap-2.5 px-3 py-[7px] rounded-lg text-[13px] transition-all
                      {isActive(item.path, $page.url.pathname) ? 'nav-active' : ''}"
               style="font-family: var(--font-sans); font-weight: 500;
