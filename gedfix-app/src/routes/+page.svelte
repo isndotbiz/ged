@@ -397,7 +397,7 @@
 
 <!-- FACE PICKER OVERLAY -->
 {#if showPicker && pickerPerson && !showCrop}
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.6);" role="dialog" tabindex="-1">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.6);" role="dialog" aria-modal="true" tabindex="-1">
     <div class="max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col rounded-xl animate-dossier" style="background: var(--vellum); box-shadow: var(--shadow-overlay);">
       <div class="flex items-center justify-between px-6 py-3 shrink-0" style="border-bottom: 1px solid var(--border-rule);">
         <h2 style="font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--ink);">Pick Photo — {pickerPerson.givenName} {pickerPerson.surname}</h2>
