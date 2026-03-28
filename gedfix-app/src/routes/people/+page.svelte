@@ -1,0 +1,346 @@
+<script lang="ts">
+  import { getPersons, getEvents, getSpouseFamilies, getChildren, getParents, getMediaWithPaths, getPrimaryPhoto } from '$lib/db';
+  import type { Person, GedcomEvent, Family, GedcomMedia } from '$lib/types';
+  import { convertFileSrc } from '@tauri-apps/api/core';
+  import { lazyImage } from '$lib/lazy-image';
+  import { VList } from 'virtua/svelte';
+
+  let search = $state('');
+  // $state.raw for large arrays — 79x faster than $state for iteration
+  let persons = $state.raw<Person[]>([]);
+  let selected = $state<Person | null>(null);
+  let selectedEvents = $state.raw<GedcomEvent[]>([]);
+  let selectedFamilies = $state.raw<{ family: Family; spouse: Person | null; children: Person[] }[]>([]);
+  let selectedParents = $state<{ father: Person | null; mother: Person | null }>({ father: null, mother: null });
+  let selectedMedia = $state.raw<GedcomMedia[]>([]);
+  let selectedPrimaryPhoto = $state<GedcomMedia | null>(null);
+  let expandedMedia = $state<GedcomMedia | null>(null);
+
+  // Photo cache for list avatars
+  let photoCache = $state<Map<string, string>>(new Map());
+
+  let searchTimeout: ReturnType<typeof setTimeout>;
+
+  async function load() {
+    persons = await getPersons(search, 2000);
+    loadPhotos(persons.slice(0, 50));
+  }
+
+  async function loadPhotos(people: Person[]) {
+    const updates = new Map(photoCache);
+    for (const p of people) {
+      if (updates.has(p.xref) || p.mediaCount === 0) continue;
+      const photo = await getPrimaryPhoto(p.xref);
+      if (photo?.filePath) updates.set(p.xref, photo.filePath);
+    }
+    if (updates.size !== photoCache.size) photoCache = updates;
+  }
+
+  function onSearchInput() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(load, 150);
+  }
+
+  async function selectPerson(p: Person) {
+    selected = p;
+    // Parallel data fetching
+    const [events, parents, media, photo, fams] = await Promise.all([
+      getEvents(p.xref),
+      getParents(p.xref),
+      getMediaWithPaths(p.xref),
+      getPrimaryPhoto(p.xref),
+      getSpouseFamilies(p.xref),
+    ]);
+    selectedEvents = events;
+    selectedParents = parents;
+    selectedMedia = media;
+    selectedPrimaryPhoto = photo;
+    expandedMedia = null;
+
+    // Load family details
+    const famDetails = await Promise.all(fams.map(async (f) => {
+      const spouseXref = f.partner1Xref === p.xref ? f.partner2Xref : f.partner1Xref;
+      const { getPerson } = await import('$lib/db');
+      const [spouse, children] = await Promise.all([
+        spouseXref ? getPerson(spouseXref) : Promise.resolve(null),
+        getChildren(f.xref),
+      ]);
+      return { family: f, spouse, children };
+    }));
+    selectedFamilies = famDetails;
+  }
+
+  function getInitials(p: Person): string {
+    return ((p.givenName?.[0] ?? '') + (p.surname?.[0] ?? '')).toUpperCase() || '?';
+  }
+
+  function avatarColor(p: Person): string {
+    return p.personColor || (p.sex === 'F' ? '#D94A8C' : '#4A90D9');
+  }
+
+  function formatDates(p: Person): string {
+    const parts: string[] = [];
+    if (p.birthDate) parts.push(`b. ${p.birthDate}`);
+    if (p.deathDate) parts.push(`d. ${p.deathDate}`);
+    return parts.join(' \u2013 ');
+  }
+
+  function isImage(path: string): boolean {
+    return /\.(jpe?g|png|gif|bmp|webp)$/i.test(path);
+  }
+
+  function fileType(path: string): string {
+    if (/\.pdf$/i.test(path)) return 'PDF';
+    if (/\.html?$/i.test(path)) return 'HTM';
+    if (/\.docx?$/i.test(path)) return 'DOC';
+    return 'FILE';
+  }
+
+  const eventLabels: Record<string, string> = {
+    BIRT: 'Birth', DEAT: 'Death', BURI: 'Burial', CHR: 'Christening',
+    BAPM: 'Baptism', MARR: 'Marriage', DIV: 'Divorce', RESI: 'Residence',
+    OCCU: 'Occupation', EDUC: 'Education', EMIG: 'Emigration', IMMI: 'Immigration',
+    NATU: 'Naturalization', CENS: 'Census', PROB: 'Probate', WILL: 'Will', EVEN: 'Event',
+  };
+
+  $effect(() => { load(); });
+</script>
+
+<div class="flex h-full">
+  <!-- Person List with Virtual Scrolling -->
+  <div class="w-[340px] flex flex-col shrink-0" style="border-right: 1px solid var(--border-rule); background: color-mix(in srgb, var(--vellum) 50%, transparent);">
+    <div class="p-3" style="border-bottom: 1px solid var(--border-rule);">
+      <input
+        type="text"
+        placeholder="Search {persons.length} people..."
+        bind:value={search}
+        oninput={onSearchInput}
+        class="w-full px-3 py-2 text-sm rounded-lg border-none outline-none transition-colors arch-input"
+      />
+    </div>
+
+    <!-- Virtual scroll list — only renders visible items, handles 10K+ -->
+    <div class="flex-1" style="contain: strict;">
+      <VList data={persons} style="height: 100%;" getKey={(_, i) => persons[i]?.xref ?? i}>
+        {#snippet children(person, index)}
+          <button
+            onclick={() => selectPerson(person)}
+            class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03] transition-colors contain-content
+                   {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''}"
+          >
+            {#if photoCache.get(person.xref)}
+              <img
+                use:lazyImage={photoCache.get(person.xref)!}
+                alt=""
+                class="w-8 h-8 rounded-full object-cover shrink-0"
+                style="background: var(--parchment);"
+              />
+            {:else}
+              <div
+                class="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-semibold shrink-0"
+                style="background: {avatarColor(person)}"
+              >
+                {getInitials(person)}
+              </div>
+            {/if}
+            <div class="flex-1 min-w-0">
+              <div class="text-sm font-medium text-ink truncate">
+                {person.givenName} {person.surname}{person.suffix ? ` ${person.suffix}` : ''}
+              </div>
+              <div class="text-xs text-ink-muted truncate">{formatDates(person)}</div>
+            </div>
+            {#if person.mediaCount > 0}
+              <span class="text-[10px] text-ink-faint tabular-nums">{person.mediaCount}</span>
+            {/if}
+            {#if person.sourceCount > 0}
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title="Has sources"></span>
+            {/if}
+          </button>
+        {/snippet}
+      </VList>
+    </div>
+
+    <div class="px-4 py-2 text-xs text-ink-faint tabular-nums" style="border-top: 1px solid var(--border-rule);">
+      {persons.length} people
+    </div>
+  </div>
+
+  <!-- Person Detail -->
+  <div class="flex-1 overflow-auto">
+    {#if selected}
+      <div class="p-8 max-w-3xl animate-fade-in">
+        <!-- Header -->
+        <div class="flex items-start gap-5 mb-8">
+          {#if selectedPrimaryPhoto?.filePath}
+            <img
+              src={convertFileSrc(selectedPrimaryPhoto.filePath)}
+              alt={selected.givenName}
+              class="w-24 h-24 rounded-2xl object-cover shadow-md shrink-0"
+              onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+            />
+          {:else}
+            <div
+              class="w-24 h-24 rounded-2xl flex items-center justify-center text-white text-2xl font-bold shrink-0 shadow-md"
+              style="background: {avatarColor(selected)}"
+            >
+              {getInitials(selected)}
+            </div>
+          {/if}
+          <div>
+            <h1 class="text-xl font-bold text-ink">
+              {selected.givenName} {selected.surname}{selected.suffix ? ` ${selected.suffix}` : ''}
+            </h1>
+            <p class="text-sm text-ink-muted mt-0.5">{formatDates(selected)}</p>
+            {#if selected.birthPlace}
+              <p class="text-xs text-ink-faint mt-0.5">{selected.birthPlace}</p>
+            {/if}
+            <div class="flex items-center gap-2 mt-2 flex-wrap">
+              <span class="text-xs px-2 py-0.5 rounded-full {selected.sex === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'}">
+                {selected.sex === 'F' ? 'Female' : selected.sex === 'M' ? 'Male' : 'Unknown'}
+              </span>
+              {#if selected.isLiving}
+                <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">Living</span>
+              {/if}
+              {#if selected.proofStatus && selected.proofStatus !== 'UNKNOWN'}
+                <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600">{selected.proofStatus}</span>
+              {/if}
+              {#if selected.sourceCount > 0}
+                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{selected.sourceCount} sources</span>
+              {/if}
+              <span class="text-xs text-ink-faint">{selected.xref}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parents -->
+        {#if selectedParents.father || selectedParents.mother}
+          <section class="mb-6">
+            <h2 class="arch-section-header">Parents</h2>
+            <div class="flex gap-3">
+              {#each [selectedParents.father, selectedParents.mother].filter(Boolean) as parent}
+                <button onclick={() => selectPerson(parent!)} class="flex items-center gap-2 px-3 py-2 rounded-lg arch-card hover:opacity-80 transition-colors">
+                  <div class="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-semibold" style="background: {avatarColor(parent!)}">
+                    {getInitials(parent!)}
+                  </div>
+                  <span class="text-sm text-ink-light">{parent!.givenName} {parent!.surname}</span>
+                </button>
+              {/each}
+            </div>
+          </section>
+        {/if}
+
+        <!-- Media Gallery -->
+        {#if selectedMedia.length > 0}
+          <section class="mb-6">
+            <h2 class="arch-section-header">
+              Photos & Documents ({selectedMedia.length})
+            </h2>
+            <div class="grid grid-cols-4 gap-3">
+              {#each selectedMedia as m (m.id)}
+                {#if isImage(m.filePath)}
+                  <button
+                    onclick={() => expandedMedia = expandedMedia?.id === m.id ? null : m}
+                    class="aspect-square rounded-xl overflow-hidden hover:ring-2 transition-all contain-content {expandedMedia?.id === m.id ? 'ring-2' : ''}"
+                    style="background: var(--parchment); border: 1px solid var(--border-subtle); --tw-ring-color: var(--accent);"
+                  >
+                    <img
+                      use:lazyImage={m.filePath}
+                      alt={m.title || 'Photo'}
+                      class="w-full h-full object-cover"
+                    />
+                  </button>
+                {:else}
+                  <div class="aspect-square rounded-xl flex flex-col items-center justify-center gap-1 p-2 contain-content" style="background: var(--parchment); border: 1px solid var(--border-subtle);">
+                    <span class="text-xs font-bold text-ink-faint">{fileType(m.filePath)}</span>
+                    <span class="text-[10px] text-ink-faint text-center truncate w-full">{m.title || m.filePath.split('/').pop()}</span>
+                  </div>
+                {/if}
+              {/each}
+            </div>
+
+            {#if expandedMedia}
+              <div class="mt-4 arch-card rounded-xl overflow-hidden" style="box-shadow: var(--shadow-lg);">
+                <img
+                  src={convertFileSrc(expandedMedia.filePath)}
+                  alt={expandedMedia.title || 'Photo'}
+                  class="w-full max-h-[500px] object-contain"
+                  style="background: var(--parchment);"
+                />
+                <div class="p-3" style="border-top: 1px solid var(--border-subtle);">
+                  <div class="text-sm font-medium text-ink">{expandedMedia.title || expandedMedia.filePath.split('/').pop()}</div>
+                  <div class="text-[10px] text-ink-faint mt-0.5 truncate">{expandedMedia.filePath}</div>
+                </div>
+              </div>
+            {/if}
+          </section>
+        {/if}
+
+        <!-- Events -->
+        {#if selectedEvents.length > 0}
+          <section class="mb-6">
+            <h2 class="arch-section-header">Life Events</h2>
+            <div class="arch-card rounded-xl divide-y arch-card-divide">
+              {#each selectedEvents as ev (ev.id)}
+                <div class="flex items-start gap-3 px-4 py-3 contain-content">
+                  <div class="w-2 h-2 rounded-full mt-1.5 shrink-0
+                    {ev.eventType === 'BIRT' ? 'bg-green-400' :
+                     ev.eventType === 'DEAT' ? 'bg-gray-400' :
+                     ev.eventType === 'MARR' ? 'bg-pink-400' :
+                     ev.eventType === 'BURI' ? 'bg-amber-700' : 'bg-blue-400'}"></div>
+                  <div class="flex-1 min-w-0">
+                    <div class="text-sm font-medium text-ink">{eventLabels[ev.eventType] ?? ev.eventType}</div>
+                    {#if ev.dateValue}<div class="text-xs text-ink-muted">{ev.dateValue}</div>{/if}
+                    {#if ev.place}<div class="text-xs text-ink-faint">{ev.place}</div>{/if}
+                    {#if ev.description}<div class="text-xs text-ink-faint italic">{ev.description}</div>{/if}
+                  </div>
+                </div>
+              {/each}
+            </div>
+          </section>
+        {/if}
+
+        <!-- Families -->
+        {#if selectedFamilies.length > 0}
+          <section class="mb-6">
+            <h2 class="arch-section-header">Families</h2>
+            {#each selectedFamilies as sf (sf.family.xref)}
+              <div class="arch-card rounded-xl p-4 mb-3 contain-content">
+                {#if sf.spouse}
+                  <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs text-ink-faint">Spouse:</span>
+                    <button onclick={() => selectPerson(sf.spouse!)} class="flex items-center gap-2 hover:opacity-80 rounded-md px-2 py-1 transition-colors">
+                      <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-semibold" style="background: {avatarColor(sf.spouse)}">
+                        {getInitials(sf.spouse)}
+                      </div>
+                      <span class="text-sm text-ink-light">{sf.spouse.givenName} {sf.spouse.surname}</span>
+                    </button>
+                    {#if sf.family.marriageDate}
+                      <span class="text-xs text-ink-faint ml-auto">m. {sf.family.marriageDate}</span>
+                    {/if}
+                  </div>
+                {/if}
+                {#if sf.children.length > 0}
+                  <div class="text-xs text-ink-faint mb-2">Children ({sf.children.length}):</div>
+                  <div class="flex flex-wrap gap-2">
+                    {#each sf.children as child (child.xref)}
+                      <button onclick={() => selectPerson(child)} class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:opacity-80 transition-colors">
+                        <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-semibold" style="background: {avatarColor(child)}">
+                          {getInitials(child)}
+                        </div>
+                        <span class="text-xs text-ink-light">{child.givenName} {child.surname}</span>
+                      </button>
+                    {/each}
+                  </div>
+                {/if}
+              </div>
+            {/each}
+          </section>
+        {/if}
+      </div>
+    {:else}
+      <div class="flex items-center justify-center h-full text-sm text-ink-faint">
+        Select a person to view details
+      </div>
+    {/if}
+  </div>
+</div>
