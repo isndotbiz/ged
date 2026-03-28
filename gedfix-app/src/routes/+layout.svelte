@@ -227,7 +227,7 @@
             style="font-family: var(--font-serif); color: var(--ink-muted); font-weight: 600; letter-spacing: 0.12em;"
           >Importing Records</div>
           <div class="mb-4" style="border-top: 2px double var(--ink-faint);"></div>
-          <div class="h-1 rounded-full overflow-hidden mb-3" style="background: var(--parchment);">
+          <div class="h-1 rounded-full overflow-hidden mb-3" style="background: var(--parchment);" role="progressbar" aria-valuenow={$importProgress} aria-valuemin={0} aria-valuemax={100}>
             <div
               class="h-full rounded-full transition-all"
               style="width: {$importProgress}%; background: var(--accent); transition-duration: var(--duration-normal);"
