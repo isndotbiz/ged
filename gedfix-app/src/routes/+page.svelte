@@ -138,9 +138,16 @@
 
   function getImg(n: TreeNode): string {
     if (n.thumbUrl) return n.thumbUrl;
-    if (!n.person) return crestSvg('?', 'U');
-    if (n.person.surname) return personSvg(n.person);
-    return crestSvg(n.person.givenName || '?', n.person.sex);
+    if (!n.person) {
+      const key = '?:U';
+      if (!svgCache.has(key)) svgCache.set(key, crestSvg('?', 'U'));
+      return svgCache.get(key)!;
+    }
+    const key = `${n.person.surname || n.person.givenName || '?'}:${n.person.sex}`;
+    if (!svgCache.has(key)) {
+      svgCache.set(key, n.person.surname ? personSvg(n.person) : crestSvg(n.person.givenName || '?', n.person.sex));
+    }
+    return svgCache.get(key)!;
   }
 
   // ===== Face picker =====
