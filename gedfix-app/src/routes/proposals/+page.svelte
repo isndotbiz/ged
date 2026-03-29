@@ -4,7 +4,7 @@
     getAgentRuns, getChangeLog, getQualityRules, toggleQualityRule,
     getPerson, getPendingProposalCount, getPersons
   } from '$lib/db';
-  import { runResearchAgent } from '$lib/research-agent';
+  import { runResearchAgent, runBatchResearch, findResearchCandidates } from '$lib/research-agent';
   import { appStats } from '$lib/stores';
   import type { Proposal, AgentRun, ChangeLogEntry, QualityRule, Person } from '$lib/types';
 
