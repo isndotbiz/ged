@@ -31,6 +31,11 @@
   let researchMessage = $state('');
   let searchTimeout: ReturnType<typeof setTimeout> | null = null;
 
+  // Batch research
+  let researchCandidates = $state<{ xref: string; name: string; missingFields: string[]; priority: number }[]>([]);
+  let batchProgress = $state(0);
+  let batchMessage = $state('');
+
   // Loading
   let isLoading = $state(true);
 
