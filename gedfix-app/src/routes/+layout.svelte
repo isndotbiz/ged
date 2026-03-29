@@ -138,8 +138,13 @@
     }
   }
 
+  let hasAutoImported = false;
+
   $effect(() => {
-    autoImport();
+    if (!hasAutoImported) {
+      hasAutoImported = true;
+      autoImport();
+    }
   });
 </script>
 

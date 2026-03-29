@@ -7,7 +7,9 @@ CREATE TABLE IF NOT EXISTS person (
     sex TEXT NOT NULL DEFAULT 'U',
     isLiving INTEGER NOT NULL DEFAULT 0,
     sourceCount INTEGER NOT NULL DEFAULT 0,
-    mediaCount INTEGER NOT NULL DEFAULT 0
+    mediaCount INTEGER NOT NULL DEFAULT 0,
+    personColor TEXT NOT NULL DEFAULT '',
+    proofStatus TEXT NOT NULL DEFAULT 'UNKNOWN'
 );
 
 CREATE TABLE IF NOT EXISTS family (
@@ -105,11 +107,11 @@ countPersons:
 SELECT COUNT(*) FROM person;
 
 insertPerson:
-INSERT INTO person(id, xref, givenName, surname, suffix, sex, isLiving, sourceCount, mediaCount)
-VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?);
+INSERT INTO person(id, xref, givenName, surname, suffix, sex, isLiving, sourceCount, mediaCount, personColor, proofStatus)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
 
 updatePerson:
-UPDATE person SET givenName = ?, surname = ?, suffix = ?, sex = ?, isLiving = ? WHERE xref = ?;
+UPDATE person SET givenName = ?, surname = ?, suffix = ?, sex = ?, isLiving = ?, personColor = ?, proofStatus = ? WHERE xref = ?;
 
 deletePerson:
 DELETE FROM person WHERE xref = ?;
@@ -605,3 +607,173 @@ SELECT COUNT(*) FROM handleEverythingRun;
 
 deleteHandleEverythingRun:
 DELETE FROM handleEverythingRun WHERE id = ?;
+
+-- ============================================================
+-- Person Groups
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS customGroup (
+    id TEXT NOT NULL PRIMARY KEY,
+    name TEXT NOT NULL,
+    color TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS groupMember (
+    groupId TEXT NOT NULL,
+    personXref TEXT NOT NULL,
+    addedAt TEXT NOT NULL DEFAULT '',
+    PRIMARY KEY (groupId, personXref)
+);
+
+CREATE INDEX IF NOT EXISTS gm_group ON groupMember(groupId);
+CREATE INDEX IF NOT EXISTS gm_person ON groupMember(personXref);
+
+insertGroup:
+INSERT OR REPLACE INTO customGroup(id, name, color, description, createdAt)
+VALUES (?, ?, ?, ?, ?);
+
+selectAllGroups:
+SELECT * FROM customGroup ORDER BY name;
+
+selectGroupById:
+SELECT * FROM customGroup WHERE id = ?;
+
+countGroups:
+SELECT COUNT(*) FROM customGroup;
+
+deleteGroup:
+DELETE FROM customGroup WHERE id = ?;
+
+deleteAllGroups:
+DELETE FROM customGroup;
+
+insertGroupMember:
+INSERT OR REPLACE INTO groupMember(groupId, personXref, addedAt)
+VALUES (?, ?, ?);
+
+selectMembersOfGroup:
+SELECT personXref FROM groupMember WHERE groupId = ? ORDER BY addedAt;
+
+selectGroupsForPerson:
+SELECT customGroup.* FROM customGroup
+INNER JOIN groupMember ON customGroup.id = groupMember.groupId
+WHERE groupMember.personXref = ?;
+
+countGroupMembers:
+SELECT COUNT(*) FROM groupMember WHERE groupId = ?;
+
+deleteGroupMember:
+DELETE FROM groupMember WHERE groupId = ? AND personXref = ?;
+
+deleteAllGroupMembers:
+DELETE FROM groupMember WHERE groupId = ?;
+
+deleteGroupMembersForGroup:
+DELETE FROM groupMember WHERE groupId = ?;
+
+deleteAllGroupsAndMembers:
+DELETE FROM groupMember;
+
+-- ============================================================
+-- Associations (non-family relationships)
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS association (
+    id TEXT NOT NULL PRIMARY KEY,
+    person1Xref TEXT NOT NULL,
+    person2Xref TEXT NOT NULL,
+    relationshipType TEXT NOT NULL DEFAULT '',
+    description TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS assoc_p1 ON association(person1Xref);
+CREATE INDEX IF NOT EXISTS assoc_p2 ON association(person2Xref);
+
+insertAssociation:
+INSERT OR REPLACE INTO association(id, person1Xref, person2Xref, relationshipType, description, createdAt)
+VALUES (?, ?, ?, ?, ?, ?);
+
+selectAssociationsForPerson:
+SELECT * FROM association WHERE person1Xref = ? OR person2Xref = ? ORDER BY relationshipType;
+
+countAssociations:
+SELECT COUNT(*) FROM association;
+
+deleteAssociation:
+DELETE FROM association WHERE id = ?;
+
+deleteAllAssociations:
+DELETE FROM association;
+
+-- ============================================================
+-- Alternate Names
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS alternateName (
+    id TEXT NOT NULL PRIMARY KEY,
+    personXref TEXT NOT NULL,
+    givenName TEXT NOT NULL DEFAULT '',
+    surname TEXT NOT NULL DEFAULT '',
+    suffix TEXT NOT NULL DEFAULT '',
+    nameType TEXT NOT NULL DEFAULT '',
+    source TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS altname_person ON alternateName(personXref);
+
+insertAlternateName:
+INSERT OR REPLACE INTO alternateName(id, personXref, givenName, surname, suffix, nameType, source)
+VALUES (?, ?, ?, ?, ?, ?, ?);
+
+selectAlternateNamesForPerson:
+SELECT * FROM alternateName WHERE personXref = ? ORDER BY nameType;
+
+countAlternateNames:
+SELECT COUNT(*) FROM alternateName;
+
+deleteAlternateName:
+DELETE FROM alternateName WHERE id = ?;
+
+deleteAllAlternateNames:
+DELETE FROM alternateName;
+
+-- ============================================================
+-- Research Log
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS researchLog (
+    id TEXT NOT NULL PRIMARY KEY,
+    personXref TEXT NOT NULL DEFAULT '',
+    repository TEXT NOT NULL DEFAULT '',
+    searchTerms TEXT NOT NULL DEFAULT '',
+    recordsViewed TEXT NOT NULL DEFAULT '',
+    conclusion TEXT NOT NULL DEFAULT '',
+    sourceXref TEXT NOT NULL DEFAULT '',
+    resultType TEXT NOT NULL DEFAULT 'NEGATIVE',
+    searchDate TEXT NOT NULL DEFAULT '',
+    createdAt TEXT NOT NULL DEFAULT ''
+);
+
+CREATE INDEX IF NOT EXISTS rlog_person ON researchLog(personXref);
+
+insertResearchLog:
+INSERT OR REPLACE INTO researchLog(id, personXref, repository, searchTerms, recordsViewed, conclusion, sourceXref, resultType, searchDate, createdAt)
+VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+
+selectAllResearchLogs:
+SELECT * FROM researchLog ORDER BY createdAt DESC;
+
+selectResearchLogsForPerson:
+SELECT * FROM researchLog WHERE personXref = ? ORDER BY createdAt DESC;
+
+countResearchLogs:
+SELECT COUNT(*) FROM researchLog;
+
+deleteResearchLog:
+DELETE FROM researchLog WHERE id = ?;
+
+deleteAllResearchLogs:
+DELETE FROM researchLog;

@@ -207,7 +207,8 @@
           messages: conversationHistory,
         });
       } else if (provider === 'gemini') {
-        url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+        url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+        headers['x-goog-api-key'] = apiKey;
         const geminiContents = conversationHistory.map(m => ({
           role: m.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: m.content }],

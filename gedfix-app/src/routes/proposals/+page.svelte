@@ -376,6 +376,34 @@
     </div>
   {/if}
 
+  <!-- Auto-Source Finder -->
+  {#if !sourceSearching}
+    <div class="arch-card rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold" style="font-family: var(--font-serif); color: var(--ink);">Auto-Source Finder</h3>
+          <p class="text-xs text-ink-muted mt-0.5" style="color: var(--ink-muted);">Search FamilySearch (22.7B records) + historic newspapers for sources</p>
+        </div>
+        <div class="flex gap-2">
+          {#if researchCandidates.length > 0}
+            <button onclick={batchSourceSearch}
+              class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg transition-colors">
+              Find Sources for Top {Math.min(25, researchCandidates.filter(c => c.missingFields.includes('sources')).length)}
+            </button>
+          {/if}
+        </div>
+      </div>
+      {#if sourceProgress > 0}
+        <div class="mt-3">
+          <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: var(--parchment);">
+            <div class="h-full rounded-full transition-all duration-300" style="width: {sourceProgress}%; background: var(--accent);"></div>
+          </div>
+          <p class="text-xs mt-1" style="color: var(--ink-muted);">{sourceMessage}</p>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
   <!-- Stats Bar -->
   <div class="flex gap-3 mb-6">
     <div class="arch-card rounded-xl px-5 py-3 text-center">

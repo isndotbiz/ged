@@ -1,0 +1,385 @@
+@import "tailwindcss";
+
+/* ═══ ARCHIVAL ATLAS DESIGN TOKENS ═══ */
+
+:root {
+  /* Palette — warm paper & ink */
+  --paper: #F5F0E8;
+  --vellum: #FDFBF7;
+  --parchment: #EDE7D9;
+  --ink: #1A1612;
+  --ink-light: #3D352B;
+  --ink-muted: #7A6F62;
+  --ink-faint: #B5AA9A;
+  --accent: #8B6914;
+  --accent-hover: #A37D1A;
+  --accent-subtle: rgba(139, 105, 20, 0.08);
+
+  /* Sidebar — dark archive panel */
+  --sidebar-bg: #2C2418;
+  --sidebar-surface: #362E22;
+  --sidebar-text: #D4C9B8;
+  --sidebar-text-muted: #8A7E6E;
+  --sidebar-active-bg: rgba(139, 105, 20, 0.2);
+  --sidebar-active-text: #E8D5A0;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.04);
+  --sidebar-border: rgba(255, 255, 255, 0.06);
+  --sidebar-width: 240px;
+
+  /* Enhanced archival palette */
+  --paper-warm: #F2EBDF;
+  --linen: #E8E0D0;
+  --aged-gold: #C4A44A;
+  --deep-umber: #4A3628;
+  --sidebar-accent-line: #8B6914;
+
+  /* Enhanced shadows */
+  --shadow-inset: inset 0 1px 3px rgba(26, 22, 18, 0.06);
+  --shadow-deep: 0 6px 24px rgba(26, 22, 18, 0.18);
+
+  /* Decorative borders */
+  --border-decorative: 2px double var(--ink-faint);
+
+  /* Genealogy card colors */
+  --card-male-bg: #E8EEF5;
+  --card-male-border: #8FAEC8;
+  --card-male-border-hover: #4A6B8A;
+  --card-female-bg: #F5E8EE;
+  --card-female-border: #C88FAE;
+  --card-female-border-hover: #8A4A6B;
+  --card-unknown-bg: #EDEBE6;
+  --card-unknown-border: #C5BFB4;
+
+  /* Status colors */
+  --color-validated: #4A7C3F;
+  --color-warning: #B8860B;
+  --color-error: #A63D2F;
+
+  /* Typography — editorial stacks */
+  --font-serif: Georgia, "Palatino Linotype", "Book Antiqua", Palatino, "Times New Roman", serif;
+  --font-sans: "Gill Sans", "Gill Sans MT", Calibri, "Trebuchet MS", system-ui, sans-serif;
+  --font-mono: "SF Mono", "Fira Code", "Fira Mono", "Roboto Mono", monospace;
+
+  /* Elevation & depth */
+  --shadow-sm: 0 1px 2px rgba(26, 22, 18, 0.06);
+  --shadow-md: 0 2px 8px rgba(26, 22, 18, 0.1);
+  --shadow-lg: 0 4px 16px rgba(26, 22, 18, 0.12);
+  --shadow-overlay: 0 8px 32px rgba(26, 22, 18, 0.25);
+  --border-subtle: rgba(26, 22, 18, 0.08);
+  --border-rule: rgba(26, 22, 18, 0.15);
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.45, 0, 0.55, 1);
+  --duration-fast: 120ms;
+  --duration-normal: 200ms;
+  --duration-slow: 400ms;
+
+  /* Background texture — subtle paper grain */
+  --texture-paper: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0L40 40M40 0L0 40' stroke='%23B5AA9A' stroke-width='0.3' opacity='0.08'/%3E%3C/svg%3E");
+}
+
+body {
+  font-family: var(--font-sans);
+  background: var(--paper);
+  background-image: var(--texture-paper);
+  color: var(--ink);
+  margin: 0;
+  overflow: hidden;
+  user-select: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Archival scrollbar */
+::-webkit-scrollbar { width: 7px; height: 7px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--ink-faint); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--ink-muted); }
+
+/* ═══ MOTION SYSTEM ═══ */
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(-8px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes revealUp {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-fade-in {
+  animation: fadeIn var(--duration-normal) var(--ease-out);
+}
+
+.animate-slide-in {
+  animation: slideIn var(--duration-normal) var(--ease-out);
+}
+
+.animate-reveal {
+  animation: revealUp var(--duration-slow) var(--ease-out);
+}
+
+/* Staged reveal for child elements */
+.stagger-children > * {
+  animation: fadeIn var(--duration-slow) var(--ease-out) both;
+}
+.stagger-children > *:nth-child(1) { animation-delay: 0ms; }
+.stagger-children > *:nth-child(2) { animation-delay: 60ms; }
+.stagger-children > *:nth-child(3) { animation-delay: 120ms; }
+.stagger-children > *:nth-child(4) { animation-delay: 180ms; }
+.stagger-children > *:nth-child(5) { animation-delay: 240ms; }
+.stagger-children > *:nth-child(6) { animation-delay: 300ms; }
+.stagger-children > *:nth-child(7) { animation-delay: 360ms; }
+.stagger-children > *:nth-child(8) { animation-delay: 420ms; }
+.stagger-children > *:nth-child(9) { animation-delay: 480ms; }
+.stagger-children > *:nth-child(10) { animation-delay: 540ms; }
+
+/* ═══ FOCUS & ACCESSIBILITY ═══ */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ═══ ARCHIVAL RULES & DIVIDERS ═══ */
+
+.rule-top {
+  border-top: 1px solid var(--border-rule);
+  padding-top: 0.5rem;
+}
+
+.rule-bottom {
+  border-bottom: 1px solid var(--border-rule);
+  padding-bottom: 0.5rem;
+}
+
+/* ═══ ARCHIVAL COMPONENT CLASSES ═══ */
+
+/* Page layout */
+.arch-page {
+  padding: 2rem;
+  max-width: 56rem;
+  font-family: var(--font-sans);
+  color: var(--ink);
+}
+
+.arch-page h1 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+/* Cards — archival paper surface */
+.arch-card {
+  background: var(--vellum);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-subtle);
+}
+
+.arch-card-divide {
+  border-color: var(--border-subtle);
+}
+
+/* Buttons */
+.btn-accent {
+  background: var(--accent);
+  color: white;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  border-radius: 0.5rem;
+  transition: background var(--duration-fast);
+}
+
+.btn-accent:disabled {
+  opacity: 0.5;
+}
+
+.btn-secondary {
+  background: var(--parchment);
+  color: var(--ink-light);
+  font-family: var(--font-sans);
+  border-radius: 0.5rem;
+  transition: background var(--duration-fast);
+}
+
+.btn-secondary:hover {
+  background: var(--ink-faint);
+  color: var(--ink);
+}
+
+/* Filter pill buttons */
+.btn-filter {
+  font-size: 0.75rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--parchment);
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  transition: all var(--duration-fast);
+}
+
+.btn-filter.active,
+.btn-filter-active {
+  background: var(--accent);
+  color: white;
+}
+
+/* Inputs */
+.arch-input {
+  background: rgba(26, 22, 18, 0.04);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  font-family: var(--font-sans);
+  color: var(--ink);
+  outline: none;
+  transition: border-color var(--duration-fast);
+}
+
+.arch-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px rgba(139, 105, 20, 0.1);
+}
+
+.arch-input::placeholder {
+  color: var(--ink-faint);
+}
+
+/* Section headers */
+.arch-section-header {
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-muted);
+  font-family: var(--font-sans);
+  margin-bottom: 0.75rem;
+}
+
+/* Toolbar bar */
+.arch-toolbar {
+  background: var(--vellum);
+  border-bottom: 1px solid var(--border-rule);
+  padding: 0.5rem 1.25rem;
+}
+
+/* Muted text helpers */
+.text-ink { color: var(--ink); }
+.text-ink-light { color: var(--ink-light); }
+.text-ink-muted { color: var(--ink-muted); }
+.text-ink-faint { color: var(--ink-faint); }
+
+/* Progress bars */
+.arch-progress-track {
+  background: var(--parchment);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.arch-progress-bar {
+  background: var(--accent);
+  border-radius: 9999px;
+  transition: width var(--duration-normal);
+}
+
+/* Segmented control / tab group */
+.arch-tabs {
+  background: var(--parchment);
+  border-radius: 0.5rem;
+  padding: 2px;
+  display: flex;
+}
+
+.arch-tab {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 0.375rem;
+  color: var(--ink-muted);
+  transition: all var(--duration-fast);
+}
+
+.arch-tab.active {
+  background: var(--vellum);
+  box-shadow: var(--shadow-sm);
+  color: var(--ink);
+}
+
+/* ═══ INTERACTIVE STATES ═══ */
+
+.nav-link:not(.nav-active):hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.btn-accent:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+/* ═══ PERFORMANCE ═══ */
+
+.contain-content { contain: content; }
+.contain-strict { contain: strict; }
+
+.list-item-lazy {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 60px;
+}
+
+.gpu-transition {
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* ═══ ARCHIVAL DECORATIVE BORDERS ═══ */
+
+.rule-double {
+  border-top: 2px double var(--ink-faint);
+  padding-top: 0.75rem;
+}
+
+.rule-accent-left {
+  border-left: 2px solid var(--accent);
+  padding-left: 0.75rem;
+}
+
+/* Dossier page header */
+.dossier-header {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  padding-bottom: 0.75rem;
+  border-bottom: 2px double var(--ink-faint);
+  margin-bottom: 1.5rem;
+}
+
+/* Catalog notation — small monospace reference text */
+.catalog-notation {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  color: var(--ink-faint);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* ═══ DOSSIER REVEAL ANIMATION ═══ */
+
+@keyframes dossierReveal {
+  from { opacity: 0; transform: translateY(16px) scale(0.97); }
+  50% { opacity: 0.8; transform: translateY(4px) scale(0.995); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.animate-dossier {
+  animation: dossierReveal 600ms var(--ease-out);
+}

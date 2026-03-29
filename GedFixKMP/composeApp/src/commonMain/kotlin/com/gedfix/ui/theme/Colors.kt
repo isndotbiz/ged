@@ -149,6 +149,15 @@ val CleanupIconColor = Color(0xFFE05A4F)
 val CloudSyncIconColor = Color(0xFF5AB4E8)
 
 // ============================================================
+// New feature section colors
+// ============================================================
+val GroupsIconColor = Color(0xFF5C6BC0)
+val ContradictionsIconColor = Color(0xFFE05A4F)
+val ResearchLogIconColor = Color(0xFF8E7463)
+val MapsIconColor = Color(0xFF5AB078)
+val DNAToolsIconColor = Color(0xFF9B6BCD)
+
+// ============================================================
 // Chart view section colors
 // ============================================================
 val FanChartIconColor = Color(0xFF9B6BCD)

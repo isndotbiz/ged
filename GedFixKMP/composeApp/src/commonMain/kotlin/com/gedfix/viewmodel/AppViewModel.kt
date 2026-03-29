@@ -42,6 +42,10 @@ class AppViewModel(val db: DatabaseRepository) {
         private set
     var versionCount by mutableStateOf(0)
         private set
+    var groupCount by mutableStateOf(0)
+        private set
+    var researchLogCount by mutableStateOf(0)
+        private set
 
     var issueCount by mutableStateOf(0)
 
@@ -65,6 +69,8 @@ class AppViewModel(val db: DatabaseRepository) {
         noteCount = db.noteCount()
         pendingTaskCount = db.pendingTaskCount()
         versionCount = db.versionCount()
+        groupCount = db.groupCount()
+        researchLogCount = db.researchLogCount()
     }
 
     val validationPercentage: Float

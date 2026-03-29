@@ -5,6 +5,18 @@ import kotlin.uuid.Uuid
 
 // MARK: - Person
 
+enum class ProofStatus(val label: String) {
+    PROVEN("Proven"),
+    DISPROVEN("Disproven"),
+    DISPUTED("Disputed"),
+    PROPOSED("Proposed"),
+    UNKNOWN("Unknown");
+
+    companion object {
+        fun fromString(s: String): ProofStatus = entries.firstOrNull { it.name == s } ?: UNKNOWN
+    }
+}
+
 data class GedcomPerson(
     val id: String,
     val xref: String,
@@ -15,7 +27,9 @@ data class GedcomPerson(
     var isLiving: Boolean,
     val sourceCount: Int = 0,
     val mediaCount: Int = 0,
-    val isValidated: Boolean = false
+    val isValidated: Boolean = false,
+    val personColor: String = "",
+    val proofStatus: ProofStatus = ProofStatus.UNKNOWN
 ) {
     val displayName: String
         get() = listOf(givenName, surname, suffix)
@@ -297,6 +311,11 @@ enum class SidebarSection(val label: String) {
     IMAGE_DEDUPE("Image Dedupe"),
     CLEANUP("Cleanup"),
     CLOUD_SYNC("Cloud Sync"),
+    GROUPS("Groups"),
+    CONTRADICTIONS("Contradictions"),
+    RESEARCH_LOG("Research Log"),
+    MAPS("Maps"),
+    DNA_TOOLS("DNA Tools"),
     AI_CHAT("AI Chat"),
     AI_SETTINGS("AI Settings"),
     SETTINGS("Settings");
@@ -327,6 +346,11 @@ enum class SidebarSection(val label: String) {
             IMAGE_DEDUPE -> "image_dedupe"
             CLEANUP -> "cleanup"
             CLOUD_SYNC -> "cloud"
+            GROUPS -> "group"
+            CONTRADICTIONS -> "contradictions"
+            RESEARCH_LOG -> "research_log"
+            MAPS -> "maps"
+            DNA_TOOLS -> "dna"
             AI_CHAT -> "chat"
             AI_SETTINGS -> "ai_settings"
             SETTINGS -> "gear"

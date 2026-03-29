@@ -440,7 +440,7 @@
 
 <!-- CROP TOOL OVERLAY -->
 {#if showCrop && cropMedia && pickerPerson}
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.7);" role="dialog" tabindex="-1">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.7);" role="dialog" aria-modal="true" tabindex="-1">
     <div class="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col rounded-xl animate-dossier" style="background: var(--vellum); box-shadow: var(--shadow-overlay);">
       <div class="flex items-center justify-between px-6 py-3 shrink-0" style="border-bottom: 1px solid var(--border-rule);">
         <div>

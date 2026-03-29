@@ -64,7 +64,10 @@ fun SidebarContent(
             it != SidebarSection.AI_CHAT && it != SidebarSection.AI_SETTINGS && it != SidebarSection.SETTINGS &&
             it != SidebarSection.BOOKMARKS && it != SidebarSection.NOTES && it != SidebarSection.TASKS &&
             it != SidebarSection.VERSION_HISTORY && it != SidebarSection.IMAGE_DEDUPE &&
-            it != SidebarSection.CLEANUP && it != SidebarSection.CLOUD_SYNC
+            it != SidebarSection.CLEANUP && it != SidebarSection.CLOUD_SYNC &&
+            it != SidebarSection.GROUPS && it != SidebarSection.CONTRADICTIONS &&
+            it != SidebarSection.RESEARCH_LOG && it != SidebarSection.MAPS &&
+            it != SidebarSection.DNA_TOOLS
         }
         items(treeSections) { section ->
             SidebarNavItem(
@@ -80,7 +83,8 @@ fun SidebarContent(
         item { SidebarSectionHeader("Research") }
 
         val researchSections = listOf(
-            SidebarSection.BOOKMARKS, SidebarSection.NOTES, SidebarSection.TASKS
+            SidebarSection.BOOKMARKS, SidebarSection.NOTES, SidebarSection.TASKS,
+            SidebarSection.RESEARCH_LOG, SidebarSection.DNA_TOOLS
         )
         items(researchSections) { section ->
             SidebarNavItem(
@@ -96,8 +100,9 @@ fun SidebarContent(
         item { SidebarSectionHeader("Data Quality") }
 
         val dataQualitySections = listOf(
+            SidebarSection.CONTRADICTIONS, SidebarSection.GROUPS,
             SidebarSection.VERSION_HISTORY, SidebarSection.IMAGE_DEDUPE,
-            SidebarSection.CLEANUP, SidebarSection.CLOUD_SYNC
+            SidebarSection.CLEANUP, SidebarSection.CLOUD_SYNC, SidebarSection.MAPS
         )
         items(dataQualitySections) { section ->
             SidebarNavItem(
@@ -274,6 +279,11 @@ private fun sectionIcon(section: SidebarSection): String = when (section) {
     SidebarSection.IMAGE_DEDUPE -> "\u229A"
     SidebarSection.CLEANUP -> "\u2702"
     SidebarSection.CLOUD_SYNC -> "\u2601"
+    SidebarSection.GROUPS -> "\u2630"
+    SidebarSection.CONTRADICTIONS -> "\u2620"
+    SidebarSection.RESEARCH_LOG -> "\u270D"
+    SidebarSection.MAPS -> "\u2637"
+    SidebarSection.DNA_TOOLS -> "\u2697"
     SidebarSection.AI_CHAT -> "\u2604"
     SidebarSection.AI_SETTINGS -> "\u2318"
     SidebarSection.SETTINGS -> "\u2699"
@@ -304,6 +314,11 @@ private fun sectionIconColor(section: SidebarSection, vm: AppViewModel) = when (
     SidebarSection.IMAGE_DEDUPE -> ImageDedupeIconColor
     SidebarSection.CLEANUP -> CleanupIconColor
     SidebarSection.CLOUD_SYNC -> CloudSyncIconColor
+    SidebarSection.GROUPS -> GroupsIconColor
+    SidebarSection.CONTRADICTIONS -> ContradictionsIconColor
+    SidebarSection.RESEARCH_LOG -> ResearchLogIconColor
+    SidebarSection.MAPS -> MapsIconColor
+    SidebarSection.DNA_TOOLS -> DNAToolsIconColor
     SidebarSection.AI_CHAT -> AIChatIconColor
     SidebarSection.AI_SETTINGS -> AISettingsIconColor
     SidebarSection.SETTINGS -> SettingsIconColor
@@ -334,6 +349,11 @@ private fun sectionBadge(section: SidebarSection, vm: AppViewModel): String = wh
     SidebarSection.IMAGE_DEDUPE -> ""
     SidebarSection.CLEANUP -> ""
     SidebarSection.CLOUD_SYNC -> ""
+    SidebarSection.GROUPS -> if (vm.groupCount > 0) vm.groupCount.toString() else ""
+    SidebarSection.CONTRADICTIONS -> ""
+    SidebarSection.RESEARCH_LOG -> if (vm.researchLogCount > 0) vm.researchLogCount.toString() else ""
+    SidebarSection.MAPS -> ""
+    SidebarSection.DNA_TOOLS -> ""
     SidebarSection.AI_CHAT -> ""
     SidebarSection.AI_SETTINGS -> ""
     SidebarSection.SETTINGS -> ""

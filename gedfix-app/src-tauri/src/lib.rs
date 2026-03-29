@@ -69,7 +69,11 @@ async fn crop_face(
     );
     let thumb_path = cache_dir.join(format!("{}_crop_{}.jpg", hash, size));
 
-    // Don't cache crops - always regenerate for fresh results
+    // Return cached crop if it exists
+    if thumb_path.exists() {
+        return Ok(thumb_path.to_string_lossy().to_string());
+    }
+
     let img = image::open(&src).map_err(|e| e.to_string())?;
     let (w, h) = img.dimensions();
 

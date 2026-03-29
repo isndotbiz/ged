@@ -274,27 +274,29 @@
         {/if}
 
         <!-- Data completeness -->
-        {@const fields = ['birthDate', 'birthPlace', 'deathDate', 'deathPlace']}
-        {@const filled = fields.filter(f => (selected as any)[f]).length}
-        {@const pct = Math.round((filled / fields.length) * 100)}
-        <div class="mt-3 mb-4">
-          <div class="flex items-center justify-between mb-1">
-            <span class="text-[10px] text-ink-faint">Data completeness</span>
-            <span class="text-[10px] font-medium" style="color: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};">{pct}%</span>
-          </div>
-          <div class="w-full h-1 rounded-full" style="background: var(--parchment);">
-            <div class="h-full rounded-full transition-all" style="width: {pct}%; background: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};"></div>
-          </div>
-          {#if filled < fields.length}
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              {#each fields.filter(f => !(selected as any)[f]) as missing}
-                <span class="text-[9px] px-1.5 py-0.5 rounded" style="background: rgba(166,61,47,0.08); color: var(--color-error);">
-                  Missing {missing.replace(/([A-Z])/g, ' $1').toLowerCase()}
-                </span>
-              {/each}
+        {#if selected}
+          {@const fields = ['birthDate', 'birthPlace', 'deathDate', 'deathPlace']}
+          {@const filled = fields.filter(f => (selected as any)[f]).length}
+          {@const pct = Math.round((filled / fields.length) * 100)}
+          <div class="mt-3 mb-4">
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[10px] text-ink-faint">Data completeness</span>
+              <span class="text-[10px] font-medium" style="color: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};">{pct}%</span>
             </div>
-          {/if}
-        </div>
+            <div class="w-full h-1 rounded-full" style="background: var(--parchment);">
+              <div class="h-full rounded-full transition-all" style="width: {pct}%; background: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};"></div>
+            </div>
+            {#if filled < fields.length}
+              <div class="flex flex-wrap gap-1 mt-1.5">
+                {#each fields.filter(f => !(selected as any)[f]) as missing}
+                  <span class="text-[9px] px-1.5 py-0.5 rounded" style="background: rgba(166,61,47,0.08); color: var(--color-error);">
+                    Missing {missing.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                  </span>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        {/if}
 
         <!-- Parents -->
         {#if selectedParents.father || selectedParents.mother}

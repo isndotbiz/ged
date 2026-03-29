@@ -43,7 +43,9 @@ class DatabaseRepository(driverFactory: DriverFactory) {
                 sex = person.sex,
                 isLiving = if (person.isLiving) 1L else 0L,
                 sourceCount = person.sourceCount.toLong(),
-                mediaCount = person.mediaCount.toLong()
+                mediaCount = person.mediaCount.toLong(),
+                personColor = person.personColor,
+                proofStatus = person.proofStatus.name
             )
         }
         for (family in result.families) {
@@ -142,7 +144,9 @@ class DatabaseRepository(driverFactory: DriverFactory) {
             sex = person.sex,
             isLiving = if (person.isLiving) 1L else 0L,
             sourceCount = person.sourceCount.toLong(),
-            mediaCount = person.mediaCount.toLong()
+            mediaCount = person.mediaCount.toLong(),
+            personColor = person.personColor,
+            proofStatus = person.proofStatus.name
         )
     }
 
@@ -153,6 +157,8 @@ class DatabaseRepository(driverFactory: DriverFactory) {
             suffix = person.suffix,
             sex = person.sex,
             isLiving = if (person.isLiving) 1L else 0L,
+            personColor = person.personColor,
+            proofStatus = person.proofStatus.name,
             xref = person.xref
         )
     }
@@ -760,6 +766,170 @@ class DatabaseRepository(driverFactory: DriverFactory) {
 
     fun handleEverythingRunCount(): Int = queries.countHandleEverythingRuns().executeAsOne().toInt()
 
+    // MARK: - Groups
+
+    fun insertGroup(group: PersonGroup) {
+        queries.insertGroup(
+            id = group.id,
+            name = group.name,
+            color = group.color,
+            description = group.description,
+            createdAt = group.createdAt
+        )
+    }
+
+    fun fetchAllGroups(): List<PersonGroup> {
+        return queries.selectAllGroups().executeAsList().map { it.toGroupModel() }
+    }
+
+    fun groupCount(): Int = queries.countGroups().executeAsOne().toInt()
+
+    fun deleteGroup(id: String) {
+        queries.deleteGroupMembersForGroup(id)
+        queries.deleteGroup(id)
+    }
+
+    fun addMemberToGroup(groupId: String, personXref: String) {
+        queries.insertGroupMember(groupId, personXref, java.time.Instant.now().toString())
+    }
+
+    fun removeMemberFromGroup(groupId: String, personXref: String) {
+        queries.deleteGroupMember(groupId, personXref)
+    }
+
+    fun fetchMembersOfGroup(groupId: String): List<String> {
+        return queries.selectMembersOfGroup(groupId).executeAsList()
+    }
+
+    fun fetchGroupsForPerson(personXref: String): List<PersonGroup> {
+        return queries.selectGroupsForPerson(personXref).executeAsList().map { it.toGroupModel() }
+    }
+
+    fun groupMemberCount(groupId: String): Int {
+        return queries.countGroupMembers(groupId).executeAsOne().toInt()
+    }
+
+    // MARK: - Associations
+
+    fun insertAssociation(assoc: Association) {
+        queries.insertAssociation(
+            id = assoc.id,
+            person1Xref = assoc.person1Xref,
+            person2Xref = assoc.person2Xref,
+            relationshipType = assoc.relationshipType,
+            description = assoc.description,
+            createdAt = assoc.createdAt
+        )
+    }
+
+    fun fetchAssociationsForPerson(personXref: String): List<Association> {
+        return queries.selectAssociationsForPerson(personXref, personXref).executeAsList().map {
+            Association(
+                id = it.id,
+                person1Xref = it.person1Xref,
+                person2Xref = it.person2Xref,
+                relationshipType = it.relationshipType,
+                description = it.description,
+                createdAt = it.createdAt
+            )
+        }
+    }
+
+    fun associationCount(): Int = queries.countAssociations().executeAsOne().toInt()
+
+    fun deleteAssociation(id: String) {
+        queries.deleteAssociation(id)
+    }
+
+    // MARK: - Alternate Names
+
+    fun insertAlternateName(name: AlternateName) {
+        queries.insertAlternateName(
+            id = name.id,
+            personXref = name.personXref,
+            givenName = name.givenName,
+            surname = name.surname,
+            suffix = name.suffix,
+            nameType = name.nameType,
+            source = name.source
+        )
+    }
+
+    fun fetchAlternateNamesForPerson(personXref: String): List<AlternateName> {
+        return queries.selectAlternateNamesForPerson(personXref).executeAsList().map {
+            AlternateName(
+                id = it.id,
+                personXref = it.personXref,
+                givenName = it.givenName,
+                surname = it.surname,
+                suffix = it.suffix,
+                nameType = it.nameType,
+                source = it.source
+            )
+        }
+    }
+
+    fun deleteAlternateName(id: String) {
+        queries.deleteAlternateName(id)
+    }
+
+    // MARK: - Research Log
+
+    fun insertResearchLog(entry: ResearchLogEntry) {
+        queries.insertResearchLog(
+            id = entry.id,
+            personXref = entry.personXref,
+            repository = entry.repository,
+            searchTerms = entry.searchTerms,
+            recordsViewed = entry.recordsViewed,
+            conclusion = entry.conclusion,
+            sourceXref = entry.sourceXref,
+            resultType = entry.resultType.name,
+            searchDate = entry.searchDate,
+            createdAt = entry.createdAt
+        )
+    }
+
+    fun fetchAllResearchLogs(): List<ResearchLogEntry> {
+        return queries.selectAllResearchLogs().executeAsList().map {
+            ResearchLogEntry(
+                id = it.id,
+                personXref = it.personXref,
+                repository = it.repository,
+                searchTerms = it.searchTerms,
+                recordsViewed = it.recordsViewed,
+                conclusion = it.conclusion,
+                sourceXref = it.sourceXref,
+                resultType = ResearchResultType.fromString(it.resultType),
+                searchDate = it.searchDate,
+                createdAt = it.createdAt
+            )
+        }
+    }
+
+    fun fetchResearchLogsForPerson(personXref: String): List<ResearchLogEntry> {
+        return queries.selectResearchLogsForPerson(personXref).executeAsList().map {
+            ResearchLogEntry(
+                id = it.id,
+                personXref = it.personXref,
+                repository = it.repository,
+                searchTerms = it.searchTerms,
+                recordsViewed = it.recordsViewed,
+                conclusion = it.conclusion,
+                sourceXref = it.sourceXref,
+                resultType = ResearchResultType.fromString(it.resultType),
+                searchDate = it.searchDate,
+                createdAt = it.createdAt
+            )
+        }
+    }
+
+    fun researchLogCount(): Int = queries.countResearchLogs().executeAsOne().toInt()
+
+    fun deleteResearchLog(id: String) {
+        queries.deleteResearchLog(id)
+    }
+
     // MARK: - Merge operations
 
     /**
@@ -774,6 +944,8 @@ class DatabaseRepository(driverFactory: DriverFactory) {
             suffix = mergedData.suffix,
             sex = mergedData.sex,
             isLiving = if (mergedData.isLiving) 1L else 0L,
+            personColor = mergedData.personColor,
+            proofStatus = mergedData.proofStatus.name,
             xref = keepXref
         )
 
@@ -808,7 +980,9 @@ private fun com.gedfix.db.Person.toModel(): GedcomPerson = GedcomPerson(
     isLiving = isLiving != 0L,
     sourceCount = sourceCount.toInt(),
     mediaCount = mediaCount.toInt(),
-    isValidated = sourceCount > 0
+    isValidated = sourceCount > 0,
+    personColor = personColor,
+    proofStatus = ProofStatus.fromString(proofStatus)
 )
 
 private fun com.gedfix.db.Family.toModel(): GedcomFamily = GedcomFamily(
@@ -884,6 +1058,14 @@ private fun com.gedfix.db.Note.toNoteModel(): ResearchNote = ResearchNote(
     content = content,
     createdAt = createdAt,
     updatedAt = updatedAt
+)
+
+private fun com.gedfix.db.CustomGroup.toGroupModel(): PersonGroup = PersonGroup(
+    id = id,
+    name = name,
+    color = color,
+    description = description,
+    createdAt = createdAt
 )
 
 private fun com.gedfix.db.ResearchTask.toTaskModel(): com.gedfix.models.ResearchTask = com.gedfix.models.ResearchTask(
