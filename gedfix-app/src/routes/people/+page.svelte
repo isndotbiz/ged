@@ -105,7 +105,49 @@
     BAPM: 'Baptism', MARR: 'Marriage', DIV: 'Divorce', RESI: 'Residence',
     OCCU: 'Occupation', EDUC: 'Education', EMIG: 'Emigration', IMMI: 'Immigration',
     NATU: 'Naturalization', CENS: 'Census', PROB: 'Probate', WILL: 'Will', EVEN: 'Event',
+    RELI: 'Religion', GRAD: 'Graduation', MILI: 'Military',
   };
+
+  function eventIcon(type: string): string {
+    const icons: Record<string, string> = {
+      'BIRT': 'Born', 'DEAT': 'Died', 'MARR': 'Married', 'BURI': 'Buried',
+      'BAPM': 'Baptized', 'CHR': 'Christened', 'EMIG': 'Emigrated', 'IMMI': 'Immigrated',
+      'NATU': 'Naturalized', 'CENS': 'Census', 'RESI': 'Residence', 'OCCU': 'Occupation',
+      'EDUC': 'Education', 'RELI': 'Religion', 'GRAD': 'Graduated', 'MILI': 'Military',
+      'PROB': 'Probate', 'WILL': 'Will', 'DIV': 'Divorced', 'EVEN': 'Event',
+    };
+    return icons[type] || eventLabels[type] || type;
+  }
+
+  async function researchSelected() {
+    if (!selected) return;
+    isResearchingPerson = true;
+    researchPersonMsg = 'Researching...';
+    try {
+      const result = await runResearchAgent(selected.xref, (p) => {
+        researchPersonMsg = p.message;
+      });
+      researchPersonMsg = `Found ${result.proposalCount} proposals. Check Proposals page.`;
+    } catch (e) {
+      researchPersonMsg = `Error: ${e}`;
+    }
+    setTimeout(() => { isResearchingPerson = false; researchPersonMsg = ''; }, 3000);
+  }
+
+  async function findSourcesForSelected() {
+    if (!selected) return;
+    isResearchingPerson = true;
+    researchPersonMsg = 'Searching records...';
+    try {
+      const result = await findSources(selected.xref, (p) => {
+        researchPersonMsg = p.message;
+      });
+      researchPersonMsg = `Found ${result.sourcesFound} sources. Check Proposals page.`;
+    } catch (e) {
+      researchPersonMsg = `Error: ${e}`;
+    }
+    setTimeout(() => { isResearchingPerson = false; researchPersonMsg = ''; }, 3000);
+  }
 
   $effect(() => { load(); });
 </script>
@@ -216,6 +258,44 @@
           </div>
         </div>
 
+        <!-- Research actions -->
+        <div class="flex gap-2 mt-3 mb-4">
+          <button onclick={researchSelected} disabled={isResearchingPerson}
+            class="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-50"
+            style="background: var(--accent);"
+          >{isResearchingPerson ? '...' : 'AI Research'}</button>
+          <button onclick={findSourcesForSelected} disabled={isResearchingPerson}
+            class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
+            style="background: var(--parchment); color: var(--ink);"
+          >Find Sources</button>
+        </div>
+        {#if researchPersonMsg}
+          <div class="text-xs text-ink-muted mb-3 italic">{researchPersonMsg}</div>
+        {/if}
+
+        <!-- Data completeness -->
+        {@const fields = ['birthDate', 'birthPlace', 'deathDate', 'deathPlace']}
+        {@const filled = fields.filter(f => (selected as any)[f]).length}
+        {@const pct = Math.round((filled / fields.length) * 100)}
+        <div class="mt-3 mb-4">
+          <div class="flex items-center justify-between mb-1">
+            <span class="text-[10px] text-ink-faint">Data completeness</span>
+            <span class="text-[10px] font-medium" style="color: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};">{pct}%</span>
+          </div>
+          <div class="w-full h-1 rounded-full" style="background: var(--parchment);">
+            <div class="h-full rounded-full transition-all" style="width: {pct}%; background: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};"></div>
+          </div>
+          {#if filled < fields.length}
+            <div class="flex flex-wrap gap-1 mt-1.5">
+              {#each fields.filter(f => !(selected as any)[f]) as missing}
+                <span class="text-[9px] px-1.5 py-0.5 rounded" style="background: rgba(166,61,47,0.08); color: var(--color-error);">
+                  Missing {missing.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                </span>
+              {/each}
+            </div>
+          {/if}
+        </div>
+
         <!-- Parents -->
         {#if selectedParents.father || selectedParents.mother}
           <section class="mb-6">
@@ -292,7 +372,7 @@
                      ev.eventType === 'MARR' ? 'bg-pink-400' :
                      ev.eventType === 'BURI' ? 'bg-amber-700' : 'bg-blue-400'}"></div>
                   <div class="flex-1 min-w-0">
-                    <div class="text-sm font-medium text-ink">{eventLabels[ev.eventType] ?? ev.eventType}</div>
+                    <div class="text-sm font-medium text-ink">{eventIcon(ev.eventType)}</div>
                     {#if ev.dateValue}<div class="text-xs text-ink-muted">{ev.dateValue}</div>{/if}
                     {#if ev.place}<div class="text-xs text-ink-faint">{ev.place}</div>{/if}
                     {#if ev.description}<div class="text-xs text-ink-faint italic">{ev.description}</div>{/if}
