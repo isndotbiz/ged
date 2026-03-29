@@ -178,6 +178,32 @@
     setTimeout(() => { isResearching = false; }, 1500);
   }
 
+  // --- Batch Research ---
+  async function scanCandidates() {
+    researchCandidates = await findResearchCandidates();
+  }
+
+  async function batchResearch() {
+    const top50 = researchCandidates.slice(0, 50).map(c => c.xref);
+    isResearching = true;
+    batchProgress = 0;
+    batchMessage = 'Starting batch research...';
+
+    const result = await runBatchResearch(top50, (p) => {
+      batchProgress = p.pct;
+      batchMessage = p.message;
+    });
+
+    batchProgress = 100;
+    batchMessage = `Done! ${result.totalProposals} proposals from ${top50.length} people`;
+    isResearching = false;
+    await loadData();
+  }
+
+  async function refreshProposals() {
+    await loadData();
+  }
+
   // --- Helpers ---
   function personName(xref: string): string {
     const p = personCache.get(xref);
