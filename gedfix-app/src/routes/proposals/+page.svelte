@@ -210,6 +210,22 @@
     await loadData();
   }
 
+  // --- Source Finder ---
+  async function batchSourceSearch() {
+    const unsourced = researchCandidates.filter(c => c.missingFields.includes('sources')).slice(0, 25);
+    sourceSearching = true;
+    sourceProgress = 0;
+    sourceMessage = 'Starting source search...';
+
+    await batchFindSources(unsourced.map(c => c.xref), (p) => {
+      sourceProgress = p.pct;
+      sourceMessage = p.message;
+    });
+
+    sourceSearching = false;
+    await refreshProposals();
+  }
+
   // --- Helpers ---
   function personName(xref: string): string {
     const p = personCache.get(xref);
