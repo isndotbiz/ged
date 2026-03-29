@@ -1,11 +1,15 @@
 <script lang="ts">
   import { getPersons, getEvents, getSpouseFamilies, getChildren, getParents, getMediaWithPaths, getPrimaryPhoto } from '$lib/db';
+  import { runResearchAgent } from '$lib/research-agent';
+  import { findSources } from '$lib/source-finder';
   import type { Person, GedcomEvent, Family, GedcomMedia } from '$lib/types';
   import { convertFileSrc } from '@tauri-apps/api/core';
   import { lazyImage } from '$lib/lazy-image';
   import { VList } from 'virtua/svelte';
 
   let search = $state('');
+  let isResearchingPerson = $state(false);
+  let researchPersonMsg = $state('');
   // $state.raw for large arrays — 79x faster than $state for iteration
   let persons = $state.raw<Person[]>([]);
   let selected = $state<Person | null>(null);
