@@ -17,7 +17,7 @@
   let expandedMedia = $state<GedcomMedia | null>(null);
 
   // Photo cache for list avatars
-  let photoCache = $state<Map<string, string>>(new Map());
+  let photoCache = $state.raw<Map<string, string>>(new Map());
 
   let searchTimeout: ReturnType<typeof setTimeout>;
 
