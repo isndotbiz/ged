@@ -5,6 +5,7 @@
     getPerson, getPendingProposalCount, getPersons
   } from '$lib/db';
   import { runResearchAgent, runBatchResearch, findResearchCandidates } from '$lib/research-agent';
+  import { findSources, batchFindSources } from '$lib/source-finder';
   import { appStats } from '$lib/stores';
   import type { Proposal, AgentRun, ChangeLogEntry, QualityRule, Person } from '$lib/types';
 
