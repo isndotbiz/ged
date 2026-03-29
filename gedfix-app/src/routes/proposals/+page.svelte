@@ -318,6 +318,42 @@
     </div>
   {/if}
 
+  <!-- Batch Research Section -->
+  {#if !isResearching}
+    <div class="arch-card rounded-xl p-5 mb-6">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="text-sm font-semibold" style="font-family: var(--font-serif); color: var(--ink);">Batch Research</h3>
+          <p class="text-xs mt-0.5" style="color: var(--ink-muted);">
+            {#if researchCandidates.length > 0}
+              {researchCandidates.length} people have missing data
+            {:else}
+              Click "Find Candidates" to scan your tree
+            {/if}
+          </p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick={scanCandidates} class="px-3 py-2 text-xs btn-secondary rounded-lg transition-colors">
+            Find Candidates
+          </button>
+          {#if researchCandidates.length > 0}
+            <button onclick={batchResearch} class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg transition-colors">
+              Research Top {Math.min(50, researchCandidates.length)}
+            </button>
+          {/if}
+        </div>
+      </div>
+      {#if batchProgress > 0}
+        <div class="mt-3">
+          <div class="w-full h-1.5 rounded-full overflow-hidden" style="background: var(--parchment);">
+            <div class="h-full rounded-full transition-all" style="width: {batchProgress}%; background: var(--accent); transition-duration: 300ms;"></div>
+          </div>
+          <p class="text-xs mt-1" style="color: var(--ink-muted);">{batchMessage}</p>
+        </div>
+      {/if}
+    </div>
+  {/if}
+
   <!-- Stats Bar -->
   <div class="flex gap-3 mb-6">
     <div class="arch-card rounded-xl px-5 py-3 text-center">
