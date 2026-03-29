@@ -37,6 +37,11 @@
   let batchProgress = $state(0);
   let batchMessage = $state('');
 
+  // Source finder
+  let sourceSearching = $state(false);
+  let sourceProgress = $state(0);
+  let sourceMessage = $state('');
+
   // Loading
   let isLoading = $state(true);
 
