@@ -3,8 +3,23 @@
   import { runResearchAgent } from '$lib/research-agent';
   import { findSources } from '$lib/source-finder';
   import type { Person, GedcomEvent, Family, GedcomMedia } from '$lib/types';
-  import { convertFileSrc } from '@tauri-apps/api/core';
+  import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
+
+  // Sync file src converter — loaded once on init
+  let _convertFileSrc: ((path: string) => string) | null = null;
+  async function initFileSrc() {
+    if (isTauri()) {
+      const mod = await import('@tauri-apps/api/core');
+      _convertFileSrc = mod.convertFileSrc;
+    }
+  }
+  function convertFileSrc(path: string): string {
+    if (_convertFileSrc) return _convertFileSrc(path);
+    return path;
+  }
+
+  $effect(() => { initFileSrc(); });
   import { VList } from 'virtua/svelte';
 
   let search = $state('');

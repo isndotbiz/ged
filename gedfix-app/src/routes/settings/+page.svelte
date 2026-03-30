@@ -1,27 +1,62 @@
 <script lang="ts">
-  import { clearAll, getStats, isDbEmpty } from '$lib/db';
+  import { clearAll, getStats, isDbEmpty, getSetting, setSetting } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
   import { appStats, isImporting, importProgress, importMessage } from '$lib/stores';
-  import { open } from '@tauri-apps/plugin-dialog';
-  import { readTextFile } from '@tauri-apps/plugin-fs';
+  import { pickAndReadTextFile } from '$lib/platform-fs';
 
   let livingThreshold = $state(110);
   let confirmClear = $state(false);
+  let saveStatus = $state('');
+
+  interface ApiKeyConfig {
+    name: string;
+    dbKey: string;
+    key: string;
+    placeholder: string;
+  }
+
+  let apiKeys = $state<ApiKeyConfig[]>([
+    { name: 'OpenAI', dbKey: 'api_key_openai', key: '', placeholder: 'sk-...' },
+    { name: 'Anthropic', dbKey: 'api_key_anthropic', key: '', placeholder: 'sk-ant-...' },
+    { name: 'Google AI', dbKey: 'api_key_google', key: '', placeholder: 'AIza...' },
+    { name: 'FamilySearch', dbKey: 'api_key_familysearch', key: '', placeholder: 'API key' },
+    { name: 'FindMyPast', dbKey: 'api_key_findmypast', key: '', placeholder: 'API key' },
+    { name: 'MyHeritage', dbKey: 'api_key_myheritage', key: '', placeholder: 'API key' },
+    { name: 'Ancestry', dbKey: 'api_key_ancestry', key: '', placeholder: 'API key' },
+  ]);
+
+  async function loadSettings() {
+    const threshold = await getSetting('living_threshold');
+    if (threshold) livingThreshold = parseInt(threshold);
+
+    for (let i = 0; i < apiKeys.length; i++) {
+      const val = await getSetting(apiKeys[i].dbKey);
+      if (val) apiKeys[i].key = val;
+    }
+  }
+
+  async function saveApiKey(config: ApiKeyConfig) {
+    await setSetting(config.dbKey, config.key);
+    saveStatus = `${config.name} key saved`;
+    setTimeout(() => { saveStatus = ''; }, 2000);
+  }
+
+  async function saveLivingThreshold() {
+    await setSetting('living_threshold', String(livingThreshold));
+    saveStatus = 'Threshold saved';
+    setTimeout(() => { saveStatus = ''; }, 2000);
+  }
 
   async function importFile() {
-    const path = await open({
-      multiple: false,
-      filters: [{ name: 'GEDCOM', extensions: ['ged'] }],
-    });
-    if (!path) return;
+    const result = await pickAndReadTextFile([{ name: 'GEDCOM', extensions: ['ged'] }]);
+    if (!result) return;
 
     $isImporting = true;
     $importProgress = 0;
     $importMessage = 'Reading file...';
 
     try {
-      const text = await readTextFile(path as string);
-      await importGedcom(text, (pct, msg) => {
+      await importGedcom(result.text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
       });
@@ -41,27 +76,16 @@
     confirmClear = false;
   }
 
-  interface ApiKeyConfig {
-    name: string;
-    key: string;
-    placeholder: string;
-  }
-
-  let apiKeys = $state<ApiKeyConfig[]>([
-    { name: 'OpenAI', key: '', placeholder: 'sk-...' },
-    { name: 'Anthropic', key: '', placeholder: 'sk-ant-...' },
-    { name: 'Google AI', key: '', placeholder: 'AIza...' },
-    { name: 'FamilySearch', key: '', placeholder: 'API key' },
-    { name: 'FindMyPast', key: '', placeholder: 'API key' },
-    { name: 'MyHeritage', key: '', placeholder: 'API key' },
-    { name: 'Ancestry', key: '', placeholder: 'API key' },
-  ]);
+  $effect(() => { loadSettings(); });
 </script>
 
 <div class="p-8 max-w-2xl animate-fade-in">
   <div class="mb-8">
     <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Settings</h1>
     <p class="text-sm text-ink-muted mt-1">Configure your GedFix application</p>
+    {#if saveStatus}
+      <div class="mt-2 text-xs font-medium px-3 py-1 rounded-lg inline-block" style="background: var(--parchment); color: var(--sepia);">{saveStatus}</div>
+    {/if}
   </div>
 
   <!-- Data Management -->
@@ -132,9 +156,10 @@
           <input
             type="number"
             bind:value={livingThreshold}
+            onchange={saveLivingThreshold}
             min="80"
             max="130"
-            class="w-16 px-2 py-1.5 text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none text-center"
+            class="w-16 px-2 py-1.5 text-sm rounded-lg border outline-none text-center arch-input"
           />
           <span class="text-xs text-ink-faint">years</span>
         </div>
@@ -147,18 +172,24 @@
     <h2 class="arch-section-header">AI & Service API Keys</h2>
     <div class="arch-card divide-y arch-card-divide">
       {#each apiKeys as config, i}
-        <div class="flex items-center justify-between px-5 py-3.5">
-          <span class="text-sm font-medium text-ink w-28">{config.name}</span>
+        <div class="flex items-center gap-3 px-5 py-3.5">
+          <span class="text-sm font-medium text-ink w-28 shrink-0">{config.name}</span>
           <input
             type="password"
             bind:value={apiKeys[i].key}
             placeholder={config.placeholder}
-            class="flex-1 ml-4 px-3 py-1.5 text-sm bg-gray-50 rounded-lg border border-gray-200 outline-none placeholder:text-gray-300 focus:border-amber-600/40 transition-colors"
+            class="flex-1 px-3 py-1.5 text-sm rounded-lg outline-none placeholder:text-gray-300 transition-colors arch-input"
           />
+          <button
+            onclick={() => saveApiKey(config)}
+            class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors shrink-0"
+          >
+            Save
+          </button>
         </div>
       {/each}
     </div>
-    <p class="text-xs text-ink-faint mt-2 px-1">API keys are stored locally and never transmitted.</p>
+    <p class="text-xs text-ink-faint mt-2 px-1">API keys are stored locally in your database and never transmitted.</p>
   </section>
 
   <!-- About -->

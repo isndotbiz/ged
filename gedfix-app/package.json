@@ -9,7 +9,10 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "tauri": "tauri"
+    "tauri": "tauri",
+    "build:tauri": "vite build",
+    "build:web": "VITE_WEB=true vite build",
+    "dev:web": "VITE_WEB=true vite dev"
   },
   "license": "MIT",
   "dependencies": {
@@ -19,6 +22,8 @@
     "@tauri-apps/plugin-opener": "^2",
     "@tauri-apps/plugin-shell": "^2.3.5",
     "@tauri-apps/plugin-sql": "^2.3.2",
+    "leaflet": "^1.9.4",
+    "sql.js": "^1.14.1",
     "virtua": "^0.48.8"
   },
   "devDependencies": {
@@ -27,6 +32,7 @@
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@tailwindcss/vite": "^4.2.2",
     "@tauri-apps/cli": "^2",
+    "@types/leaflet": "^1.9.21",
     "svelte": "^5.0.0",
     "svelte-check": "^4.0.0",
     "tailwindcss": "^4.2.2",

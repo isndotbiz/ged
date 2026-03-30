@@ -1,10 +1,10 @@
 <script lang="ts">
   import { appStats } from '$lib/stores';
-  import { getDb } from '$lib/db';
-  import type { DuplicateCandidate } from '$lib/media-matcher';
+  import { getDb, findSameNameGenerations, findCollateralRelatives, updatePerson } from '$lib/db';
+  import type { Person } from '$lib/types';
+  import type { DuplicateCandidate, MergeLogEntry } from '$lib/media-matcher';
   import { exportGedcom } from '$lib/gedcom-exporter';
-  import { writeTextFile } from '@tauri-apps/plugin-fs';
-  import { join, downloadDir, homeDir } from '@tauri-apps/api/path';
+  import { isTauri } from '$lib/platform';
 
   // --- Stats ---
   let totalPeople = $state(0);
@@ -77,6 +77,8 @@
 
     try {
       const { scanAndMatchMedia } = await import('$lib/media-matcher');
+      if (!isTauri()) { mediaScanMsg = 'Media scanning requires desktop app'; mediaScanning = false; return; }
+      const { homeDir } = await import('@tauri-apps/api/path');
       const home = await homeDir();
       const dirs = [
         `${home}/Documents/GedFix/media/photos`,
@@ -168,16 +170,140 @@
     exportError = '';
     try {
       const gedcom = await exportGedcom();
-      const downloads = await downloadDir();
       const date = new Date().toISOString().slice(0, 10);
       const filename = `gedfix_export_${date}.ged`;
-      const path = await join(downloads, filename);
-      await writeTextFile(path, gedcom);
-      exportPath = path;
+
+      if (isTauri()) {
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        const { downloadDir, join } = await import('@tauri-apps/api/path');
+        const downloads = await downloadDir();
+        const path = await join(downloads, filename);
+        await writeTextFile(path, gedcom);
+        exportPath = path;
+      } else {
+        // Web: download via browser
+        const blob = new Blob([gedcom], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        exportPath = filename;
+      }
     } catch (e) {
       exportError = String(e);
     }
     exporting = false;
+  }
+
+  // --- Merge History & Undo ---
+  let mergeLog = $state<MergeLogEntry[]>([]);
+  let mergeLogLoading = $state(false);
+  let unmerging = $state<Set<number>>(new Set());
+
+  async function loadMergeLog() {
+    mergeLogLoading = true;
+    try {
+      const { getMergeLog } = await import('$lib/media-matcher');
+      mergeLog = await getMergeLog();
+    } catch { mergeLog = []; }
+    mergeLogLoading = false;
+  }
+
+  async function undoMerge(logId: number) {
+    unmerging = new Set([...unmerging, logId]);
+    try {
+      const { unmergePersons } = await import('$lib/media-matcher');
+      const result = await unmergePersons(logId);
+      if (result.success) {
+        mergeLog = mergeLog.map(m => m.id === logId ? { ...m, undoneAt: 'just now' } : m);
+      } else {
+        console.error('Unmerge failed:', result.error);
+      }
+    } catch (e) {
+      console.error('Unmerge error:', e);
+    }
+    unmerging = new Set([...unmerging].filter(id => id !== logId));
+  }
+
+  // --- Sr/Jr Generation Labeling ---
+  let genScanning = $state(false);
+  let genPairs = $state<{ elder: Person; younger: Person; yearGap: number }[]>([]);
+  let genMsg = $state('');
+  let genApplying = $state<Set<string>>(new Set());
+
+  async function scanSameNameGenerations() {
+    genScanning = true;
+    genMsg = 'Scanning for same-name generations...';
+    genPairs = [];
+    try {
+      const results = await findSameNameGenerations();
+      genPairs = results;
+      genMsg = `Found ${results.length} potential father-son pairs`;
+    } catch (e) {
+      genMsg = `Error: ${e}`;
+    }
+    genScanning = false;
+  }
+
+  async function applySrJr(elder: Person, younger: Person) {
+    const key = `${elder.xref}-${younger.xref}`;
+    const next = new Set(genApplying); next.add(key); genApplying = next;
+    try {
+      if (!elder.suffix) await updatePerson(elder.xref, { suffix: 'Sr' });
+      if (!younger.suffix) await updatePerson(younger.xref, { suffix: 'Jr' });
+      genPairs = genPairs.filter(p => !(p.elder.xref === elder.xref && p.younger.xref === younger.xref));
+    } catch (e) {
+      console.error('Failed to apply Sr/Jr:', e);
+    }
+    const done = new Set(genApplying); done.delete(key); genApplying = done;
+  }
+
+  function skipGenPair(elder: Person, younger: Person) {
+    genPairs = genPairs.filter(p => !(p.elder.xref === elder.xref && p.younger.xref === younger.xref));
+  }
+
+  // --- Collateral Line Tagging ---
+  let collateralScanning = $state(false);
+  let collateralResults = $state<{ person: Person; relationship: string }[]>([]);
+  let collateralMsg = $state('');
+  let collateralRootXref = $state('');
+  let collateralTagging = $state<Set<string>>(new Set());
+
+  async function scanCollaterals() {
+    if (!collateralRootXref.trim()) {
+      collateralMsg = 'Please enter a root person XREF (e.g., @I1@)';
+      return;
+    }
+    collateralScanning = true;
+    collateralMsg = 'Walking direct line and finding collateral relatives...';
+    collateralResults = [];
+    try {
+      const results = await findCollateralRelatives(collateralRootXref.trim());
+      collateralResults = results;
+      collateralMsg = `Found ${results.length} collateral relatives`;
+    } catch (e) {
+      collateralMsg = `Error: ${e}`;
+    }
+    collateralScanning = false;
+  }
+
+  async function tagCollateral(person: Person) {
+    const next = new Set(collateralTagging); next.add(person.xref); collateralTagging = next;
+    try {
+      await updatePerson(person.xref, { personColor: 'collateral' });
+      collateralResults = collateralResults.filter(r => r.person.xref !== person.xref);
+    } catch (e) {
+      console.error('Failed to tag collateral:', e);
+    }
+    const done = new Set(collateralTagging); done.delete(person.xref); collateralTagging = done;
+  }
+
+  async function tagAllCollaterals() {
+    for (const r of collateralResults) {
+      await tagCollateral(r.person);
+    }
   }
 
   $effect(() => {
@@ -484,6 +610,239 @@
           </svg>
           <div class="text-xs" style="color: var(--color-error);">{exportError}</div>
         </div>
+      {/if}
+    </div>
+
+    <!-- Section: Merge History & Undo -->
+    <div class="arch-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <svg class="w-5 h-5" style="color: var(--accent);" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
+          </svg>
+          <div>
+            <h2 class="text-sm font-semibold text-ink">Merge History</h2>
+            <p class="text-xs text-ink-muted">View and undo recent person merges</p>
+          </div>
+        </div>
+        <button onclick={loadMergeLog} disabled={mergeLogLoading} class="px-4 py-2 text-xs btn-accent">
+          {mergeLogLoading ? 'Loading...' : 'Load History'}
+        </button>
+      </div>
+
+      {#if mergeLog.length > 0}
+        <div class="divide-y" style="border-color: var(--border-subtle);">
+          {#each mergeLog as entry}
+            {@const person = JSON.parse(entry.removedPersonJson)?.[0]}
+            <div class="flex items-center justify-between py-3">
+              <div>
+                <span class="text-sm font-medium text-ink">
+                  {person ? `${person.givenName} ${person.surname}` : entry.removeXref}
+                </span>
+                <span class="text-xs text-ink-muted mx-2">merged into</span>
+                <span class="text-sm text-ink-light">{entry.keepXref}</span>
+                <div class="text-[10px] text-ink-faint mt-0.5">{entry.mergedAt}</div>
+              </div>
+              {#if entry.undoneAt}
+                <span class="text-xs text-green-600 font-medium px-2 py-1 rounded" style="background: rgba(74, 124, 63, 0.1);">Restored</span>
+              {:else}
+                <button
+                  onclick={() => undoMerge(entry.id)}
+                  disabled={unmerging.has(entry.id)}
+                  class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
+                  style="background: var(--parchment); color: var(--color-warning);"
+                >
+                  {unmerging.has(entry.id) ? 'Restoring...' : 'Undo Merge'}
+                </button>
+              {/if}
+            </div>
+          {/each}
+        </div>
+      {:else if !mergeLogLoading}
+        <p class="text-xs text-ink-faint text-center py-4">No merge history yet. Future merges will be logged here.</p>
+      {/if}
+    </div>
+
+    <!-- Section 6: Sr/Jr Generation Labeling -->
+    <div class="arch-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-subtle);">
+            <svg class="w-4 h-4" fill="none" stroke="var(--accent)" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold text-ink">Sr/Jr Generation Labeling</h2>
+            <p class="text-xs text-ink-muted">Find people with same first+last name born 20-50 years apart (father-son)</p>
+          </div>
+        </div>
+        <button
+          onclick={scanSameNameGenerations}
+          disabled={genScanning}
+          class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+        >
+          {genScanning ? 'Scanning...' : 'Scan for Same-Name Generations'}
+        </button>
+      </div>
+
+      {#if genScanning}
+        <div class="flex items-center gap-2 text-sm text-ink-muted py-4">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          {genMsg}
+        </div>
+      {/if}
+
+      {#if !genScanning && genPairs.length > 0}
+        <div class="text-xs text-ink-muted mb-3">{genMsg}</div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-[10px] uppercase tracking-wider text-ink-muted" style="border-bottom: 1px solid var(--ink-faint);">
+                <th class="pb-2 pr-3">Elder</th>
+                <th class="pb-2 pr-3">Birth</th>
+                <th class="pb-2 pr-3">Younger</th>
+                <th class="pb-2 pr-3">Birth</th>
+                <th class="pb-2 pr-3">Gap</th>
+                <th class="pb-2 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each genPairs as pair}
+                {@const key = `${pair.elder.xref}-${pair.younger.xref}`}
+                <tr style="border-bottom: 1px solid var(--ink-faint);">
+                  <td class="py-2 pr-3 text-ink">{pair.elder.givenName} {pair.elder.surname} {pair.elder.suffix}</td>
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono);">{pair.elder.birthDate}</td>
+                  <td class="py-2 pr-3 text-ink">{pair.younger.givenName} {pair.younger.surname} {pair.younger.suffix}</td>
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono);">{pair.younger.birthDate}</td>
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono);">{pair.yearGap}y</td>
+                  <td class="py-2 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button
+                        onclick={() => applySrJr(pair.elder, pair.younger)}
+                        disabled={genApplying.has(key)}
+                        class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+                        style="background: rgba(74,124,63,0.1); color: var(--color-validated); border: 1px solid rgba(74,124,63,0.2);"
+                      >
+                        {genApplying.has(key) ? 'Applying...' : 'Apply Sr/Jr'}
+                      </button>
+                      <button
+                        onclick={() => skipGenPair(pair.elder, pair.younger)}
+                        class="px-3 py-1 text-xs font-medium rounded-md text-ink-muted transition-colors"
+                        style="background: var(--parchment); border: 1px solid var(--ink-faint);"
+                      >
+                        Skip
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/if}
+
+      {#if !genScanning && genPairs.length === 0 && genMsg}
+        <div class="text-sm text-ink-faint py-4 text-center">{genMsg}</div>
+      {/if}
+    </div>
+
+    <!-- Section 7: Collateral Line Tagging -->
+    <div class="arch-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center gap-3">
+          <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-subtle);">
+            <svg class="w-4 h-4" fill="none" stroke="var(--accent)" stroke-width="1.5" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21L3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5" />
+            </svg>
+          </div>
+          <div>
+            <h2 class="text-sm font-semibold text-ink">Collateral Line Tagging</h2>
+            <p class="text-xs text-ink-muted">Identify siblings of direct-line ancestors and tag them as collateral</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-3 mb-4">
+        <input
+          type="text"
+          bind:value={collateralRootXref}
+          placeholder="Root person XREF (e.g., @I1@)"
+          class="flex-1 px-3 py-2 text-sm rounded-lg text-ink"
+          style="background: var(--parchment); border: 1px solid var(--ink-faint); font-family: var(--font-mono);"
+        />
+        <button
+          onclick={scanCollaterals}
+          disabled={collateralScanning}
+          class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
+        >
+          {collateralScanning ? 'Scanning...' : 'Find Collateral Relatives'}
+        </button>
+      </div>
+
+      {#if collateralScanning}
+        <div class="flex items-center gap-2 text-sm text-ink-muted py-4">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          {collateralMsg}
+        </div>
+      {/if}
+
+      {#if !collateralScanning && collateralResults.length > 0}
+        <div class="flex items-center justify-between mb-3">
+          <div class="text-xs text-ink-muted">{collateralMsg}</div>
+          <button
+            onclick={tagAllCollaterals}
+            class="px-3 py-1 text-xs font-medium rounded-md transition-colors"
+            style="background: rgba(74,124,63,0.1); color: var(--color-validated); border: 1px solid rgba(74,124,63,0.2);"
+          >
+            Tag All as Collateral
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-left text-[10px] uppercase tracking-wider text-ink-muted" style="border-bottom: 1px solid var(--ink-faint);">
+                <th class="pb-2 pr-3">XREF</th>
+                <th class="pb-2 pr-3">Name</th>
+                <th class="pb-2 pr-3">Birth</th>
+                <th class="pb-2 pr-3">Death</th>
+                <th class="pb-2 pr-3">Status</th>
+                <th class="pb-2 text-right">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each collateralResults as result}
+                <tr style="border-bottom: 1px solid var(--ink-faint);">
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono); font-size: 11px;">{result.person.xref}</td>
+                  <td class="py-2 pr-3 text-ink">{result.person.givenName} {result.person.surname}</td>
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono);">{result.person.birthDate || '--'}</td>
+                  <td class="py-2 pr-3 text-ink-muted" style="font-family: var(--font-mono);">{result.person.deathDate || '--'}</td>
+                  <td class="py-2 pr-3">
+                    {#if result.person.personColor === 'collateral'}
+                      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: rgba(74,124,63,0.1); color: var(--color-validated);">Tagged</span>
+                    {:else}
+                      <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{result.relationship}</span>
+                    {/if}
+                  </td>
+                  <td class="py-2 text-right">
+                    <button
+                      onclick={() => tagCollateral(result.person)}
+                      disabled={collateralTagging.has(result.person.xref) || result.person.personColor === 'collateral'}
+                      class="px-3 py-1 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
+                      style="background: rgba(74,124,63,0.1); color: var(--color-validated); border: 1px solid rgba(74,124,63,0.2);"
+                    >
+                      {collateralTagging.has(result.person.xref) ? 'Tagging...' : 'Tag Collateral'}
+                    </button>
+                  </td>
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
+      {/if}
+
+      {#if !collateralScanning && collateralResults.length === 0 && collateralMsg}
+        <div class="text-sm text-ink-faint py-4 text-center">{collateralMsg}</div>
       {/if}
     </div>
 

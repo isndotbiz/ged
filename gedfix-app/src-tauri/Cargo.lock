@@ -1566,6 +1566,7 @@ name = "gedfix-app"
 version = "1.0.0"
 dependencies = [
  "image",
+ "little_exif",
  "serde",
  "serde_json",
  "tauri",
@@ -2499,6 +2500,17 @@ name = "litemap"
 version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6373607a59f0be73a39b6fe456b8192fcc3585f602af20751600e974dd455e77"
+
+[[package]]
+name = "little_exif"
+version = "0.4.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "18fc3d3c3fd62cc00fb84a14e259ac5144918f2eed099d3f1b6a0e413e6a3a74"
+dependencies = [
+ "crc",
+ "miniz_oxide",
+ "paste",
+]
 
 [[package]]
 name = "lock_api"

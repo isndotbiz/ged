@@ -383,3 +383,74 @@ body {
 .animate-dossier {
   animation: dossierReveal 600ms var(--ease-out);
 }
+
+/* ═══ RESPONSIVE / MOBILE ═══ */
+
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 100vw;
+  }
+
+  body {
+    overflow: auto;
+  }
+
+  .sidebar-mobile-hidden {
+    display: none !important;
+  }
+
+  .sidebar-mobile-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    background: var(--sidebar-bg);
+    overflow-y: auto;
+    animation: slideInMobile 200ms var(--ease-out);
+  }
+
+  .mobile-hamburger {
+    display: flex !important;
+  }
+
+  .arch-page, .p-8 {
+    padding: 1rem !important;
+  }
+
+  /* Touch-friendly tap targets */
+  .nav-link {
+    padding: 12px 16px !important;
+    font-size: 15px !important;
+  }
+
+  .btn-accent, .btn-secondary, .btn-filter {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .arch-input {
+    min-height: 44px;
+    font-size: 16px !important; /* prevents iOS zoom on focus */
+  }
+
+  /* Stack horizontal layouts */
+  .flex.items-center.justify-between {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  /* Pedigree tree scroll */
+  table {
+    font-size: 0.8rem;
+  }
+}
+
+@media (min-width: 769px) {
+  .mobile-hamburger {
+    display: none !important;
+  }
+}
+
+@keyframes slideInMobile {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}

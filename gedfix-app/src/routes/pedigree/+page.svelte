@@ -1,7 +1,27 @@
 <script lang="ts">
   import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto } from '$lib/db';
   import type { Person, GedcomMedia } from '$lib/types';
-  import { convertFileSrc, invoke } from '@tauri-apps/api/core';
+  import { isTauri } from '$lib/platform';
+
+  let _convertFileSrc: ((path: string) => string) | null = null;
+  let _invoke: ((cmd: string, args?: Record<string, unknown>) => Promise<unknown>) | null = null;
+  async function initTauriCore() {
+    if (isTauri()) {
+      const mod = await import('@tauri-apps/api/core');
+      _convertFileSrc = mod.convertFileSrc;
+      _invoke = mod.invoke;
+    }
+  }
+  function convertFileSrc(path: string): string {
+    if (_convertFileSrc) return _convertFileSrc(path);
+    return path;
+  }
+  async function invoke<T>(cmd: string, args?: Record<string, unknown>): Promise<T> {
+    if (_invoke) return _invoke(cmd, args) as Promise<T>;
+    return '' as unknown as T;
+  }
+
+  $effect(() => { initTauriCore(); });
 
   // Cache of base64 data URLs for photos
   let photoCache = $state<Map<string, string>>(new Map());
