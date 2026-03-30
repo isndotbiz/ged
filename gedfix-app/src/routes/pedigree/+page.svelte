@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto } from '$lib/db';
-  import type { Person, GedcomMedia } from '$lib/types';
+  import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto, getSpouseFamilies, getChildren, getEvents } from '$lib/db';
+  import type { Person, Family, GedcomEvent, GedcomMedia } from '$lib/types';
   import { isTauri } from '$lib/platform';
 
   let _convertFileSrc: ((path: string) => string) | null = null;
@@ -138,6 +138,98 @@
     return ((p.givenName?.[0] ?? '') + (p.surname?.[0] ?? '')).toUpperCase();
   }
 
+  // --- Print mode state ---
+  let printMode = $state<'none' | 'pedigree' | 'family-group'>('none');
+
+  interface FamilyGroupData {
+    husband: Person | null;
+    wife: Person | null;
+    marriageDate: string;
+    marriagePlace: string;
+    husbandEvents: GedcomEvent[];
+    wifeEvents: GedcomEvent[];
+    children: { person: Person; events: GedcomEvent[] }[];
+    familyXref: string;
+  }
+
+  let familyGroupData = $state<FamilyGroupData | null>(null);
+
+  function handlePrintPedigree() {
+    printMode = 'pedigree';
+    // Use tick-based delay so DOM updates before print dialog
+    setTimeout(() => {
+      window.print();
+      printMode = 'none';
+    }, 100);
+  }
+
+  async function handlePrintFamilyGroup() {
+    if (!rootPerson) return;
+    const families = await getSpouseFamilies(rootPerson.xref);
+    const fam = families[0] ?? null;
+
+    let husband: Person | null = null;
+    let wife: Person | null = null;
+    let husbandEvents: GedcomEvent[] = [];
+    let wifeEvents: GedcomEvent[] = [];
+    let childrenData: { person: Person; events: GedcomEvent[] }[] = [];
+
+    if (fam) {
+      const p1 = fam.partner1Xref ? await getPerson(fam.partner1Xref) : null;
+      const p2 = fam.partner2Xref ? await getPerson(fam.partner2Xref) : null;
+      // Assign husband/wife by sex
+      if (p1?.sex === 'F') { wife = p1; husband = p2; }
+      else if (p2?.sex === 'F') { wife = p2; husband = p1; }
+      else { husband = p1; wife = p2; }
+
+      if (husband) husbandEvents = await getEvents(husband.xref);
+      if (wife) wifeEvents = await getEvents(wife.xref);
+
+      const kids = await getChildren(fam.xref);
+      for (const kid of kids) {
+        const kidEvents = await getEvents(kid.xref);
+        childrenData.push({ person: kid, events: kidEvents });
+      }
+    } else {
+      // No family found - show root person as husband with their events
+      if (rootPerson.sex === 'F') {
+        wife = rootPerson;
+        wifeEvents = await getEvents(rootPerson.xref);
+      } else {
+        husband = rootPerson;
+        husbandEvents = await getEvents(rootPerson.xref);
+      }
+    }
+
+    familyGroupData = {
+      husband,
+      wife,
+      marriageDate: fam?.marriageDate ?? '',
+      marriagePlace: fam?.marriagePlace ?? '',
+      husbandEvents,
+      wifeEvents,
+      children: childrenData,
+      familyXref: fam?.xref ?? '',
+    };
+
+    printMode = 'family-group';
+    setTimeout(() => {
+      window.print();
+      printMode = 'none';
+    }, 100);
+  }
+
+  function formatEventType(t: string): string {
+    const map: Record<string, string> = {
+      BIRT: 'Birth', DEAT: 'Death', BURI: 'Burial', CHR: 'Christening',
+      BAPM: 'Baptism', MARR: 'Marriage', DIV: 'Divorce', OCCU: 'Occupation',
+      RESI: 'Residence', IMMI: 'Immigration', EMIG: 'Emigration', NATU: 'Naturalization',
+      CENS: 'Census', GRAD: 'Graduation', RETI: 'Retirement', WILL: 'Will',
+      PROB: 'Probate', SSN: 'Social Security', MILI: 'Military',
+    };
+    return map[t] ?? t;
+  }
+
   let filtered = $derived(search.trim()
     ? persons.filter(p => `${p.givenName} ${p.surname}`.toLowerCase().includes(search.toLowerCase())).slice(0, 8)
     : []);
@@ -211,6 +303,18 @@
     <div class="flex items-center gap-3 ml-3 text-[10px]">
       <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[#4A90D9]"></span> Male</span>
       <span class="flex items-center gap-1"><span class="w-3 h-3 rounded-full bg-[#D94A8C]"></span> Female</span>
+    </div>
+
+    <!-- Print actions -->
+    <div class="flex items-center gap-1.5 ml-3">
+      <button onclick={handlePrintPedigree} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title="Print pedigree chart">
+        <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+        Pedigree
+      </button>
+      <button onclick={handlePrintFamilyGroup} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title="Print family group sheet">
+        <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        Family Group
+      </button>
     </div>
 
     <div class="relative ml-auto">
