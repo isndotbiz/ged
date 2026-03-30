@@ -1314,44 +1314,69 @@ Rules:
 
       <!-- ========== BROWSE MODE (Default) ========== -->
       {:else}
-        <div class="grid grid-cols-3 gap-4">
-          {#each categoryFiltered as m, idx}
-            <button
-              onclick={() => {
-                if (/\.(jpe?g|png|gif|webp|bmp)$/i.test(m.filePath)) openLightbox(idx);
-              }}
-              oncontextmenu={(e) => { e.preventDefault(); startPick(m); }}
-              class="arch-card overflow-hidden text-left cursor-pointer hover:ring-2 transition-all group"
-              style="--tw-ring-color: var(--accent, #6b5b3e);"
-            >
-              {#if /\.(jpe?g|png|gif|webp|bmp)$/i.test(m.filePath)}
-                <div class="aspect-square overflow-hidden" style="background: var(--parchment);">
-                  {#await (tauriInvoke('read_image_base64', { path: m.filePath }) as Promise<string>).catch(() => '') then src}
-                    {#if src}<img {src} alt="" class="w-full h-full object-cover" />
-                    {:else}<div class="w-full h-full flex items-center justify-center text-xs" style="color: var(--ink-faint, #999);">No preview</div>{/if}
-                  {/await}
+        {#if !isTauri()}
+          <div class="arch-card p-4 mb-4" style="border-left: 3px solid var(--accent);">
+            <p class="text-sm" style="color: var(--ink); font-family: var(--font-sans);">
+              Photo thumbnails require the desktop app. Use Settings to import your GEDCOM on desktop first.
+            </p>
+          </div>
+          <div class="arch-card divide-y arch-card-divide">
+            {#each categoryFiltered as m}
+              <div class="px-4 py-3">
+                <div class="text-sm font-semibold" style="color: var(--ink);">{m.title || fileName(m.filePath)}</div>
+                <div class="text-xs mt-1" style="color: var(--ink-muted);">
+                  Linked: {m.person?.givenName} {m.person?.surname}
                 </div>
-              {:else}
-                <div class="aspect-square flex flex-col items-center justify-center gap-2" style="background: var(--parchment);">
-                  <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: var(--ink-muted, #666);">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
-                  </svg>
-                  <span class="text-xs font-bold" style="color: var(--ink-faint, #999);">{m.filePath.split('.').pop()?.toUpperCase()}</span>
+                <div class="text-xs mt-1" style="color: var(--ink-faint);">
+                  Category: {categorizeWithAI(m).replace('-', ' ')}
                 </div>
-              {/if}
-              <div class="p-3">
-                <div class="text-xs font-bold truncate" style="font-family: var(--font-sans); color: var(--ink);">{m.person?.givenName} {m.person?.surname}</div>
-                <div class="text-[10px] truncate mt-0.5" style="color: var(--ink-muted, #666);">{m.title || fileName(m.filePath)}</div>
-                <div class="flex items-center gap-1.5 mt-1.5">
-                  <span class="text-[8px] px-1.5 py-0.5 rounded-full" style="background: var(--parchment); color: var(--ink-faint, #999); font-family: var(--font-mono);">{categorizeWithAI(m).replace('-', ' ')}</span>
-                  {#if m.format === 'PRIMARY'}
-                    <span class="text-[8px] px-1.5 py-0.5 rounded-full font-semibold" style="background: color-mix(in srgb, var(--color-validated, green) 10%, transparent); color: var(--color-validated, green);">Primary</span>
-                  {/if}
-                </div>
+                <div class="text-[10px] mt-1" style="color: var(--ink-faint);">{m.filePath}</div>
+                {#if m.format === 'PRIMARY'}
+                  <span class="inline-flex mt-1.5 text-[9px] px-1.5 py-0.5 rounded-full font-semibold" style="background: color-mix(in srgb, var(--color-validated, green) 10%, transparent); color: var(--color-validated, green);">Primary</span>
+                {/if}
               </div>
-            </button>
-          {/each}
-        </div>
+            {/each}
+          </div>
+        {:else}
+          <div class="grid grid-cols-3 gap-4">
+            {#each categoryFiltered as m, idx}
+              <button
+                onclick={() => {
+                  if (/\.(jpe?g|png|gif|webp|bmp)$/i.test(m.filePath)) openLightbox(idx);
+                }}
+                oncontextmenu={(e) => { e.preventDefault(); startPick(m); }}
+                class="arch-card overflow-hidden text-left cursor-pointer hover:ring-2 transition-all group"
+                style="--tw-ring-color: var(--accent, #6b5b3e);"
+              >
+                {#if /\.(jpe?g|png|gif|webp|bmp)$/i.test(m.filePath)}
+                  <div class="aspect-square overflow-hidden" style="background: var(--parchment);">
+                    {#await (tauriInvoke('read_image_base64', { path: m.filePath }) as Promise<string>).catch(() => '') then src}
+                      {#if src}<img {src} alt="" class="w-full h-full object-cover" />
+                      {:else}<div class="w-full h-full flex items-center justify-center text-xs" style="color: var(--ink-faint, #999);">No preview</div>{/if}
+                    {/await}
+                  </div>
+                {:else}
+                  <div class="aspect-square flex flex-col items-center justify-center gap-2" style="background: var(--parchment);">
+                    <svg class="w-8 h-8 opacity-40" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24" style="color: var(--ink-muted, #666);">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                    </svg>
+                    <span class="text-xs font-bold" style="color: var(--ink-faint, #999);">{m.filePath.split('.').pop()?.toUpperCase()}</span>
+                  </div>
+                {/if}
+                <div class="p-3">
+                  <div class="text-xs font-bold truncate" style="font-family: var(--font-sans); color: var(--ink);">{m.person?.givenName} {m.person?.surname}</div>
+                  <div class="text-[10px] truncate mt-0.5" style="color: var(--ink-muted, #666);">{m.title || fileName(m.filePath)}</div>
+                  <div class="flex items-center gap-1.5 mt-1.5">
+                    <span class="text-[8px] px-1.5 py-0.5 rounded-full" style="background: var(--parchment); color: var(--ink-faint, #999); font-family: var(--font-mono);">{categorizeWithAI(m).replace('-', ' ')}</span>
+                    {#if m.format === 'PRIMARY'}
+                      <span class="text-[8px] px-1.5 py-0.5 rounded-full font-semibold" style="background: color-mix(in srgb, var(--color-validated, green) 10%, transparent); color: var(--color-validated, green);">Primary</span>
+                    {/if}
+                  </div>
+                </div>
+              </button>
+            {/each}
+          </div>
+        {/if}
 
         {#if categoryFiltered.length === 0}
           <div class="flex flex-col items-center justify-center py-20" style="color: var(--ink-faint, #999);">
