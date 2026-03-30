@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getSetting, setSetting } from '$lib/db';
+  import { getDb, getSetting, setSetting } from '$lib/db';
   import { isTauri } from '$lib/platform';
   import { exportGedcom } from '$lib/gedcom-exporter';
 
@@ -19,11 +19,16 @@
   let wikitreeApiKey = $state('');
   let exportStatus = $state('');
   let exportLoading = $state(false);
+  let fsSearchGiven = $state('');
+  let fsSearchSurname = $state('');
+  let fsSearchYear = $state('');
+  let fsSearchLoading = $state(false);
+  let fsSearchResults = $state<{ id: string; title: string; summary: string }[]>([]);
 
   // --- Load saved connection state ---
   async function loadConnectionState() {
     try {
-      const fsToken = await getSetting('service_familysearch_token');
+      const fsToken = await getSetting('service_familysearch_access_token');
       const fsUser = await getSetting('service_familysearch_user');
       const fsSync = await getSetting('service_familysearch_last_sync');
       if (fsToken) {
@@ -59,8 +64,13 @@
         familysearch = { ...familysearch, loading: false, error: 'Set your FamilySearch Client ID in the field below first.' };
         return;
       }
-      const redirectUri = encodeURIComponent(window.location.origin + '/services/callback/familysearch');
-      const authUrl = `https://ident.familysearch.org/cis-web/oauth2/v3/authorization?response_type=code&client_id=${clientId}&redirect_uri=${redirectUri}&scope=openid%20profile%20email`;
+      const redirectUri = getFamilySearchRedirectUri();
+      const codeVerifier = generateCodeVerifier();
+      const codeChallenge = await createCodeChallenge(codeVerifier);
+      const state = cryptoRandomString(32);
+      await setSetting('service_familysearch_pkce_verifier', codeVerifier);
+      await setSetting('service_familysearch_oauth_state', state);
+      const authUrl = `https://ident.familysearch.org/cis-web/oauth2/v3/authorization?response_type=code&client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=openid%20profile&code_challenge=${encodeURIComponent(codeChallenge)}&code_challenge_method=S256&state=${encodeURIComponent(state)}`;
       window.location.href = authUrl;
     } catch (e) {
       familysearch = { ...familysearch, loading: false, error: `Connection failed: ${e}` };
@@ -68,9 +78,11 @@
   }
 
   async function disconnectFamilySearch() {
-    await setSetting('service_familysearch_token', '');
+    await setSetting('service_familysearch_access_token', '');
+    await setSetting('service_familysearch_refresh_token', '');
     await setSetting('service_familysearch_user', '');
     await setSetting('service_familysearch_last_sync', '');
+    fsSearchResults = [];
     familysearch = { connected: false, username: '', lastSync: '', loading: false, error: '' };
   }
 
@@ -168,10 +180,167 @@
     }
   }
 
-  // --- Placeholder actions ---
-  function searchFamilySearch() {
-    alert('FamilySearch record search will open a search panel for the selected person. Coming soon.');
+  function getFamilySearchRedirectUri() {
+    return isTauri() ? 'http://localhost:1420/services' : 'https://gedfix.isn.biz/services';
   }
+
+  function base64UrlEncode(bytes: Uint8Array): string {
+    let binary = '';
+    for (const b of bytes) binary += String.fromCharCode(b);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/g, '');
+  }
+
+  function cryptoRandomString(length = 64): string {
+    const bytes = new Uint8Array(length);
+    crypto.getRandomValues(bytes);
+    return base64UrlEncode(bytes).slice(0, length);
+  }
+
+  function generateCodeVerifier(): string {
+    return cryptoRandomString(64);
+  }
+
+  async function createCodeChallenge(verifier: string): Promise<string> {
+    const data = new TextEncoder().encode(verifier);
+    const digest = await crypto.subtle.digest('SHA-256', data);
+    return base64UrlEncode(new Uint8Array(digest));
+  }
+
+  async function handleFamilySearchCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const returnedState = params.get('state');
+    if (!code) return;
+
+    familysearch = { ...familysearch, loading: true, error: '' };
+    try {
+      const expectedState = await getSetting('service_familysearch_oauth_state');
+      const verifier = await getSetting('service_familysearch_pkce_verifier');
+      const clientId = await getSetting('service_familysearch_client_id');
+      if (!clientId || !verifier) throw new Error('Missing PKCE state or client ID');
+      if (!returnedState || returnedState !== expectedState) throw new Error('OAuth state mismatch');
+
+      const body = new URLSearchParams({
+        grant_type: 'authorization_code',
+        code,
+        client_id: clientId,
+        redirect_uri: getFamilySearchRedirectUri(),
+        code_verifier: verifier
+      });
+
+      const tokenResp = await fetch('https://ident.familysearch.org/cis-web/oauth2/v3/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString()
+      });
+      if (!tokenResp.ok) {
+        const err = await tokenResp.text();
+        throw new Error(`Token exchange failed (${tokenResp.status}): ${err}`);
+      }
+      const tokenData = await tokenResp.json();
+      const accessToken = tokenData.access_token as string;
+      const refreshToken = tokenData.refresh_token as string;
+      if (!accessToken) throw new Error('No access token returned');
+
+      await setSetting('service_familysearch_access_token', accessToken);
+      await setSetting('service_familysearch_refresh_token', refreshToken || '');
+      await setSetting('service_familysearch_last_sync', new Date().toISOString());
+      await setSetting('service_familysearch_pkce_verifier', '');
+      await setSetting('service_familysearch_oauth_state', '');
+
+      let username = 'Connected';
+      try {
+        const profileResp = await fetch('https://api.familysearch.org/platform/users/current', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            Accept: 'application/json'
+          }
+        });
+        if (profileResp.ok) {
+          const profileData = await profileResp.json();
+          const contactName = profileData?.users?.[0]?.contactName;
+          if (contactName) username = contactName;
+        }
+      } catch {}
+
+      await setSetting('service_familysearch_user', username);
+      familysearch = { connected: true, username, lastSync: new Date().toISOString(), loading: false, error: '' };
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete('code');
+      clean.searchParams.delete('state');
+      clean.searchParams.delete('scope');
+      clean.searchParams.delete('session_state');
+      window.history.replaceState({}, '', clean.toString());
+    } catch (e) {
+      familysearch = { ...familysearch, loading: false, error: `FamilySearch OAuth failed: ${e}` };
+    }
+  }
+
+  async function searchFamilySearch() {
+    fsSearchLoading = true;
+    fsSearchResults = [];
+    familysearch = { ...familysearch, error: '' };
+    try {
+      const token = await getSetting('service_familysearch_access_token');
+      if (!token) throw new Error('No FamilySearch access token. Connect first.');
+      const givenName = fsSearchGiven.trim();
+      const surname = fsSearchSurname.trim();
+      const year = fsSearchYear.trim();
+      if (!givenName || !surname || !year) throw new Error('Enter given name, surname, and birth year');
+      const q = `givenName:${givenName}+surname:${surname}+birthLikeDate:${year}`;
+      const resp = await fetch(`https://api.familysearch.org/platform/search/persons?q=${encodeURIComponent(q)}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/json'
+        }
+      });
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`Search failed (${resp.status}): ${err}`);
+      }
+      const data = await resp.json();
+      const entries = data?.entries || [];
+      fsSearchResults = entries.map((entry: any) => {
+        const content = entry.content || {};
+        const id = content.id || entry.id || '';
+        const title = content?.display?.name || content?.display?.fullName || id || 'Unknown person';
+        const lifespan = content?.display?.lifespan || '';
+        const summary = [lifespan, content?.display?.birthPlace, content?.display?.deathPlace].filter(Boolean).join(' · ');
+        return { id, title, summary };
+      });
+    } catch (e) {
+      familysearch = { ...familysearch, error: String(e) };
+    } finally {
+      fsSearchLoading = false;
+    }
+  }
+
+  async function importFamilySearchResult(result: { id: string; title: string; summary: string }) {
+    const db = await getDb();
+    await db.execute(
+      `INSERT INTO proposal (agentRunId, entityType, entityId, fieldName, oldValue, newValue, confidence, reasoning, evidenceSource, status)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending')`,
+      [
+        'familysearch_search',
+        'person',
+        result.id || '',
+        'source',
+        '',
+        JSON.stringify(result),
+        0.75,
+        'Imported from FamilySearch search result',
+        'https://api.familysearch.org/platform/search/persons'
+      ]
+    );
+    familysearch = { ...familysearch, lastSync: new Date().toISOString() };
+    await setSetting('service_familysearch_last_sync', familysearch.lastSync);
+  }
+
+  $effect(() => {
+    handleFamilySearchCallback();
+  });
+
+  // --- Placeholder actions ---
   function syncFamilySearchTree() {
     alert('Tree sync with FamilySearch is a planned feature. This will allow bidirectional sync of person and family records.');
   }
@@ -222,11 +391,28 @@
           {/if}
         </div>
       </div>
-      <div class="flex flex-wrap gap-2">
-        <button class="btn-accent" onclick={searchFamilySearch}>
-          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-          Search Records
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
+        <input class="arch-input" placeholder="Given Name" bind:value={fsSearchGiven} />
+        <input class="arch-input" placeholder="Surname" bind:value={fsSearchSurname} />
+        <input class="arch-input" placeholder="Birth Year" bind:value={fsSearchYear} />
+        <button class="btn-accent" onclick={searchFamilySearch} disabled={fsSearchLoading}>
+          {fsSearchLoading ? 'Searching...' : 'Search Records'}
         </button>
+      </div>
+      {#if fsSearchResults.length > 0}
+        <div class="arch-card mb-4 divide-y arch-card-divide">
+          {#each fsSearchResults as result}
+            <div class="px-3 py-2 flex items-center justify-between gap-2">
+              <div>
+                <div class="text-xs font-semibold" style="color: var(--ink);">{result.title}</div>
+                <div class="text-[11px]" style="color: var(--ink-muted);">{result.summary || result.id}</div>
+              </div>
+              <button class="btn-secondary text-xs" onclick={() => importFamilySearchResult(result)}>Import to Proposals</button>
+            </div>
+          {/each}
+        </div>
+      {/if}
+      <div class="flex flex-wrap gap-2">
         <button class="btn-secondary" onclick={syncFamilySearchTree}>
           <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
           Sync Tree
