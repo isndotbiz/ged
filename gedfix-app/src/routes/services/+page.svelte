@@ -159,16 +159,16 @@
   }
 
   // --- GEDCOM Export ---
-  async function handleExportGedcom551() {
+  async function exportGedcomFile(format: '5.5.1' | '7.0') {
     exportLoading = true;
     exportStatus = '';
     try {
-      const gedcomText = await exportGedcom();
+      const gedcomText = await exportGedcom(format);
       const blob = new Blob([gedcomText], { type: 'text/plain' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `gedfix_export_${new Date().toISOString().slice(0, 10)}.ged`;
+      a.download = `gedfix_export_${format.replace('.', '_')}_${new Date().toISOString().slice(0, 10)}.ged`;
       a.click();
       URL.revokeObjectURL(url);
       exportStatus = 'Export complete!';
@@ -178,6 +178,14 @@
       exportLoading = false;
       setTimeout(() => { exportStatus = ''; }, 4000);
     }
+  }
+
+  async function handleExportGedcom551() {
+    await exportGedcomFile('5.5.1');
+  }
+
+  async function handleExportGedcom70() {
+    await exportGedcomFile('7.0');
   }
 
   function getFamilySearchRedirectUri() {
@@ -612,9 +620,9 @@
       <div class="p-4 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
         <h3 class="text-sm font-semibold mb-1" style="color: var(--ink); font-family: var(--font-serif);">GEDCOM 7.0</h3>
         <p class="text-[11px] mb-3" style="color: var(--ink-muted); font-family: var(--font-sans);">Next-generation format with UTF-8, GEDZip media bundling, and formal extensions.</p>
-        <button class="btn-secondary w-full" disabled>
-          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-          Coming Soon
+        <button class="btn-secondary w-full" onclick={handleExportGedcom70} disabled={exportLoading}>
+          <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" /></svg>
+          Export GEDCOM 7.0
         </button>
       </div>
     </div>
