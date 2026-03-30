@@ -28,7 +28,11 @@
       {#each bookmarks as bm}
         <div class="arch-card rounded-xl p-4 flex items-center justify-between">
           <div>
-            <div class="font-medium text-sm text-ink">{bm.person ? `${bm.person.givenName} ${bm.person.surname}` : bm.personXref}</div>
+            {#if bm.person}
+              <a href="/people/{encodeURIComponent(bm.personXref)}" class="font-medium text-sm hover:underline" style="color: var(--ink); text-decoration: none;">{bm.person.givenName} {bm.person.surname}</a>
+            {:else}
+              <a href="/people/{encodeURIComponent(bm.personXref)}" class="font-medium text-sm hover:underline" style="color: var(--ink); text-decoration: none;">{bm.personXref}</a>
+            {/if}
             {#if bm.label}<div class="text-xs text-ink-muted">{bm.label}</div>{/if}
             <div class="text-[10px] text-ink-faint">{new Date(bm.createdAt).toLocaleDateString()}</div>
           </div>

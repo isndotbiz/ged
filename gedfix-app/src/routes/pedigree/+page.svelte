@@ -277,6 +277,156 @@
 
   .male-ring { box-shadow: 0 0 0 3px #3B82F6; }
   .female-ring { box-shadow: 0 0 0 3px #EC4899; }
+
+  /* Print button styling */
+  .arch-btn-ghost {
+    background: transparent;
+    border: 1px solid var(--border-rule, #d4c5a9);
+    color: var(--ink, #3d3229);
+    cursor: pointer;
+  }
+  .arch-btn-ghost:hover {
+    background: var(--parchment, #f5f0e8);
+    border-color: var(--ink-light, #6b5d4f);
+  }
+
+  /* Family Group Sheet - screen hidden, print visible */
+  .fgs-print-sheet {
+    display: none;
+  }
+
+  /* ============ PRINT STYLES ============ */
+  @media print {
+    /* Hide everything except the tree area or FGS */
+    :global(nav),
+    :global(.sidebar),
+    :global(aside),
+    :global(header),
+    :global(footer) {
+      display: none !important;
+    }
+
+    /* Hide toolbar, detail panel, and search in print */
+    :global(.arch-toolbar) {
+      display: none !important;
+    }
+
+    /* Pedigree print mode */
+    .fgs-print-sheet {
+      display: none !important;
+    }
+  }
+
+  /* Family Group Sheet print mode overrides */
+  @media print {
+    .fgs-print-sheet {
+      display: block !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 10000;
+      background: white;
+      padding: 0.5in;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      font-size: 11pt;
+      color: #1a1a1a;
+      overflow: visible;
+    }
+    .fgs-title {
+      font-size: 18pt;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2pt;
+      letter-spacing: 0.5pt;
+      border-bottom: 2px solid #333;
+      padding-bottom: 4pt;
+    }
+    .fgs-subtitle {
+      text-align: center;
+      font-size: 9pt;
+      color: #666;
+      margin-bottom: 12pt;
+    }
+    .fgs-section {
+      margin-bottom: 10pt;
+      page-break-inside: avoid;
+    }
+    .fgs-section-title {
+      font-size: 12pt;
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+      padding-bottom: 2pt;
+      margin-bottom: 4pt;
+    }
+    .fgs-section-title.fgs-male { color: #1e40af; }
+    .fgs-section-title.fgs-female { color: #9d174d; }
+    .fgs-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .fgs-table td,
+    .fgs-table th {
+      padding: 2pt 4pt;
+      vertical-align: top;
+      text-align: left;
+      border-bottom: 1px dotted #ccc;
+      font-size: 10pt;
+    }
+    .fgs-label {
+      width: 80pt;
+      font-weight: bold;
+      color: #555;
+    }
+    .fgs-value {
+      color: #1a1a1a;
+    }
+    .fgs-children-table th {
+      background: #f0f0f0;
+      font-size: 9pt;
+      font-weight: bold;
+      border-bottom: 1px solid #999;
+    }
+    .fgs-child-name {
+      font-weight: 600;
+    }
+    .fgs-child-event td {
+      font-size: 9pt;
+      color: #555;
+      font-style: italic;
+      border-bottom: none;
+    }
+    .fgs-empty {
+      font-style: italic;
+      color: #999;
+      font-size: 10pt;
+    }
+    .fgs-source-note {
+      font-size: 9pt;
+      color: #555;
+    }
+    .fgs-footer {
+      margin-top: 16pt;
+      text-align: center;
+      font-size: 8pt;
+      color: #aaa;
+      border-top: 1px solid #ddd;
+      padding-top: 4pt;
+    }
+
+    /* Pedigree chart print optimizations */
+    .face-photo { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+    .male-card, .female-card, .unknown-card {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+      box-shadow: none !important;
+    }
+    .male-ring, .female-ring {
+      print-color-adjust: exact;
+      -webkit-print-color-adjust: exact;
+    }
+  }
 </style>
 
 <div class="flex flex-col h-full">
@@ -499,4 +649,115 @@
       </div>
     {/if}
   </div>
+
+  <!-- Family Group Sheet (print-only) -->
+  {#if printMode === 'family-group' && familyGroupData}
+    <div class="fgs-print-sheet">
+      <h1 class="fgs-title">Family Group Sheet</h1>
+      <p class="fgs-subtitle">Prepared {new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+
+      <!-- Husband -->
+      <div class="fgs-section">
+        <h2 class="fgs-section-title fgs-male">Husband</h2>
+        {#if familyGroupData.husband}
+          {@const h = familyGroupData.husband}
+          <table class="fgs-table"><tbody>
+            <tr><td class="fgs-label">Name</td><td class="fgs-value">{h.givenName} {h.surname}{h.suffix ? ` ${h.suffix}` : ''}</td></tr>
+            {#if h.birthDate}<tr><td class="fgs-label">Birth</td><td class="fgs-value">{h.birthDate}{h.birthPlace ? ` -- ${h.birthPlace}` : ''}</td></tr>{/if}
+            {#if h.deathDate}<tr><td class="fgs-label">Death</td><td class="fgs-value">{h.deathDate}{h.deathPlace ? ` -- ${h.deathPlace}` : ''}</td></tr>{/if}
+            {#each familyGroupData.husbandEvents.filter(e => !['BIRT','DEAT'].includes(e.eventType)) as evt}
+              <tr><td class="fgs-label">{formatEventType(evt.eventType)}</td><td class="fgs-value">{evt.dateValue ?? ''}{evt.place ? ` -- ${evt.place}` : ''}{evt.description ? ` (${evt.description})` : ''}</td></tr>
+            {/each}
+          </tbody></table>
+        {:else}
+          <p class="fgs-empty">Unknown</p>
+        {/if}
+      </div>
+
+      <!-- Wife -->
+      <div class="fgs-section">
+        <h2 class="fgs-section-title fgs-female">Wife</h2>
+        {#if familyGroupData.wife}
+          {@const w = familyGroupData.wife}
+          <table class="fgs-table"><tbody>
+            <tr><td class="fgs-label">Name</td><td class="fgs-value">{w.givenName} {w.surname}{w.suffix ? ` ${w.suffix}` : ''}</td></tr>
+            {#if w.birthDate}<tr><td class="fgs-label">Birth</td><td class="fgs-value">{w.birthDate}{w.birthPlace ? ` -- ${w.birthPlace}` : ''}</td></tr>{/if}
+            {#if w.deathDate}<tr><td class="fgs-label">Death</td><td class="fgs-value">{w.deathDate}{w.deathPlace ? ` -- ${w.deathPlace}` : ''}</td></tr>{/if}
+            {#each familyGroupData.wifeEvents.filter(e => !['BIRT','DEAT'].includes(e.eventType)) as evt}
+              <tr><td class="fgs-label">{formatEventType(evt.eventType)}</td><td class="fgs-value">{evt.dateValue ?? ''}{evt.place ? ` -- ${evt.place}` : ''}{evt.description ? ` (${evt.description})` : ''}</td></tr>
+            {/each}
+          </tbody></table>
+        {:else}
+          <p class="fgs-empty">Unknown</p>
+        {/if}
+      </div>
+
+      <!-- Marriage -->
+      {#if familyGroupData.marriageDate || familyGroupData.marriagePlace}
+        <div class="fgs-section">
+          <h2 class="fgs-section-title">Marriage</h2>
+          <table class="fgs-table"><tbody>
+            {#if familyGroupData.marriageDate}<tr><td class="fgs-label">Date</td><td class="fgs-value">{familyGroupData.marriageDate}</td></tr>{/if}
+            {#if familyGroupData.marriagePlace}<tr><td class="fgs-label">Place</td><td class="fgs-value">{familyGroupData.marriagePlace}</td></tr>{/if}
+          </tbody></table>
+        </div>
+      {/if}
+
+      <!-- Children -->
+      <div class="fgs-section">
+        <h2 class="fgs-section-title">Children</h2>
+        {#if familyGroupData.children.length > 0}
+          <table class="fgs-table fgs-children-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Sex</th>
+                <th>Birth</th>
+                <th>Birth Place</th>
+                <th>Death</th>
+                <th>Death Place</th>
+              </tr>
+            </thead>
+            <tbody>
+              {#each familyGroupData.children as child, i}
+                {@const c = child.person}
+                <tr>
+                  <td>{i + 1}</td>
+                  <td class="fgs-child-name">{c.givenName} {c.surname}{c.suffix ? ` ${c.suffix}` : ''}</td>
+                  <td>{c.sex === 'M' ? 'M' : c.sex === 'F' ? 'F' : '?'}</td>
+                  <td>{c.birthDate ?? ''}</td>
+                  <td>{c.birthPlace ?? ''}</td>
+                  <td>{c.deathDate ?? ''}</td>
+                  <td>{c.deathPlace ?? ''}</td>
+                </tr>
+                {#each child.events.filter(e => !['BIRT','DEAT'].includes(e.eventType)) as evt}
+                  <tr class="fgs-child-event">
+                    <td></td>
+                    <td colspan="6">{formatEventType(evt.eventType)}: {evt.dateValue ?? ''}{evt.place ? ` -- ${evt.place}` : ''}{evt.description ? ` (${evt.description})` : ''}</td>
+                  </tr>
+                {/each}
+              {/each}
+            </tbody>
+          </table>
+        {:else}
+          <p class="fgs-empty">No children recorded</p>
+        {/if}
+      </div>
+
+      <!-- Sources -->
+      <div class="fgs-section">
+        <h2 class="fgs-section-title">Sources Cited</h2>
+        <p class="fgs-source-note">
+          Husband sources: {familyGroupData.husband?.sourceCount ?? 0} |
+          Wife sources: {familyGroupData.wife?.sourceCount ?? 0} |
+          Family: {familyGroupData.familyXref || 'N/A'}
+        </p>
+      </div>
+
+      <div class="fgs-footer">
+        Generated by GedFix Archival Atlas
+      </div>
+    </div>
+  {/if}
 </div>

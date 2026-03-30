@@ -133,13 +133,21 @@
         <div class="arch-card rounded-xl divide-y arch-card-divide">
           {#each familyResults as r}
             <div class="px-4 py-2.5 flex items-center gap-2">
-              <span class="text-sm text-ink">
-                {r.partner1 ? `${r.partner1.givenName} ${r.partner1.surname}` : '(unknown)'}
-              </span>
+              {#if r.partner1}
+                <a href="/people/{encodeURIComponent(r.partner1.xref)}" class="text-sm hover:underline" style="color: var(--ink); text-decoration: none;">
+                  {r.partner1.givenName} {r.partner1.surname}
+                </a>
+              {:else}
+                <span class="text-sm text-ink">(unknown)</span>
+              {/if}
               <span class="text-xs text-ink-faint">&</span>
-              <span class="text-sm text-ink">
-                {r.partner2 ? `${r.partner2.givenName} ${r.partner2.surname}` : '(unknown)'}
-              </span>
+              {#if r.partner2}
+                <a href="/people/{encodeURIComponent(r.partner2.xref)}" class="text-sm hover:underline" style="color: var(--ink); text-decoration: none;">
+                  {r.partner2.givenName} {r.partner2.surname}
+                </a>
+              {:else}
+                <span class="text-sm text-ink">(unknown)</span>
+              {/if}
               {#if r.family.marriageDate}
                 <span class="text-xs text-ink-faint ml-auto">m. {r.family.marriageDate}</span>
               {/if}

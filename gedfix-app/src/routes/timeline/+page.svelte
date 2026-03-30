@@ -134,9 +134,13 @@
                 <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: {getEventColor(item.event.eventType)}15; color: {getEventColor(item.event.eventType)}">
                   {eventLabels[item.event.eventType] ?? item.event.eventType}
                 </span>
-                <span class="text-sm text-ink font-medium">
-                  {item.person ? `${item.person.givenName} ${item.person.surname}` : item.event.ownerXref}
-                </span>
+                {#if item.person}
+                  <a href="/people/{encodeURIComponent(item.person.xref)}" class="text-sm font-medium hover:underline" style="color: var(--ink); text-decoration: none;">
+                    {item.person.givenName} {item.person.surname}
+                  </a>
+                {:else}
+                  <span class="text-sm text-ink font-medium">{item.event.ownerXref}</span>
+                {/if}
                 {#if item.event.dateValue}
                   <span class="text-xs text-ink-faint ml-auto">{item.event.dateValue}</span>
                 {/if}

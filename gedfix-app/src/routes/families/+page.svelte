@@ -1,7 +1,6 @@
 <script lang="ts">
   import { getFamilies, getPerson, getChildren, getEvents } from '$lib/db';
   import type { Person, Family, GedcomEvent } from '$lib/types';
-  import { goto } from '$app/navigation';
 
   interface FamilyRow {
     family: Family;
