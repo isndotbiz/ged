@@ -253,6 +253,163 @@ fn base64_encode(data: &[u8]) -> String {
 }
 
 // ============================================================
+// EXIF metadata writing
+// ============================================================
+
+#[derive(Deserialize)]
+struct ExifWriteItem {
+    file_path: String,
+    person_name: String,
+    original_filename: String,
+    gedcom_xref: String,
+    category: String,
+    description: String,
+}
+
+#[derive(Serialize)]
+struct ExifWriteResult {
+    written: usize,
+    failed: usize,
+    errors: Vec<String>,
+}
+
+#[tauri::command]
+async fn write_exif_metadata(items: Vec<ExifWriteItem>) -> Result<ExifWriteResult, String> {
+    use little_exif::metadata::Metadata;
+    use little_exif::exif_tag::ExifTag;
+
+    let mut written = 0;
+    let mut errors: Vec<String> = Vec::new();
+
+    for item in &items {
+        let src = PathBuf::from(&item.file_path);
+        if !src.exists() {
+            errors.push(format!("Not found: {}", item.file_path));
+            continue;
+        }
+
+        let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("").to_lowercase();
+        if !["jpg", "jpeg", "tiff", "tif"].contains(&ext.as_str()) {
+            errors.push(format!("Unsupported format: {}", ext));
+            continue;
+        }
+
+        let desc = format!("{} | {} | GEDCOM: {} | Category: {}",
+            item.person_name, item.description, item.gedcom_xref, item.category);
+        let comment = format!("GedFix Export | Person: {} | XREF: {} | Original: {} | Category: {}",
+            item.person_name, item.gedcom_xref, item.original_filename, item.category);
+
+        let mut metadata = match Metadata::new_from_path(&src) {
+            Ok(m) => m,
+            Err(_) => Metadata::new(),
+        };
+
+        metadata.set_tag(ExifTag::ImageDescription(desc));
+        metadata.set_tag(ExifTag::DocumentName(item.original_filename.clone()));
+        metadata.set_tag(ExifTag::Artist(item.person_name.clone()));
+        metadata.set_tag(ExifTag::UserComment(comment));
+
+        match metadata.write_to_file(&src) {
+            Ok(_) => written += 1,
+            Err(e) => errors.push(format!("{}: {}", item.file_path, e)),
+        }
+    }
+
+    Ok(ExifWriteResult { written, failed: errors.len(), errors })
+}
+
+// ============================================================
+// Organize media into categorized folders
+// ============================================================
+
+#[derive(Deserialize)]
+struct OrganizeItem {
+    source_path: String,
+    category: String,
+    person_surname: String,
+    person_given: String,
+    media_title: String,
+}
+
+#[derive(Serialize)]
+struct OrganizeResult {
+    organized: usize,
+    failed: usize,
+    output_dir: String,
+}
+
+#[tauri::command]
+async fn organize_media_folders(
+    app: tauri::AppHandle,
+    items: Vec<OrganizeItem>,
+) -> Result<OrganizeResult, String> {
+    let output_dir = app.path()
+        .document_dir()
+        .map_err(|e: tauri::Error| e.to_string())?
+        .join("GedFix")
+        .join("organized_media");
+
+    let category_folders: std::collections::HashMap<&str, &str> = [
+        ("headshots", "People/Headshots"),
+        ("single", "People/Headshots"),
+        ("group", "People/Group_Photos"),
+        ("family-group", "People/Group_Photos"),
+        ("married", "People/Group_Photos"),
+        ("homes", "Places/Homes_Castles"),
+        ("castles", "Places/Homes_Castles"),
+        ("graves", "Places/Graves"),
+        ("crests", "Symbols/Crests_Flags"),
+        ("ship-manifests", "Documents/Ship_Manifests"),
+        ("census", "Documents/Census_Records"),
+        ("marriage-docs", "Documents/Marriage_Records"),
+        ("wills", "Documents/Wills_Probate"),
+        ("histories", "Documents/Histories"),
+        ("other-docs", "Documents/Other"),
+        ("document", "Documents/Other"),
+        ("other", "Other"),
+    ].into_iter().collect();
+
+    let mut organized = 0;
+    let mut failed = 0;
+
+    for item in &items {
+        let src = PathBuf::from(&item.source_path);
+        if !src.exists() { failed += 1; continue; }
+
+        let folder_name = category_folders.get(item.category.as_str()).unwrap_or(&"Other");
+        let dest_dir = output_dir.join(folder_name);
+        std::fs::create_dir_all(&dest_dir).ok();
+
+        let ext = src.extension().and_then(|e| e.to_str()).unwrap_or("jpg").to_lowercase();
+        let clean = |s: &str| s.chars().map(|c| if c.is_alphanumeric() || c == '-' || c == ' ' { c } else { '_' }).collect::<String>();
+        let surname = clean(&item.person_surname);
+        let given = clean(&item.person_given);
+        let title = clean(if item.media_title.is_empty() { "untitled" } else { &item.media_title });
+        let title_short = if title.len() > 40 { &title[..40] } else { &title };
+
+        let filename = format!("{}_{}_{}.{}", surname, given, title_short, ext);
+        let dest = dest_dir.join(&filename);
+        let final_dest = if dest.exists() {
+            let mut counter = 1;
+            loop {
+                let alt = dest_dir.join(format!("{}_{}_{}_{}.{}", surname, given, title_short, counter, ext));
+                if !alt.exists() { break alt; }
+                counter += 1;
+            }
+        } else {
+            dest
+        };
+
+        match std::fs::copy(&src, &final_dest) {
+            Ok(_) => organized += 1,
+            Err(_) => failed += 1,
+        }
+    }
+
+    Ok(OrganizeResult { organized, failed, output_dir: output_dir.to_string_lossy().to_string() })
+}
+
+// ============================================================
 // Directory scanning for media matcher
 // ============================================================
 
