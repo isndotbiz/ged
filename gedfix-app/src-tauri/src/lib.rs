@@ -307,7 +307,7 @@ async fn write_exif_metadata(items: Vec<ExifWriteItem>) -> Result<ExifWriteResul
         metadata.set_tag(ExifTag::ImageDescription(desc));
         metadata.set_tag(ExifTag::DocumentName(item.original_filename.clone()));
         metadata.set_tag(ExifTag::Artist(item.person_name.clone()));
-        metadata.set_tag(ExifTag::UserComment(comment));
+        metadata.set_tag(ExifTag::UserComment(comment.into_bytes()));
 
         match metadata.write_to_file(&src) {
             Ok(_) => written += 1,
