@@ -143,7 +143,37 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
   await clearAll();
 
   const db = await getDb();
-  const pendingMediaLinks: { personXref: string; objeRefs: string[]; primaryPhotoXref: string }[] = [];
+  const pendingMediaLinks: { personXref: string; objeRefs: string[]; inlineMediaIds: number[]; primaryPhotoXref: string }[] = [];
+  const mediaFileCache = new Map<string, number>();
+
+  async function findMediaByFile(filePath: string): Promise<{ id: number; xref: string } | null> {
+    const rows = await db.select<{ id: number; xref: string }[]>(
+      `SELECT id, xref FROM media WHERE filePath = $1 LIMIT 1`,
+      [filePath]
+    );
+    return rows.length > 0 ? rows[0] : null;
+  }
+
+  async function ensureMediaForFile(filePath: string, format: string, title: string, xref?: string): Promise<number> {
+    const normalized = filePath.trim();
+    if (!normalized) return 0;
+    if (mediaFileCache.has(normalized)) return mediaFileCache.get(normalized)!;
+    const existing = await findMediaByFile(normalized);
+    if (existing) {
+      if (!existing.xref && xref) {
+        await db.execute(`UPDATE media SET xref = $1 WHERE id = $2`, [xref, existing.id]);
+      }
+      mediaFileCache.set(normalized, existing.id);
+      return existing.id;
+    }
+    await insertMedia({ xref: xref || '', ownerXref: '', filePath: normalized, format, title });
+    const newRows = await db.select<{ id: number }[]>(`SELECT id FROM media WHERE filePath = $1 ORDER BY id DESC LIMIT 1`, [normalized]);
+    const newId = newRows.length > 0 ? newRows[0].id : 0;
+    if (newId) {
+      mediaFileCache.set(normalized, newId);
+    }
+    return newId;
+  }
 
   onProgress?.(5, 'Parsing GEDCOM lines...');
   const gedVersion = detectGedcomVersion(text);
@@ -227,6 +257,7 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
       // Collect OBJE references for this person (will link after all OBJE records processed)
       let primaryPhotoXref = '';
       const objeRefs: string[] = [];
+      const inlineMediaIds: number[] = [];
 
       for (let i = 0; i < rec.lines.length; i++) {
         const l = rec.lines[i];
@@ -243,14 +274,15 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
           const form = getSubValue(rec.lines, l.level, i, 'FORM');
           const title = getSubValue(rec.lines, l.level, i, 'TITL');
           if (file) {
-            await insertMedia({ xref: '', ownerXref: rec.xref, filePath: file, format: form, title });
+            const mid = await ensureMediaForFile(file, form, title);
+            if (mid) inlineMediaIds.push(mid);
           }
         }
       }
 
       // Store person's OBJE refs for linking after all records parsed
-      if (objeRefs.length > 0 || primaryPhotoXref) {
-        pendingMediaLinks.push({ personXref: rec.xref, objeRefs, primaryPhotoXref });
+      if (objeRefs.length > 0 || inlineMediaIds.length > 0 || primaryPhotoXref) {
+        pendingMediaLinks.push({ personXref: rec.xref, objeRefs, inlineMediaIds, primaryPhotoXref });
       }
 
     } else if (rec.tag === 'FAM') {
@@ -339,15 +371,19 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
       }
 
       if (filePath) {
-        // Upsert: update existing or insert new
-        const existing = await db.select<{id: number}[]>(`SELECT id FROM media WHERE xref = $1`, [rec.xref]);
-        if (existing.length > 0) {
-          await db.execute(
-            `UPDATE media SET filePath = $1, format = CASE WHEN format = 'PRIMARY' THEN 'PRIMARY' ELSE $2 END, title = CASE WHEN title = '' THEN $3 ELSE title END WHERE xref = $4`,
-            [filePath, format, title, rec.xref]
-          );
+        const normalized = filePath.trim();
+        let mediaId = 0;
+        const existing = await findMediaByFile(normalized);
+        if (existing) {
+          mediaId = existing.id;
+          if (!existing.xref && rec.xref) {
+            await db.execute(`UPDATE media SET xref = $1 WHERE id = $2`, [rec.xref, mediaId]);
+          }
         } else {
-          await insertMedia({ xref: rec.xref, ownerXref: '', filePath, format, title });
+          mediaId = await ensureMediaForFile(filePath, format, title, rec.xref);
+        }
+        if (mediaId && normalized) {
+          mediaFileCache.set(normalized, mediaId);
         }
       }
     }
@@ -358,6 +394,15 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
   const allMediaXrefs = await db.select<{xref: string; id: number}[]>(`SELECT xref, id FROM media WHERE xref != ''`);
   const mediaXrefMap = new Map(allMediaXrefs.map(m => [m.xref, m.id]));
   for (const link of pendingMediaLinks) {
+    const seenInline = new Set<number>();
+    for (const mediaId of link.inlineMediaIds) {
+      if (!mediaId || seenInline.has(mediaId)) continue;
+      seenInline.add(mediaId);
+      await db.execute(`
+        INSERT OR IGNORE INTO media_person_link (mediaId, personXref, isPrimary, role, addedBy, createdAt)
+        VALUES ($1, $2, 0, 'tagged', 'gedcom_import', datetime('now'))
+      `, [mediaId, link.personXref]);
+    }
     for (const objeXref of link.objeRefs) {
       let mediaId = mediaXrefMap.get(objeXref);
       if (mediaId != null) {
