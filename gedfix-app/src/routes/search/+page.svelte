@@ -95,7 +95,7 @@
         <h2 class="text-xs font-semibold text-ink-faint uppercase tracking-wider mb-2">People ({personResults.length})</h2>
         <div class="arch-card rounded-xl divide-y arch-card-divide">
           {#each personResults as p}
-            <a href="/people" class="flex items-center gap-3 px-4 py-2.5 hover:bg-black/[0.02] transition-colors">
+            <a href="/people/{encodeURIComponent(p.xref)}" class="flex items-center gap-3 px-4 py-2.5 hover:bg-black/[0.02] transition-colors" style="color: var(--ink); text-decoration: none;">
               <div class="w-7 h-7 rounded-full flex items-center justify-center text-white text-[10px] font-semibold shrink-0"
                 style="background: {p.sex === 'F' ? '#D94A8C' : '#4A90D9'}">
                 {(p.givenName?.[0] ?? '') + (p.surname?.[0] ?? '')}
