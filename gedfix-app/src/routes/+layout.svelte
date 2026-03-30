@@ -3,12 +3,12 @@
   import { appStats, treeIssues, isImporting, importProgress, importMessage } from '$lib/stores';
   import { isDbEmpty, getStats } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
-  import { readTextFile } from '@tauri-apps/plugin-fs';
-  import { homeDir, join } from '@tauri-apps/api/path';
+  import { isTauri } from '$lib/platform';
   import '../app.css';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
+  let sidebarOpen = $state(false);
 
   interface NavSection {
     title: string;
@@ -38,6 +38,7 @@
         { path: '/pedigree', label: 'Pedigree', icon: 'M4 5h16M4 9h12M4 13h16M4 17h8' },
         { path: '/timeline', label: 'Timeline', icon: 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z' },
         { path: '/places', label: 'Places', icon: 'M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z M15 11a3 3 0 11-6 0 3 3 0 016 0z', countKey: 'placeCount' },
+        { path: '/map', label: 'Map', icon: 'M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l5.447 2.724A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7' },
         { path: '/sources', label: 'Sources', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253', countKey: 'sourceCount' },
         { path: '/media', label: 'Media', icon: 'M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z', countKey: 'mediaCount' },
       ]
@@ -68,6 +69,7 @@
         { path: '/ai-chat', label: 'AI Chat', icon: 'M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z' },
         { path: '/stories', label: 'Stories', icon: 'M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253' },
         { path: '/ai-settings', label: 'AI Settings', icon: 'M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z' },
+        { path: '/services', label: 'Services', icon: 'M13 10V3L4 14h7v7l9-11h-7z' },
       ]
     },
     {
@@ -90,6 +92,12 @@
     return currentPath.startsWith(itemPath);
   }
 
+  // Close sidebar on navigation (mobile)
+  $effect(() => {
+    $page.url.pathname;
+    sidebarOpen = false;
+  });
+
   async function autoImport() {
     try {
       const empty = await isDbEmpty();
@@ -99,11 +107,18 @@
         return;
       }
 
+      // On web, skip auto-import — user must import via Settings
+      if (!isTauri()) {
+        return;
+      }
+
       $isImporting = true;
       $importMessage = 'Reading GEDCOM file...';
 
+      const { readTextFile } = await import('@tauri-apps/plugin-fs');
+      const { homeDir, join } = await import('@tauri-apps/api/path');
+
       const home = await homeDir();
-      // Try fresh Ancestry export first, then fall back to cleaned version
       const primaryPath = await join(home, 'Documents', 'Family Tree Maker', 'Ancestry_2026-03-25.ged');
       const fallbackPath = await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged');
       let filePath = primaryPath;
@@ -149,10 +164,27 @@
 </script>
 
 <div class="flex h-screen select-none" style="background: var(--paper);">
+  <!-- Mobile hamburger -->
+  <button
+    class="mobile-hamburger fixed top-3 left-3 z-[60] p-2 rounded-lg"
+    style="background: var(--sidebar-bg); color: var(--sidebar-text);"
+    onclick={() => { sidebarOpen = !sidebarOpen; }}
+    aria-label="Toggle navigation"
+  >
+    <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+      {#if sidebarOpen}
+        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+      {:else}
+        <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+      {/if}
+    </svg>
+  </button>
+
   <!-- Sidebar — dark archive panel -->
   <nav
     aria-label="Main navigation"
-    class="flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in"
+    class="flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in {sidebarOpen ? 'sidebar-mobile-overlay' : ''}"
+    class:sidebar-mobile-hidden={!sidebarOpen}
     style="width: var(--sidebar-width); background: var(--sidebar-bg);"
   >
     <!-- Masthead — click to go home -->
