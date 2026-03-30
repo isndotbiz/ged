@@ -79,10 +79,51 @@
   --texture-paper: url("data:image/svg+xml,%3Csvg width='40' height='40' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0L40 40M40 0L0 40' stroke='%23B5AA9A' stroke-width='0.3' opacity='0.08'/%3E%3C/svg%3E");
 }
 
+:root[data-theme='dark'] {
+  --paper: #17130f;
+  --vellum: #231d17;
+  --parchment: #2d261f;
+  --ink: #efe6d8;
+  --ink-light: #dccfbc;
+  --ink-muted: #b9aa93;
+  --ink-faint: #7f705d;
+  --accent: #c49a3b;
+  --accent-hover: #d5ab4a;
+  --accent-subtle: rgba(196, 154, 59, 0.18);
+  --sidebar-bg: #140f0a;
+  --sidebar-surface: #1f1811;
+  --sidebar-text: #dbccb7;
+  --sidebar-text-muted: #998972;
+  --sidebar-active-bg: rgba(196, 154, 59, 0.2);
+  --sidebar-active-text: #f2dfb8;
+  --sidebar-hover-bg: rgba(255, 255, 255, 0.06);
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+  --paper-warm: #201912;
+  --linen: #2a221a;
+  --aged-gold: #c49a3b;
+  --deep-umber: #cdbda5;
+  --sidebar-accent-line: #c49a3b;
+  --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.35);
+  --shadow-deep: 0 8px 28px rgba(0, 0, 0, 0.42);
+  --border-subtle: rgba(255, 246, 228, 0.12);
+  --border-rule: rgba(255, 246, 228, 0.2);
+  --card-male-bg: rgba(74, 144, 217, 0.15);
+  --card-male-border: rgba(74, 144, 217, 0.3);
+  --card-female-bg: rgba(217, 74, 140, 0.15);
+  --card-female-border: rgba(217, 74, 140, 0.3);
+  --card-unknown-bg: rgba(169, 157, 140, 0.15);
+  --card-unknown-border: rgba(169, 157, 140, 0.3);
+  --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.45);
+  --shadow-md: 0 4px 14px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.58);
+  --texture-paper: radial-gradient(circle at 1px 1px, rgba(255, 244, 223, 0.03) 1px, transparent 0);
+}
+
 body {
   font-family: var(--font-sans);
   background: var(--paper);
   background-image: var(--texture-paper);
+  background-size: 40px 40px;
   color: var(--ink);
   margin: 0;
   overflow: hidden;
@@ -317,6 +358,10 @@ body {
 /* ═══ INTERACTIVE STATES ═══ */
 
 .nav-link:not(.nav-active):hover {
+  background: var(--sidebar-hover-bg);
+}
+
+.sidebar-theme-toggle:hover {
   background: var(--sidebar-hover-bg);
 }
 

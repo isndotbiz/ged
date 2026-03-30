@@ -37,6 +37,33 @@
   let donutCanvas = $state<HTMLCanvasElement | null>(null);
   let timelineCanvas = $state<HTMLCanvasElement | null>(null);
   let placesCanvas = $state<HTMLCanvasElement | null>(null);
+  let themeTick = $state(0);
+
+  interface ChartPalette {
+    ink: string;
+    muted: string;
+    faint: string;
+    accent: string;
+    accentAlt: string;
+    validated: string;
+    media: string;
+    grid: string;
+  }
+
+  function getChartPalette(): ChartPalette {
+    const styles = getComputedStyle(document.documentElement);
+    const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
+    return {
+      ink: read('--ink', '#1A1612'),
+      muted: read('--ink-muted', '#7A6F62'),
+      faint: read('--ink-faint', '#B5AA9A'),
+      accent: read('--accent', '#8B6914'),
+      accentAlt: read('--aged-gold', '#C4A44A'),
+      validated: read('--color-validated', '#4A7C3F'),
+      media: read('--card-male-border-hover', '#3D6B8A'),
+      grid: 'rgba(26, 22, 18, 0.08)',
+    };
+  }
 
   // ── Chart drawing functions ──
 
@@ -55,6 +82,7 @@
     const outerR = Math.min(w, h) / 2 - 10;
     const innerR = outerR * 0.6;
 
+    const palette = getChartPalette();
     const total = segments.reduce((s, seg) => s + seg.value, 0);
     if (total === 0) return;
 
@@ -71,18 +99,19 @@
     }
 
     // Center text
-    ctx.fillStyle = '#1A1612';
+    ctx.fillStyle = palette.ink;
     ctx.font = `bold ${Math.floor(outerR * 0.4)}px Georgia, serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${Math.round(completenessScore)}%`, cx, cy - 6);
     ctx.font = `${Math.floor(outerR * 0.15)}px "Gill Sans", sans-serif`;
-    ctx.fillStyle = '#7A6F62';
+    ctx.fillStyle = palette.muted;
     ctx.fillText('complete', cx, cy + outerR * 0.18);
   }
 
   function drawTimelineChart(canvas: HTMLCanvasElement, data: {label: string; value: number}[]) {
     const ctx = canvas.getContext('2d')!;
+    const palette = getChartPalette();
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
@@ -101,7 +130,7 @@
     const barW = Math.max(2, (plotW / data.length) - 2);
 
     // Grid lines
-    ctx.strokeStyle = 'rgba(26, 22, 18, 0.08)';
+    ctx.strokeStyle = palette.grid;
     ctx.lineWidth = 1;
     for (let i = 0; i <= 4; i++) {
       const y = pad.top + plotH - (plotH * i / 4);
@@ -110,7 +139,7 @@
       ctx.lineTo(pad.left + plotW, y);
       ctx.stroke();
 
-      ctx.fillStyle = '#7A6F62';
+      ctx.fillStyle = palette.muted;
       ctx.font = '10px "Gill Sans", sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
@@ -119,8 +148,8 @@
 
     // Bars
     const gradient = ctx.createLinearGradient(0, pad.top, 0, pad.top + plotH);
-    gradient.addColorStop(0, '#8B6914');
-    gradient.addColorStop(1, '#C4A44A');
+    gradient.addColorStop(0, palette.accent);
+    gradient.addColorStop(1, palette.accentAlt);
 
     data.forEach((d, i) => {
       const x = pad.left + (i / data.length) * plotW + 1;
@@ -141,7 +170,7 @@
       // Labels (show every Nth label to avoid overlap)
       const step = Math.max(1, Math.floor(data.length / 8));
       if (i % step === 0) {
-        ctx.fillStyle = '#7A6F62';
+        ctx.fillStyle = palette.muted;
         ctx.font = '9px "Gill Sans", sans-serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
@@ -152,6 +181,7 @@
 
   function drawHorizontalBarChart(canvas: HTMLCanvasElement, data: {label: string; value: number}[]) {
     const ctx = canvas.getContext('2d')!;
+    const palette = getChartPalette();
     const dpr = window.devicePixelRatio || 1;
     const rect = canvas.getBoundingClientRect();
     canvas.width = rect.width * dpr;
@@ -168,7 +198,13 @@
 
     const maxVal = Math.max(...data.map(d => d.value), 1);
     const barH = Math.min(24, (plotH / data.length) - 4);
-    const colors = ['#8B6914', '#A37D1A', '#C4A44A', '#4A7C3F', '#3D6B8A', '#6B4A3D', '#8A6B4A', '#5A7A4A', '#7A5A4A', '#4A5A7A'];
+    const colors = [
+      palette.accent,
+      palette.accentAlt,
+      palette.validated,
+      palette.media,
+      palette.faint
+    ];
 
     data.forEach((d, i) => {
       const y = pad.top + (i / data.length) * plotH + 2;
@@ -187,7 +223,7 @@
       ctx.fill();
 
       // Label
-      ctx.fillStyle = '#1A1612';
+      ctx.fillStyle = palette.ink;
       ctx.font = '11px "Gill Sans", sans-serif';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
@@ -195,7 +231,7 @@
       ctx.fillText(label, pad.left - 8, y + barH / 2);
 
       // Value
-      ctx.fillStyle = '#7A6F62';
+      ctx.fillStyle = palette.muted;
       ctx.font = '10px "Gill Sans", sans-serif';
       ctx.textAlign = 'left';
       ctx.fillText(String(d.value), pad.left + barW + 6, y + barH / 2);
@@ -340,25 +376,38 @@
     loadDashboardData();
   });
 
+  onMount(() => {
+    const root = document.documentElement;
+    const observer = new MutationObserver(() => {
+      themeTick += 1;
+    });
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  });
+
   // Draw charts when data and canvases are ready
   $effect(() => {
+    themeTick;
     if (!loading && donutCanvas) {
+      const palette = getChartPalette();
       drawDonutChart(donutCanvas, [
-        {label: 'Birth Date', value: withBirthDate, color: '#8B6914'},
-        {label: 'Death Date', value: withDeathDate, color: '#C4A44A'},
-        {label: 'Sources', value: withSource, color: '#4A7C3F'},
-        {label: 'Media', value: withMedia, color: '#3D6B8A'},
+        {label: 'Birth Date', value: withBirthDate, color: palette.accent},
+        {label: 'Death Date', value: withDeathDate, color: palette.accentAlt},
+        {label: 'Sources', value: withSource, color: palette.validated},
+        {label: 'Media', value: withMedia, color: palette.media},
       ]);
     }
   });
 
   $effect(() => {
+    themeTick;
     if (!loading && timelineCanvas && eventsByDecade.length > 0) {
       drawTimelineChart(timelineCanvas, eventsByDecade);
     }
   });
 
   $effect(() => {
+    themeTick;
     if (!loading && placesCanvas && topPlaces.length > 0) {
       drawHorizontalBarChart(placesCanvas, topPlaces);
     }
@@ -454,22 +503,22 @@
           </div>
           <div style="flex: 1;">
             <div class="completeness-row">
-              <span class="completeness-dot" style="background: #8B6914;"></span>
+              <span class="completeness-dot" style="background: var(--accent);"></span>
               <span class="completeness-label">Birth Date</span>
               <span class="completeness-pct">{withBirthDate}%</span>
             </div>
             <div class="completeness-row">
-              <span class="completeness-dot" style="background: #C4A44A;"></span>
+              <span class="completeness-dot" style="background: var(--aged-gold);"></span>
               <span class="completeness-label">Death Date</span>
               <span class="completeness-pct">{withDeathDate}%</span>
             </div>
             <div class="completeness-row">
-              <span class="completeness-dot" style="background: #4A7C3F;"></span>
+              <span class="completeness-dot" style="background: var(--color-validated);"></span>
               <span class="completeness-label">Has Source</span>
               <span class="completeness-pct">{withSource}%</span>
             </div>
             <div class="completeness-row">
-              <span class="completeness-dot" style="background: #3D6B8A;"></span>
+              <span class="completeness-dot" style="background: var(--card-male-border-hover);"></span>
               <span class="completeness-label">Has Media</span>
               <span class="completeness-pct">{withMedia}%</span>
             </div>
@@ -781,3 +830,5 @@
     }
   }
 </style>
+    const palette = getChartPalette();
+    const palette = getChartPalette();

@@ -9,7 +9,9 @@
   let mapContainer: HTMLDivElement;
   let mapInstance: any = null;
   let leafletLib: any = null;
+  let baseTileLayer: any = null;
   let markers: any[] = [];
+  let themeMode = $state<'light' | 'dark'>('light');
 
   let totalEvents = $derived(places.reduce((s, p) => s + p.eventCount, 0));
   let geocodedCount = $derived(places.filter(p => p.latitude != null).length);
@@ -120,10 +122,7 @@
       zoomControl: true,
     });
 
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 18,
-    }).addTo(mapInstance);
+    updateBaseTileLayer();
 
     // Handle popup button clicks via event delegation
     mapInstance.on('popupopen', (e: any) => {
@@ -159,6 +158,27 @@
     });
 
     addMarkers();
+  }
+
+  function updateBaseTileLayer() {
+    if (!mapInstance || !leafletLib) return;
+    if (baseTileLayer) {
+      mapInstance.removeLayer(baseTileLayer);
+      baseTileLayer = null;
+    }
+    if (themeMode === 'dark') {
+      baseTileLayer = leafletLib.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+        subdomains: 'abcd',
+        maxZoom: 20,
+      });
+    } else {
+      baseTileLayer = leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+        maxZoom: 18,
+      });
+    }
+    baseTileLayer.addTo(mapInstance);
   }
 
   function addMarkers() {
@@ -253,6 +273,25 @@
     if (!browser || !mapContainer) return;
     if (!mapInstance) {
       initMap();
+    }
+  });
+
+  $effect(() => {
+    if (!browser) return;
+    const root = document.documentElement;
+    const syncTheme = () => {
+      themeMode = root.dataset.theme === 'dark' ? 'dark' : 'light';
+    };
+    syncTheme();
+    const observer = new MutationObserver(syncTheme);
+    observer.observe(root, { attributes: true, attributeFilter: ['data-theme'] });
+    return () => observer.disconnect();
+  });
+
+  $effect(() => {
+    themeMode;
+    if (mapInstance && leafletLib) {
+      updateBaseTileLayer();
     }
   });
 </script>
