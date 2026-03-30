@@ -67,9 +67,6 @@
     }
   }
 
-  function navigateToPeople() {
-    goto('/people');
-  }
 
   $effect(() => { load(); });
 </script>
@@ -115,27 +112,27 @@
 
             <!-- Partner names -->
             <div class="flex items-center gap-2 flex-1 min-w-0">
-              <span
-                role="link"
-                tabindex="0"
-                class="text-sm font-medium truncate underline-offset-2 cursor-pointer"
-                style="color: var(--ink); text-decoration: none;"
-                onmouseenter={(e) => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = 'var(--accent, #6b4c2a)'; }}
-                onmouseleave={(e) => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = 'var(--ink)'; }}
-                onclick={(e) => { e.stopPropagation(); navigateToPeople(); }}
-                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); navigateToPeople(); } }}
-              >{personName(row.partner1)}</span>
+              {#if row.partner1}
+                <a
+                  href="/people/{encodeURIComponent(row.partner1.xref)}"
+                  class="text-sm font-medium truncate underline-offset-2 hover:underline"
+                  style="color: var(--ink); text-decoration: none;"
+                  onclick={(e) => e.stopPropagation()}
+                >{personName(row.partner1)}</a>
+              {:else}
+                <span class="text-sm font-medium truncate" style="color: var(--ink);">{personName(row.partner1)}</span>
+              {/if}
               <span class="text-xs" style="color: var(--ink-faint);">&amp;</span>
-              <span
-                role="link"
-                tabindex="0"
-                class="text-sm font-medium truncate underline-offset-2 cursor-pointer"
-                style="color: var(--ink); text-decoration: none;"
-                onmouseenter={(e) => { e.currentTarget.style.textDecoration = 'underline'; e.currentTarget.style.color = 'var(--accent, #6b4c2a)'; }}
-                onmouseleave={(e) => { e.currentTarget.style.textDecoration = 'none'; e.currentTarget.style.color = 'var(--ink)'; }}
-                onclick={(e) => { e.stopPropagation(); navigateToPeople(); }}
-                onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.stopPropagation(); navigateToPeople(); } }}
-              >{personName(row.partner2)}</span>
+              {#if row.partner2}
+                <a
+                  href="/people/{encodeURIComponent(row.partner2.xref)}"
+                  class="text-sm font-medium truncate underline-offset-2 hover:underline"
+                  style="color: var(--ink); text-decoration: none;"
+                  onclick={(e) => e.stopPropagation()}
+                >{personName(row.partner2)}</a>
+              {:else}
+                <span class="text-sm font-medium truncate" style="color: var(--ink);">{personName(row.partner2)}</span>
+              {/if}
             </div>
 
             <!-- Marriage info -->
@@ -190,12 +187,12 @@
                 {:else}
                   <div class="space-y-1">
                     {#each children as child}
-                      <button
-                        class="w-full flex items-center gap-3 px-2 py-1.5 rounded-md text-left transition-colors cursor-pointer"
-                        style="background: transparent;"
+                      <a
+                        href="/people/{encodeURIComponent(child.xref)}"
+                        class="w-full flex items-center gap-3 px-2 py-1.5 rounded-md text-left transition-colors cursor-pointer hover:underline"
+                        style="background: transparent; color: var(--ink); text-decoration: none;"
                         onmouseenter={(e) => e.currentTarget.style.background = 'rgba(0,0,0,0.03)'}
                         onmouseleave={(e) => e.currentTarget.style.background = 'transparent'}
-                        onclick={() => navigateToPeople()}
                       >
                         <!-- Sex indicator -->
                         <span class="text-xs w-4 text-center shrink-0" style="color: var(--ink-faint);">
@@ -210,7 +207,7 @@
                         {#if child.deathDate}
                           <span class="text-xs" style="color: var(--ink-faint);">d. {child.deathDate}</span>
                         {/if}
-                      </button>
+                      </a>
                     {/each}
                   </div>
                 {/if}
