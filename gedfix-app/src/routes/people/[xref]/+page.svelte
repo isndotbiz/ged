@@ -110,10 +110,22 @@
   // --- Data loading ---
   async function loadPerson(xref: string) {
     loading = true;
+    person = null;
+    events = [];
+    parents = { father: null, mother: null };
+    spouseFamilies = [];
+    media = [];
+    primaryPhoto = null;
+    photoUrl = '';
+    notes = [];
+    citations = [];
     await initFileSrc();
 
     const p = await getPerson(xref);
-    if (!p) { loading = false; return; }
+    if (!p) {
+      loading = false;
+      return;
+    }
     person = p;
 
     // Parallel data fetching
@@ -223,7 +235,7 @@
         <section class="bio-header">
           <div class="header-photo">
             {#if photoUrl}
-              <img src={photoUrl} alt={fullName(person)} class="header-photo-img" />
+              <img src={photoUrl} alt={fullName(person)} class="header-photo-img" onerror={() => { photoUrl = ''; }} />
             {:else}
               <div class="header-initials" style="background: {avatarColor(person)};">
                 {getInitials(person)}
