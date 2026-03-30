@@ -103,6 +103,10 @@
     return colors[q] || '#7A6F62';
   }
 
+  function handleLightboxKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') lightboxMedia = null;
+  }
+
   // --- Data loading ---
   async function loadPerson(xref: string) {
     loading = true;
@@ -575,7 +579,14 @@
 
   <!-- ===== LIGHTBOX ===== -->
   {#if lightboxMedia}
-    <div class="lightbox-overlay" onclick={() => lightboxMedia = null} role="dialog" aria-label="Media lightbox">
+    <div
+      class="lightbox-overlay"
+      onclick={() => lightboxMedia = null}
+      onkeydown={handleLightboxKeydown}
+      role="dialog"
+      aria-label="Media lightbox"
+      tabindex="-1"
+    >
       <button class="lightbox-close" onclick={() => lightboxMedia = null}>&times;</button>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div class="lightbox-content" onclick={(e) => e.stopPropagation()} role="presentation">

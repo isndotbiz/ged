@@ -235,9 +235,10 @@
       </div>
     {:else}
       <div class="mb-4">
-        <label class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">FamilySearch Client ID</label>
+        <label for="familysearch-client-id" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">FamilySearch Client ID</label>
         <div class="flex gap-2">
           <input
+            id="familysearch-client-id"
             type="text"
             bind:value={fsClientId}
             placeholder="Register at developers.familysearch.org"
@@ -302,9 +303,10 @@
       </div>
     {:else}
       <div class="mb-4">
-        <label class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">Geni App Key (Client ID)</label>
+        <label for="geni-client-id" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">Geni App Key (Client ID)</label>
         <div class="flex gap-2">
           <input
+            id="geni-client-id"
             type="text"
             bind:value={geniClientId}
             placeholder="Register at geni.com/platform/developer/apps"
@@ -366,9 +368,10 @@
       </div>
     {:else}
       <div class="mb-4">
-        <label class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">WikiTree API Key</label>
+        <label for="wikitree-api-key" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">WikiTree API Key</label>
         <div class="flex gap-2">
           <input
+            id="wikitree-api-key"
             type="text"
             bind:value={wikitreeApiKey}
             placeholder="Join WikiTree Apps Project for access"

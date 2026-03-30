@@ -314,7 +314,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <!-- Person A -->
       <div class="relative">
-        <label class="block text-xs font-medium text-ink-muted mb-1">Person A</label>
+        <label for="relationship-person-a" class="block text-xs font-medium text-ink-muted mb-1">Person A</label>
         {#if personA}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personA)}</span>
@@ -322,6 +322,7 @@
           </div>
         {:else}
           <input
+            id="relationship-person-a"
             type="text"
             bind:value={searchA}
             oninput={() => searchPersons(searchA, 'A')}
@@ -348,7 +349,7 @@
 
       <!-- Person B -->
       <div class="relative">
-        <label class="block text-xs font-medium text-ink-muted mb-1">Person B</label>
+        <label for="relationship-person-b" class="block text-xs font-medium text-ink-muted mb-1">Person B</label>
         {#if personB}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personB)}</span>
@@ -356,6 +357,7 @@
           </div>
         {:else}
           <input
+            id="relationship-person-b"
             type="text"
             bind:value={searchB}
             oninput={() => searchPersons(searchB, 'B')}
