@@ -457,6 +457,8 @@ pub fn run() {
             batch_rename_media,
             check_file_exists,
             list_image_files,
+            write_exif_metadata,
+            organize_media_folders,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
