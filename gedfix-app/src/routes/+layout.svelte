@@ -1,14 +1,19 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { appStats, treeIssues, isImporting, importProgress, importMessage } from '$lib/stores';
-  import { isDbEmpty, getStats } from '$lib/db';
+  import { isDbEmpty, getStats, getSetting, setSetting } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
   import { isTauri } from '$lib/platform';
+  import { pickAndReadTextFile } from '$lib/platform-fs';
   import '../app.css';
   import type { Snippet } from 'svelte';
 
   let { children }: { children: Snippet } = $props();
   let sidebarOpen = $state(false);
+  type ThemeMode = 'light' | 'dark';
+  let themeMode = $state<ThemeMode>('light');
+  let showWebWelcome = $state(false);
+  let webWelcomeError = $state('');
 
   interface NavSection {
     title: string;
@@ -105,11 +110,13 @@
       if (!empty) {
         const stats = await getStats();
         appStats.set(stats);
+        showWebWelcome = false;
         return;
       }
 
       // On web, skip auto-import — user must import via Settings
       if (!isTauri()) {
+        showWebWelcome = true;
         return;
       }
 
@@ -145,6 +152,7 @@
 
       const stats = await getStats();
       appStats.set(stats);
+      showWebWelcome = false;
       $isImporting = false;
       $importMessage = '';
     } catch (e) {
@@ -154,13 +162,73 @@
     }
   }
 
+  async function importWebGedcom() {
+    webWelcomeError = '';
+    const result = await pickAndReadTextFile([{ name: 'GEDCOM', extensions: ['ged'] }]);
+    if (!result) return;
+    $isImporting = true;
+    $importProgress = 0;
+    $importMessage = 'Reading file...';
+    try {
+      await importGedcom(result.text, (pct, msg) => {
+        $importProgress = pct;
+        $importMessage = msg;
+      });
+      const stats = await getStats();
+      appStats.set(stats);
+      showWebWelcome = false;
+      $importMessage = '';
+    } catch (e) {
+      console.error('Import error:', e);
+      webWelcomeError = `Import failed: ${e}`;
+    } finally {
+      $isImporting = false;
+    }
+  }
+
   let hasAutoImported = false;
+  let hasLoadedTheme = false;
 
   $effect(() => {
     if (!hasAutoImported) {
       hasAutoImported = true;
       autoImport();
     }
+  });
+
+  function applyTheme(mode: ThemeMode) {
+    if (typeof document === 'undefined') return;
+    document.documentElement.dataset.theme = mode;
+  }
+
+  async function loadThemePreference() {
+    try {
+      const storedMode = await getSetting('theme_mode');
+      const mode: ThemeMode = storedMode === 'dark' ? 'dark' : 'light';
+      themeMode = mode;
+      applyTheme(mode);
+    } catch (e) {
+      console.error('Failed to load theme preference:', e);
+      themeMode = 'light';
+      applyTheme('light');
+    }
+  }
+
+  async function toggleTheme() {
+    const nextMode: ThemeMode = themeMode === 'dark' ? 'light' : 'dark';
+    themeMode = nextMode;
+    applyTheme(nextMode);
+    try {
+      await setSetting('theme_mode', nextMode);
+    } catch (e) {
+      console.error('Failed to save theme preference:', e);
+    }
+  }
+
+  $effect(() => {
+    if (hasLoadedTheme) return;
+    hasLoadedTheme = true;
+    loadThemePreference();
   });
 </script>
 
@@ -245,6 +313,18 @@
 
     <!-- Footer catalog notation -->
     <div class="mt-auto px-3 pt-3" style="border-top: 2px double var(--sidebar-border);">
+      <button
+        type="button"
+        class="w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-md text-left sidebar-theme-toggle"
+        style="color: var(--sidebar-text); font-family: var(--font-sans);"
+        onclick={toggleTheme}
+        aria-label="Toggle dark mode"
+      >
+        <span class="text-[11px] tracking-[0.08em] uppercase">Theme</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded" style="background: var(--sidebar-hover-bg); color: var(--sidebar-text-muted); font-family: var(--font-mono);">
+          {themeMode === 'dark' ? 'Dark' : 'Light'}
+        </span>
+      </button>
       <div
         class="text-[10px]"
         style="color: var(--sidebar-text-muted); font-family: var(--font-mono);"
@@ -272,6 +352,21 @@
             ></div>
           </div>
           <p class="text-sm" style="color: var(--ink-muted); font-family: var(--font-sans);">{$importMessage}</p>
+        </div>
+      </div>
+    {:else if showWebWelcome}
+      <div class="flex items-center justify-center h-full p-6">
+        <div class="arch-card rounded-xl p-8 w-full max-w-xl text-center animate-fade-in">
+          <h2 class="dossier-header" style="font-size: 1.6rem; margin-bottom: 0.75rem;">Welcome to GedFix</h2>
+          <p class="text-sm mb-6" style="color: var(--ink-muted); font-family: var(--font-sans);">
+            Import a GEDCOM file to get started.
+          </p>
+          <button class="btn-accent px-5 py-2.5" onclick={importWebGedcom}>
+            Import GEDCOM
+          </button>
+          {#if webWelcomeError}
+            <p class="text-xs mt-3" style="color: var(--color-error);">{webWelcomeError}</p>
+          {/if}
         </div>
       </div>
     {:else}
