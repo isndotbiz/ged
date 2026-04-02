@@ -1,0 +1,136 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'app-v*'
+
+jobs:
+  release-desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            label: linux-x64
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            label: windows-x64
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            label: macos-arm64
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: gedfix-app/package-lock.json
+
+      - name: Install npm deps
+        run: npm ci
+        working-directory: gedfix-app
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: gedfix-app
+          tauriScript: npm run tauri
+          tagName: ${{ github.ref_name }}
+          releaseName: 'GedFix ${{ github.ref_name }}'
+          releaseBody: 'See CHANGELOG for release notes.'
+          releaseDraft: true
+
+  release-android:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust + Android targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-linux-android,armv7-linux-androideabi,i686-linux-android,x86_64-linux-android
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install NDK
+        run: sdkmanager "ndk;27.0.12077973"
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: gedfix-app/package-lock.json
+
+      - name: Install npm deps
+        run: npm ci
+        working-directory: gedfix-app
+
+      - name: Build Android APK
+        run: npm run tauri -- android build --apk
+        working-directory: gedfix-app
+        env:
+          NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.12077973
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: gedfix-android-apk
+          path: gedfix-app/gen/android/app/build/outputs/apk/universal/release/*.apk
+
+  release-web:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: gedfix-app/package-lock.json
+
+      - name: Install npm deps
+        run: npm ci
+        working-directory: gedfix-app
+
+      - name: Build web
+        run: npm run build:web
+        working-directory: gedfix-app
+
+      - name: Upload web build
+        uses: actions/upload-artifact@v4
+        with:
+          name: gedfix-web
+          path: gedfix-app/build/
