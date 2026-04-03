@@ -40,6 +40,8 @@
   let lastCheckedIndex = $state<number | null>(null);
   let selectedGroupId = $state<number>(0);
   let groups = $state.raw<{ id: number; name: string }[]>([]);
+  let swipedXref = $state<string | null>(null);
+  let touchStartX = $state(0);
 
   // Photo cache for list avatars
   let photoCache = $state.raw<Map<string, string>>(new Map());
@@ -96,6 +98,34 @@
     await batchDeletePersons(xrefs);
     selectedXrefs = new Set();
     await load();
+  }
+
+  async function bookmarkOne(xref: string) {
+    await batchBookmark([xref]);
+    swipedXref = null;
+  }
+
+  async function deleteOne(xref: string) {
+    await batchDeletePersons([xref]);
+    if (selected?.xref === xref) selected = null;
+    swipedXref = null;
+    await load();
+  }
+
+  function handleRowTouchStart(event: TouchEvent) {
+    touchStartX = event.changedTouches[0]?.clientX ?? 0;
+  }
+
+  function handleRowTouchEnd(event: TouchEvent, xref: string) {
+    const endX = event.changedTouches[0]?.clientX ?? 0;
+    const delta = touchStartX - endX;
+    if (delta > 100) {
+      swipedXref = xref;
+      return;
+    }
+    if (delta < -100 && swipedXref === xref) {
+      swipedXref = null;
+    }
   }
 
   async function exportSelected() {
@@ -261,10 +291,17 @@
     <div class="flex-1" style="contain: strict;">
       <VList data={persons} style="height: 100%;" getKey={(_, i) => persons[i]?.xref ?? i}>
         {#snippet children(person, index)}
+          <div class="person-row-wrap">
+            <div class="row-actions">
+              <button class="row-action-btn" onclick={() => bookmarkOne(person.xref)}>{t('common.bookmark')}</button>
+              <button class="row-action-btn danger" onclick={() => deleteOne(person.xref)}>{t('common.delete')}</button>
+            </div>
           <button
             onclick={() => selectPerson(person)}
-            class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03] transition-colors contain-content
-                   {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''}"
+            ontouchstart={handleRowTouchStart}
+            ontouchend={(event) => handleRowTouchEnd(event, person.xref)}
+            class="person-row w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03] transition-colors contain-content
+                   {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''} {swipedXref === person.xref ? 'row-swiped' : ''}"
           >
             <input
               type="checkbox"
@@ -303,6 +340,7 @@
               <span class="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title="Has sources"></span>
             {/if}
           </button>
+          </div>
         {/snippet}
       </VList>
     </div>
@@ -563,6 +601,45 @@
     border: 1px solid var(--border-rule);
     border-radius: 0.6rem;
     background: var(--vellum);
+  }
+
+  .person-row-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .person-row {
+    position: relative;
+    z-index: 2;
+    background: transparent;
+    transform: translateX(0);
+    transition: transform 170ms ease;
+  }
+
+  .row-swiped {
+    transform: translateX(-120px);
+  }
+
+  .row-actions {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 120px;
+    display: flex;
+    z-index: 1;
+  }
+
+  .row-action-btn {
+    flex: 1;
+    border: 0;
+    color: #fff;
+    background: var(--accent);
+    font-size: 11px;
+  }
+
+  .row-action-btn.danger {
+    background: var(--color-error);
   }
   @media (max-width: 767px) {
     .batch-bar {
