@@ -8,7 +8,8 @@
     ".": "./src/index.ts",
     "./types": "./src/types.ts",
     "./queries": "./src/queries.ts",
-    "./platform": "./src/platform.ts"
+    "./platform": "./src/platform.ts",
+    "./schema": "./src/schema.ts"
   },
   "scripts": {
     "build": "tsc --noEmit",
