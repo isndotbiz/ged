@@ -10,6 +10,9 @@ importers:
 
   gedfix-app:
     dependencies:
+      '@gedfix/core':
+        specifier: workspace:*
+        version: link:../packages/core
       '@tauri-apps/api':
         specifier: ^2
         version: 2.10.1
