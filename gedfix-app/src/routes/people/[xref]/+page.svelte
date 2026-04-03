@@ -361,15 +361,15 @@
 {#if loading}
   <div class="flex items-center justify-center h-full" style="color: var(--ink-muted);">
     <div class="text-center">
-      <div class="text-lg mb-2" style="font-family: var(--font-heading);">Loading person...</div>
-      <div class="text-sm" style="color: var(--ink-faint);">Fetching biographical data</div>
+      <div class="text-lg mb-2" style="font-family: var(--font-heading);">{t('people.loadingPerson')}</div>
+      <div class="text-sm" style="color: var(--ink-faint);">{t('people.fetchingBio')}</div>
     </div>
   </div>
 {:else if !person}
   <div class="flex items-center justify-center h-full" style="color: var(--ink-muted);">
     <div class="text-center">
-      <div class="text-2xl mb-2">Person not found</div>
-      <button onclick={() => goto('/people')} class="arch-btn mt-4">Back to People</button>
+      <div class="text-2xl mb-2">{t('people.notFound')}</div>
+      <button onclick={() => goto('/people')} class="arch-btn mt-4">{t('people.backToPeople')}</button>
     </div>
   </div>
 {:else}
@@ -382,7 +382,7 @@
     <span class="text-sm font-medium" style="color: var(--ink-light);">{fullName(person)}</span>
   </div>
 
-  <div class="person-detail-page" ontouchstart={handleSwipeStart} ontouchmove={handleSwipeMove} ontouchend={handleSwipeEnd}>
+  <div class="person-detail-page" role="region" aria-label={t('people.title')} ontouchstart={handleSwipeStart} ontouchmove={handleSwipeMove} ontouchend={handleSwipeEnd}>
     <div class="swipe-back-indicator" style="opacity: {Math.min(swipeDelta / 120, 1)};">←</div>
     <!-- ===== Two-column layout ===== -->
     <div class="detail-layout">
@@ -420,23 +420,23 @@
             {/if}
             <div class="header-actions">
               <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title={t('people.editDetails')}>Edit</button>
-              <button class="arch-btn arch-btn-sm" onclick={toggleBookmark} aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}>
-                {bookmarked ? 'Bookmarked' : 'Bookmark'}
+              <button class="arch-btn arch-btn-sm" onclick={toggleBookmark} aria-label={bookmarked ? t('people.removeBookmark') : t('common.bookmark')}>
+                {bookmarked ? t('people.bookmarked') : t('common.bookmark')}
               </button>
             </div>
           </div>
         </section>
 
         <div class="arch-card tab-bar mb-6">
-          <button class="tab-btn {activeTab === 'overview' ? 'active' : ''}" onclick={() => activeTab = 'overview'}>Overview</button>
-          <button class="tab-btn {activeTab === 'names' ? 'active' : ''}" onclick={() => activeTab = 'names'}>Names</button>
+          <button class="tab-btn {activeTab === 'overview' ? 'active' : ''}" onclick={() => activeTab = 'overview'}>{t('common.overview')}</button>
+          <button class="tab-btn {activeTab === 'names' ? 'active' : ''}" onclick={() => activeTab = 'names'}>{t('people.names')}</button>
         </div>
 
         {#if activeTab === 'overview'}
         <!-- ===== SECTION 1: LIFE TIMELINE ===== -->
         {#if events.length > 0}
           <section class="detail-section">
-            <h2 class="section-heading">Life Timeline</h2>
+            <h2 class="section-heading">{t('people.lifeTimeline')}</h2>
             <div class="timeline">
               {#each events as evt, i}
                 <div class="timeline-item">
@@ -474,7 +474,7 @@
 
           <!-- Parents -->
           {#if parents.father || parents.mother}
-            <h3 class="subsection-heading">Parents</h3>
+            <h3 class="subsection-heading">{t('people.parents')}</h3>
             <div class="person-cards">
               {#if parents.father}
                 {@const f = parents.father}
@@ -521,7 +521,7 @@
           {#each spouseFamilies as fam}
             {#if fam.spouse}
               <h3 class="subsection-heading">
-                Spouse
+                {t('families.spouse')}
                 {#if fam.family.marriageDate} &middot; m. {fam.family.marriageDate}{/if}
                 {#if fam.family.marriagePlace} &middot; {fam.family.marriagePlace}{/if}
               </h3>
@@ -644,13 +644,13 @@
         {:else}
           <section class="detail-section">
             <h2 class="section-heading">{t('people.alternateNames')}</h2>
-            <p class="text-xs text-ink-muted mb-4">Store multilingual, married/maiden, or alias names for search and display.</p>
+            <p class="text-xs text-ink-muted mb-4">{t('people.alternateNamesHelp')}</p>
 
             <div class="arch-card rounded-xl p-4 mb-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Given name" bind:value={altDraft.givenName}  aria-label="Given name" />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.givenName')} bind:value={altDraft.givenName}  aria-label={t('people.givenName')} />
                 <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.surname')} bind:value={altDraft.surname}  aria-label={t('people.surname')} />
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Suffix (optional)" bind:value={altDraft.suffix}  aria-label="Suffix (optional)" />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.suffixOptional')} bind:value={altDraft.suffix}  aria-label={t('people.suffixOptional')} />
                 <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={altDraft.nameType} aria-label={t('common.filter')}>
                   {#each nameTypes as t}<option value={t}>{t}</option>{/each}
                 </select>
@@ -662,11 +662,11 @@
             </div>
 
             {#if altLoading}
-              <div class="text-sm text-ink-faint py-4 text-center">Loading alternate names...</div>
+              <div class="text-sm text-ink-faint py-4 text-center">{t('people.loadingAlternateNames')}</div>
             {:else if altError}
               <div class="text-xs text-ink-muted">{altError}</div>
             {:else if alternateNames.length === 0}
-              <div class="text-sm text-ink-faint py-8 text-center">No alternate names yet.</div>
+              <div class="text-sm text-ink-faint py-8 text-center">{t('people.noAlternateNames')}</div>
             {:else}
               <div class="arch-card rounded-xl divide-y arch-card-divide">
                 {#each alternateNames as a}
@@ -682,7 +682,7 @@
                         <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" bind:value={editDraft.source}  aria-label={t('common.search')} />
                       </div>
                       <div class="mt-2 flex gap-2">
-                        <button class="btn-accent px-3 py-1.5 text-xs" onclick={() => saveEditAlt(a.id)}>Save</button>
+                        <button class="btn-accent px-3 py-1.5 text-xs" onclick={() => saveEditAlt(a.id)}>{t('common.save')}</button>
                         <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt} aria-label={t('common.actions')}>{t('common.cancel')}</button>
                       </div>
                     {:else}
@@ -692,8 +692,8 @@
                           <div class="text-xs text-ink-muted">{a.nameType}{a.source ? ` • ${a.source}` : ''}</div>
                         </div>
                         <div class="flex gap-2">
-                          <button class="btn-secondary px-3 py-1.5 text-xs" onclick={() => startEditAlt(a)}>Edit</button>
-                          <button class="px-3 py-1.5 text-xs rounded-lg" style="background: var(--parchment); color: var(--color-error);" onclick={() => removeAlt(a.id)}>Delete</button>
+                          <button class="btn-secondary px-3 py-1.5 text-xs" onclick={() => startEditAlt(a)}>{t('common.edit')}</button>
+                          <button class="px-3 py-1.5 text-xs rounded-lg" style="background: var(--parchment); color: var(--color-error);" onclick={() => removeAlt(a.id)}>{t('common.delete')}</button>
                         </div>
                       </div>
                     {/if}
@@ -726,11 +726,11 @@
               </div>
             {/if}
             <div class="fact-row">
-              <dt>Gender</dt>
-              <dd>{person.sex === 'M' ? 'Male' : person.sex === 'F' ? 'Female' : 'Unknown'}</dd>
+              <dt>{t('people.sex')}</dt>
+              <dd>{person.sex === 'M' ? t('people.male') : person.sex === 'F' ? t('people.female') : t('common.unknown')}</dd>
             </div>
             <div class="fact-row">
-              <dt>Birth</dt>
+              <dt>{t('common.born')}</dt>
               <dd>{person.birthDate || '\u2014'}</dd>
             </div>
             {#if person.birthPlace}
@@ -740,7 +740,7 @@
               </div>
             {/if}
             <div class="fact-row">
-              <dt>Death</dt>
+              <dt>{t('common.died')}</dt>
               <dd>{person.deathDate || '\u2014'}</dd>
             </div>
             {#if person.deathPlace}
@@ -751,13 +751,13 @@
             {/if}
             {#if calcAge(person.birthDate, person.deathDate)}
               <div class="fact-row">
-                <dt>Age at Death</dt>
-                <dd>~{calcAge(person.birthDate, person.deathDate)} years</dd>
+                <dt>{t('people.ageAtDeath')}</dt>
+                <dd>~{calcAge(person.birthDate, person.deathDate)} {t('common.years')}</dd>
               </div>
             {/if}
             <div class="fact-row">
               <dt>{t('people.living')}</dt>
-              <dd>{person.isLiving ? 'Yes' : 'No'}</dd>
+              <dd>{person.isLiving ? t('common.yes') : t('common.no')}</dd>
             </div>
             <div class="fact-row">
               <dt>XREF</dt>
@@ -768,10 +768,10 @@
 
         <!-- Sidebar stats -->
         <div class="sidebar-card">
-          <h3 class="sidebar-heading">Record Stats</h3>
+          <h3 class="sidebar-heading">{t('people.recordStats')}</h3>
           <dl class="fact-list">
             <div class="fact-row">
-              <dt>Events</dt>
+              <dt>{t('common.events')}</dt>
               <dd>{events.length}</dd>
             </div>
             <div class="fact-row">
@@ -803,13 +803,13 @@
               <div class="sidebar-family">
                 {#if fam.spouse}
                   <div class="text-sm" style="color: var(--ink-light);">
-                    Married {fam.spouse.givenName} {fam.spouse.surname}
+                    {t('families.marriage')} {fam.spouse.givenName} {fam.spouse.surname}
                   </div>
                 {/if}
                 {#if fam.family.marriageDate}
                   <div class="text-xs" style="color: var(--ink-muted);">{fam.family.marriageDate}</div>
                 {/if}
-                <div class="text-xs" style="color: var(--ink-faint);">{fam.children.length} children</div>
+                <div class="text-xs" style="color: var(--ink-faint);">{fam.children.length} {t('families.children').toLowerCase()}</div>
               </div>
             {/each}
           </div>
@@ -829,7 +829,7 @@
       tabindex="-1"
       use:focusTrap
     >
-      <h2 id="media-lightbox-title" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Media lightbox</h2>
+      <h2 id="media-lightbox-title" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">{t('media.title')}</h2>
       <button class="lightbox-close" onclick={() => lightboxMedia = null} aria-label={t('common.close')}>&times;</button>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div class="lightbox-content" onclick={(e) => e.stopPropagation()} role="presentation">

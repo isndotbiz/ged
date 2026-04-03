@@ -357,6 +357,30 @@
     }
   }
 
+  async function handleMenuImportFileChange(event: Event) {
+    const input = event.currentTarget as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    $isImporting = true;
+    $importProgress = 0;
+    $importMessage = t('nav.importingRecords');
+    try {
+      await createAutoBackup();
+      await importGedcom(await file.text(), (pct, msg) => {
+        $importProgress = pct;
+        $importMessage = msg;
+      });
+      appStats.set(await getStats());
+      showWebWelcome = false;
+    } catch (e) {
+      webWelcomeError = `${e}`;
+    } finally {
+      $isImporting = false;
+      $importMessage = '';
+      input.value = '';
+    }
+  }
+
   async function exportGedcomFromMenu() {
     try {
       const text = await exportGedcom('5.5.1');
@@ -439,14 +463,13 @@
     let unlisten: (() => void) | null = null;
 
     (async () => {
-      const [{ listen }, { invoke }, { platform }] = await Promise.all([
+      const [{ listen }, { invoke }] = await Promise.all([
         import('@tauri-apps/api/event'),
         import('@tauri-apps/api/core'),
-        import('@tauri-apps/plugin-os'),
       ]);
 
       if (!mounted) return;
-      isMacOS = (await platform()) === 'macos';
+      isMacOS = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
       tauriInvoke = invoke;
 
       const listener = await listen('menu-action', (event) => {
@@ -515,7 +538,7 @@
   <!-- Sidebar — dark archive panel -->
   <nav
     aria-label={t('nav.mainNavigation')}
-    class="flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in {sidebarOpen ? 'sidebar-mobile-overlay' : ''}"
+    class="sidebar flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in {sidebarOpen ? 'sidebar-mobile-overlay' : ''}"
     class:sidebar-mobile-hidden={!sidebarOpen}
     style="width: var(--sidebar-width); background: var(--color-charcoal);"
   >
@@ -592,6 +615,7 @@
 
   <!-- Content area -->
   <main id="main-content" class="flex-1 overflow-auto app-main content" tabindex="-1" aria-busy={$isImporting}>
+    <input id="gedcom-import" type="file" accept=".ged,.GED" onchange={handleMenuImportFileChange} style="display:none" />
     {#if isOffline}
       <div class="offline-banner">{t('nav.offlineBanner')}</div>
     {/if}
@@ -832,7 +856,7 @@
     display: none;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 768px) {
     .mobile-hamburger {
       display: inline-flex;
       align-items: center;
@@ -883,7 +907,7 @@
     }
   }
 
-  :global(.platform-macos) nav {
+  :global(.platform-macos) .sidebar {
     padding-top: 28px;
   }
 
