@@ -239,7 +239,7 @@
       <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('contradictions.title')}</h1>
       <p class="text-sm text-ink-muted mt-1">{t('contradictions.subtitle')}</p>
     </div>
-    <button onclick={runAnalysis} disabled={isRunning} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg disabled:opacity-50 transition-colors">
+    <button onclick={runAnalysis} disabled={isRunning} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
       {isRunning ? 'Analyzing...' : 'Run Analysis'}
     </button>
   </div>

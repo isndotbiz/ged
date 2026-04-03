@@ -247,7 +247,7 @@
       class="arch-input w-full px-3 py-2 text-sm"
       placeholder={t('pedigree.typeToSearch')}
       bind:value={search}
-    />
+     aria-label={t('pedigree.typeToSearch')} />
     {#if search.trim().length > 0}
       <div class="mt-2 grid gap-1">
         {#each filteredPeople as p}

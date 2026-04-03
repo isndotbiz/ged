@@ -50,7 +50,7 @@
     {#each categories as c}
       <button class="px-3 py-1 text-xs rounded-full {activeCategory === c ? 'btn-filter-active' : 'btn-filter'}" onclick={() => activeCategory = c}>{c}</button>
     {/each}
-    <input class="arch-input px-3 py-1 text-xs" placeholder="New category..." bind:value={newCategory} />
+    <input class="arch-input px-3 py-1 text-xs" placeholder="New category..." bind:value={newCategory}  aria-label="New category..." />
   </div>
 
   {#if bookmarks.length === 0}
@@ -77,7 +77,7 @@
             {/if}
             {#if bm.label}<div class="text-xs text-ink-muted">{bm.label}</div>{/if}
             <div class="mt-1">
-              <select class="arch-input text-[11px] px-2 py-1" value={bm.category || 'General'} onchange={(e) => changeCategory(bm.id, (e.currentTarget as HTMLSelectElement).value)}>
+              <select class="arch-input text-[11px] px-2 py-1" value={bm.category || 'General'} onchange={(e) => changeCategory(bm.id, (e.currentTarget as HTMLSelectElement).value)} aria-label={t('common.filter')}>
                 {#each categories.filter((c) => c !== 'All') as c}
                   <option value={c}>{c}</option>
                 {/each}

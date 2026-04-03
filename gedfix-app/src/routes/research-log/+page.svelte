@@ -65,10 +65,10 @@
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
       <div class="grid grid-cols-2 gap-4 mb-4">
-        <input bind:value={repository} placeholder={t('research.repositorySource')} class="px-3 py-2 text-sm arch-input" />
-        <input bind:value={searchDate} placeholder="Search Date (YYYY-MM-DD)" class="px-3 py-2 text-sm arch-input" />
+        <input bind:value={repository} placeholder={t('research.repositorySource')} class="px-3 py-2 text-sm arch-input"  aria-label={t('research.repositorySource')} />
+        <input bind:value={searchDate} placeholder="Search Date (YYYY-MM-DD)" class="px-3 py-2 text-sm arch-input"  aria-label="Search Date (YYYY-MM-DD)" />
       </div>
-      <input bind:value={searchTerms} placeholder={t('research.searchTerms')} class="w-full px-3 py-2 text-sm arch-input mb-4" />
+      <input bind:value={searchTerms} placeholder={t('research.searchTerms')} class="w-full px-3 py-2 text-sm arch-input mb-4"  aria-label={t('research.searchTerms')} />
       <textarea bind:value={recordsViewed} placeholder={t('research.recordsViewed')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
       <textarea bind:value={conclusion} placeholder={t('research.conclusion')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
       <div class="flex gap-2 mb-4">
@@ -76,7 +76,7 @@
           <button onclick={() => resultType = rt} class="px-3 py-1.5 text-xs rounded-lg {resultType === rt ? 'btn-filter-active' : 'btn-filter'}">{rt.charAt(0) + rt.slice(1).toLowerCase()}</button>
         {/each}
       </div>
-      <button onclick={save} class="px-4 py-2 text-sm font-medium btn-accent">{t('common.save')}</button>
+      <button onclick={save} class="px-4 py-2 text-sm font-medium btn-accent" aria-label={t('common.actions')}>{t('common.save')}</button>
     </div>
   {/if}
 

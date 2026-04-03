@@ -458,7 +458,7 @@
 
     <!-- Print actions -->
     <div class="flex items-center gap-1.5 ml-3">
-      <button onclick={handlePrintPedigree} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title={t('pedigree.printChart')}>
+      <button onclick={handlePrintPedigree} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title={t('pedigree.printChart')} aria-label={t('common.actions')}>
         <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
         {t('nav.pedigree')}
       </button>
@@ -469,7 +469,7 @@
     </div>
 
     <div class="relative ml-auto">
-      <input bind:value={search} placeholder="Find person..." class="w-52 px-3 py-1.5 text-sm rounded-lg outline-none arch-input" />
+      <input bind:value={search} placeholder="Find person..." class="w-52 px-3 py-1.5 text-sm rounded-lg outline-none arch-input"  aria-label="Find person..." />
       {#if filtered.length > 0}
         <div class="absolute top-full mt-1 left-0 right-0 rounded-lg z-20 max-h-48 overflow-auto" style="background: var(--vellum); box-shadow: var(--shadow-lg); border: 1px solid var(--border-rule);">
           {#each filtered as p}

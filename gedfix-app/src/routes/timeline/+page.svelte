@@ -98,11 +98,11 @@
         placeholder={t('timeline.filterByPerson')}
         bind:value={filterPerson}
         class="w-56 px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
-      />
+       aria-label={t('timeline.filterByPerson')} />
       <select
         bind:value={filterType}
         class="px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
-      >
+       aria-label={t('common.filter')}>
         <option value="">{t('timeline.allEventTypes')}</option>
         {#each eventTypes as t}
           <option value={t}>{eventLabels[t] ?? t}</option>

@@ -179,7 +179,7 @@
         onclick={runAnalysis}
         disabled={$isAnalyzing}
         class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-      >
+       aria-label={t('common.actions')}>
         {$isAnalyzing ? 'Analyzing...' : $treeIssues.length > 0 ? 'Re-analyze' : 'Run Analysis'}
       </button>
     </div>
@@ -259,7 +259,7 @@
             onclick={dismissSelected}
             class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
             style="background: var(--parchment); color: var(--ink-light);"
-          >{t('issues.dismissSelected')}</button>
+           aria-label={t('common.actions')}>{t('issues.dismissSelected')}</button>
         </div>
       {/if}
     </div>
@@ -275,7 +275,7 @@
               checked={allVisibleSelected}
               onchange={toggleSelectAll}
               class="w-3.5 h-3.5 rounded accent-amber-700"
-            />
+             aria-label={t('common.search')} />
             <span class="text-xs text-ink-muted">Select all ({filtered.length})</span>
           </label>
         </div>
@@ -292,6 +292,7 @@
               checked={selected.has(issue.id)}
               onchange={() => toggleSelect(issue.id)}
               class="w-3.5 h-3.5 rounded mt-1 shrink-0 accent-amber-700 cursor-pointer"
+              aria-label={`Select issue ${issue.title}`}
             />
             <span class="w-2 h-2 rounded-full mt-1.5 shrink-0 {sev.dot}"></span>
             <div class="flex-1 min-w-0">

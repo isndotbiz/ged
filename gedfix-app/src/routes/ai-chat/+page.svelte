@@ -343,7 +343,7 @@
             {#if selectedPerson.birthDate}
               <span style="color: var(--ink-faint);">b. {selectedPerson.birthDate}</span>
             {/if}
-            <button onclick={clearPersonContext} class="ml-auto text-ink-faint hover:text-red-500" title="Remove person context">&times;</button>
+            <button onclick={clearPersonContext} class="ml-auto text-ink-faint hover:text-red-500" title="Remove person context" aria-label={t('common.actions')}>&times;</button>
           </div>
         {:else}
           <input
@@ -355,6 +355,7 @@
             placeholder={t('ai.attachContext')}
             class="w-full px-3 py-1.5 text-xs rounded-lg border outline-none"
             style="background: var(--parchment, #fff); border-color: var(--border-subtle, rgba(0,0,0,0.1)); color: var(--ink);"
+            aria-label={t('ai.attachContext')}
           />
           {#if showPersonDropdown && personResults.length > 0}
             <div class="absolute top-full left-0 right-0 mt-1 rounded-lg shadow-lg border z-50 max-h-48 overflow-y-auto" style="background: var(--parchment, #fff); border-color: var(--border-subtle, rgba(0,0,0,0.1));">
@@ -404,7 +405,7 @@
       </div>
 
       <!-- Clear chat -->
-      <button onclick={clearChat} class="text-xs px-2 py-1 rounded transition-all" style="color: var(--ink-faint);" title={t('ai.clearConversation')}>
+      <button onclick={clearChat} class="text-xs px-2 py-1 rounded transition-all" style="color: var(--ink-faint);" title={t('ai.clearConversation')} aria-label={t('common.actions')}>
         {t('common.clear')}
       </button>
     </div>
@@ -499,6 +500,7 @@
         onfocus={(e) => { const el = e.currentTarget as HTMLInputElement; el.style.borderColor = 'var(--ink-light)'; }}
         onblur={(e) => { const el = e.currentTarget as HTMLInputElement; el.style.borderColor = 'var(--border-subtle, rgba(0,0,0,0.12))'; }}
         onkeydown={(e) => e.key === 'Enter' && send()}
+        aria-label={t('ai.askPlaceholder')}
       />
       <button
         onclick={send}

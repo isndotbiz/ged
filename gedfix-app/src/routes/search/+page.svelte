@@ -166,7 +166,7 @@
   }
 </script>
 
-<div class="p-8 max-w-3xl animate-fade-in">
+<div class="p-8 max-w-3xl animate-fade-in" aria-busy={searching}>
   <div class="mb-6">
     <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('common.search')}</h1>
     <p class="text-sm text-ink-muted mt-1">{t('search.subtitle')}</p>
@@ -179,13 +179,15 @@
       bind:value={query}
       oninput={onInput}
       class="w-full px-4 py-3 text-base rounded-xl arch-input transition-all"
-    />
+     aria-label={t('search.placeholder')} />
   </div>
 
   {#if searching}
     <div class="text-sm text-ink-faint py-4 text-center">{t('search.searching')}</div>
   {:else if hasSearched}
-    <div class="text-xs text-ink-faint mb-4">{totalResults} results</div>
+    <div class="text-xs text-ink-faint mb-4" aria-live="polite">
+      {t('search.resultsCount', { count: totalResults })}
+    </div>
 
     {#if results.length > 0}
       <div class="arch-card rounded-xl divide-y arch-card-divide">
@@ -266,11 +268,11 @@
     {/if}
 
     {#if totalResults === 0}
-      <div class="text-sm text-ink-faint py-8 text-center">No results found for "{query}"</div>
+      <div class="text-sm text-ink-faint py-8 text-center">{t('search.noResultsFor', { query })}</div>
     {/if}
   {:else}
     <div class="text-sm text-ink-faint py-16 text-center">
-      Start typing to search across people, sources, and families
+      {t('search.startTyping')}
     </div>
   {/if}
 </div>

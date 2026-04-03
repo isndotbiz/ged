@@ -720,10 +720,10 @@
         </div>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
-        <input class="arch-input" placeholder={t('people.givenName')} bind:value={fsSearchGiven} />
-        <input class="arch-input" placeholder={t('people.surname')} bind:value={fsSearchSurname} />
-        <input class="arch-input" placeholder="Birth Year" bind:value={fsSearchYear} />
-        <button class="btn-accent" onclick={searchFamilySearch} disabled={fsSearchLoading}>
+        <input class="arch-input" placeholder={t('people.givenName')} bind:value={fsSearchGiven}  aria-label={t('people.givenName')} />
+        <input class="arch-input" placeholder={t('people.surname')} bind:value={fsSearchSurname}  aria-label={t('people.surname')} />
+        <input class="arch-input" placeholder="Birth Year" bind:value={fsSearchYear}  aria-label="Birth Year" />
+        <button class="btn-accent" onclick={searchFamilySearch} disabled={fsSearchLoading} aria-label={t('common.actions')}>
           {fsSearchLoading ? 'Searching...' : 'Search Records'}
         </button>
       </div>
@@ -741,11 +741,11 @@
         </div>
       {/if}
       <div class="flex flex-wrap gap-2">
-        <button class="btn-secondary" onclick={syncFamilySearchTree}>
+        <button class="btn-secondary" onclick={syncFamilySearchTree} aria-label={t('common.actions')}>
           <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182" /></svg>
           {t('services.syncTree')}
         </button>
-        <button class="btn-danger-outline" onclick={disconnectFamilySearch}>{t('services.disconnect')}</button>
+        <button class="btn-danger-outline" onclick={disconnectFamilySearch} aria-label={t('common.actions')}>{t('services.disconnect')}</button>
       </div>
       {#if fsSyncProgress.active}
         <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
@@ -765,8 +765,8 @@
             bind:value={fsClientId}
             placeholder="Register at developers.familysearch.org"
             class="arch-input flex-1"
-          />
-          <button class="btn-secondary text-xs" onclick={saveFsClientId}>{t('common.save')}</button>
+           aria-label="Register at developers.familysearch.org" />
+          <button class="btn-secondary text-xs" onclick={saveFsClientId} aria-label={t('common.actions')}>{t('common.save')}</button>
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://api.familysearch.org &middot; Register: https://developers.familysearch.org/</p>
       </div>
@@ -821,7 +821,7 @@
           <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" /></svg>
           Import from Geni
         </button>
-        <button class="btn-danger-outline" onclick={disconnectGeni}>{t('services.disconnect')}</button>
+        <button class="btn-danger-outline" onclick={disconnectGeni} aria-label={t('common.actions')}>{t('services.disconnect')}</button>
       </div>
       {#if geniSyncProgress.active}
         <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
@@ -853,8 +853,8 @@
             bind:value={geniClientId}
             placeholder="Register at geni.com/platform/developer/apps"
             class="arch-input flex-1"
-          />
-          <button class="btn-secondary text-xs" onclick={saveGeniClientId}>{t('common.save')}</button>
+           aria-label="Register at geni.com/platform/developer/apps" />
+          <button class="btn-secondary text-xs" onclick={saveGeniClientId} aria-label={t('common.actions')}>{t('common.save')}</button>
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://www.geni.com/api/ &middot; Rate limit: 40 req/10s</p>
       </div>
@@ -906,7 +906,7 @@
           <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
           Search WikiTree
         </button>
-        <button class="btn-danger-outline" onclick={disconnectWikiTree}>{t('services.disconnect')}</button>
+        <button class="btn-danger-outline" onclick={disconnectWikiTree} aria-label={t('common.actions')}>{t('services.disconnect')}</button>
       </div>
       {#if wtSearchProgress.active}
         <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
@@ -938,7 +938,7 @@
             bind:value={wikitreeApiKey}
             placeholder="Join WikiTree Apps Project for access"
             class="arch-input flex-1"
-          />
+           aria-label="Join WikiTree Apps Project for access" />
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://api.wikitree.com/api.php &middot; Read-only access</p>
       </div>

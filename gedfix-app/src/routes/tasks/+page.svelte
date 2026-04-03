@@ -68,11 +68,11 @@
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={title} placeholder="Task title" class="w-full px-3 py-2 text-sm arch-input mb-3" />
+      <input bind:value={title} placeholder="Task title" class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label="Task title" />
       <textarea bind:value={description} placeholder={t('common.description')} class="w-full px-3 py-2 text-sm arch-input mb-3 h-20"></textarea>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
-        <input type="date" bind:value={dueDate} class="w-full px-3 py-2 text-sm arch-input" />
-        <select bind:value={personXref} class="w-full px-3 py-2 text-sm arch-input">
+        <input type="date" bind:value={dueDate} class="w-full px-3 py-2 text-sm arch-input"  aria-label={t('common.date')} />
+        <select bind:value={personXref} class="w-full px-3 py-2 text-sm arch-input" aria-label={t('common.filter')}>
           <option value="">Link to person (optional)</option>
           {#each persons as p}
             <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
@@ -84,7 +84,7 @@
           <button onclick={() => priority = p} class="px-3 py-1 text-xs rounded-lg {priority === p ? (p === 'HIGH' ? 'bg-red-500 text-white' : p === 'MEDIUM' ? 'bg-orange-500 text-white' : 'bg-green-500 text-white') : 'btn-filter'}">{p}</button>
         {/each}
       </div>
-      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent">{t('common.create')}</button>
+      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent" aria-label={t('common.actions')}>{t('common.create')}</button>
     </div>
   {/if}
 
