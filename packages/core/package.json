@@ -1,0 +1,20 @@
+{
+  "name": "@gedfix/core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./types": "./src/types.ts",
+    "./queries": "./src/queries.ts",
+    "./platform": "./src/platform.ts"
+  },
+  "scripts": {
+    "build": "tsc --noEmit",
+    "check": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "~5.6.2"
+  }
+}

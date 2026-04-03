@@ -94,7 +94,7 @@
   async function applyBatchDelete() {
     const xrefs = Array.from(selectedXrefs);
     if (xrefs.length === 0) return;
-    if (!confirm(`Delete ${xrefs.length} selected people?`)) return;
+    if (!confirm(t('people.confirmDeleteSelected', { count: xrefs.length }))) return;
     await batchDeletePersons(xrefs);
     selectedXrefs = new Set();
     await load();
@@ -233,12 +233,12 @@
   async function researchSelected() {
     if (!selected) return;
     isResearchingPerson = true;
-    researchPersonMsg = 'Researching...';
+    researchPersonMsg = t('ai.researching');
     try {
       const result = await runResearchAgent(selected.xref, (p) => {
         researchPersonMsg = p.message;
       });
-      researchPersonMsg = `Found ${result.proposalCount} proposals. Check Proposals page.`;
+      researchPersonMsg = t('people.researchFoundProposals', { count: result.proposalCount });
     } catch (e) {
       researchPersonMsg = `Error: ${e}`;
     }
@@ -248,12 +248,12 @@
   async function findSourcesForSelected() {
     if (!selected) return;
     isResearchingPerson = true;
-    researchPersonMsg = 'Searching records...';
+    researchPersonMsg = t('people.searchingRecords');
     try {
       const result = await findSources(selected.xref, (p) => {
         researchPersonMsg = p.message;
       });
-      researchPersonMsg = `Found ${result.sourcesFound} sources. Check Proposals page.`;
+      researchPersonMsg = t('people.sourcesFoundMessage', { count: result.sourcesFound });
     } catch (e) {
       researchPersonMsg = `Error: ${e}`;
     }
@@ -273,18 +273,18 @@
             type="checkbox"
             checked={selectedXrefs.size === persons.length && persons.length > 0}
             onchange={toggleSelectAll}
-            aria-label="Select all people"
+            aria-label={t('people.selectAll')}
           />
-          Select all
+          {t('people.selectAll')}
         </label>
       </div>
       <input
         type="text"
-        placeholder="Search {persons.length} people..."
+        placeholder={t('people.searchCountPlaceholder', { count: persons.length })}
         bind:value={search}
         oninput={onSearchInput}
         class="w-full px-3 py-2 text-sm rounded-lg border-none outline-none transition-colors arch-input"
-       aria-label="Search {persons.length} people..." />
+       aria-label={t('people.searchCountPlaceholder', { count: persons.length })} />
     </div>
 
     <!-- Virtual scroll list — only renders visible items, handles 10K+ -->
@@ -310,7 +310,7 @@
                 e.stopPropagation();
                 togglePersonSelection(person.xref, index, (e as MouseEvent).shiftKey);
               }}
-              aria-label={`Select ${person.givenName} ${person.surname}`}
+              aria-label={t('people.selectPerson', { name: `${person.givenName} ${person.surname}`.trim() })}
             />
             {#if photoCache.get(person.xref)}
               <img
@@ -337,7 +337,7 @@
               <span class="text-[10px] text-ink-faint tabular-nums">{person.mediaCount}</span>
             {/if}
             {#if person.sourceCount > 0}
-              <span class="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title="Has sources"></span>
+              <span class="w-1.5 h-1.5 rounded-full bg-green-400 shrink-0" title={t('people.hasSources')}></span>
             {/if}
           </button>
           </div>
@@ -346,7 +346,7 @@
     </div>
 
     <div class="px-4 py-2 text-xs text-ink-faint tabular-nums" style="border-top: 1px solid var(--border-rule);">
-      {persons.length} people
+      {t('people.count', { count: persons.length })}
     </div>
   </div>
 
@@ -381,7 +381,7 @@
             {/if}
             <div class="flex items-center gap-2 mt-2 flex-wrap">
               <span class="text-xs px-2 py-0.5 rounded-full {selected.sex === 'F' ? 'bg-pink-100 text-pink-600' : 'bg-blue-100 text-blue-600'}">
-                {selected.sex === 'F' ? 'Female' : selected.sex === 'M' ? 'Male' : 'Unknown'}
+                {selected.sex === 'F' ? t('people.female') : selected.sex === 'M' ? t('people.male') : t('common.unknown')}
               </span>
               {#if selected.isLiving}
                 <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">{t('people.living')}</span>
@@ -390,7 +390,7 @@
                 <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600">{selected.proofStatus}</span>
               {/if}
               {#if selected.sourceCount > 0}
-                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{selected.sourceCount} sources</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-blue-50 text-blue-600">{t('people.sourcesCount', { count: selected.sourceCount })}</span>
               {/if}
               <span class="text-xs text-ink-faint">{selected.xref}</span>
             </div>
@@ -402,11 +402,11 @@
           <button onclick={researchSelected} disabled={isResearchingPerson}
             class="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-50"
             style="background: var(--accent);"
-           aria-label={t('common.actions')}>{isResearchingPerson ? '...' : 'AI Research'}</button>
+           aria-label={t('common.actions')}>{isResearchingPerson ? '...' : t('people.aiResearch')}</button>
           <button onclick={findSourcesForSelected} disabled={isResearchingPerson}
             class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
             style="background: var(--parchment); color: var(--ink);"
-          >Find Sources</button>
+          >{t('people.findSources')}</button>
         </div>
         {#if researchPersonMsg}
           <div class="text-xs text-ink-muted mb-3 italic">{researchPersonMsg}</div>
@@ -419,7 +419,7 @@
           {@const pct = Math.round((filled / fields.length) * 100)}
           <div class="mt-3 mb-4">
             <div class="flex items-center justify-between mb-1">
-              <span class="text-[10px] text-ink-faint">Data completeness</span>
+              <span class="text-[10px] text-ink-faint">{t('people.dataCompleteness')}</span>
               <span class="text-[10px] font-medium" style="color: {pct >= 75 ? 'var(--color-validated)' : pct >= 50 ? 'var(--color-warning)' : 'var(--color-error)'};">{pct}%</span>
             </div>
             <div class="w-full h-1 rounded-full" style="background: var(--parchment);">
@@ -429,7 +429,7 @@
               <div class="flex flex-wrap gap-1 mt-1.5">
                 {#each fields.filter(f => !(selected as any)[f]) as missing}
                   <span class="text-[9px] px-1.5 py-0.5 rounded" style="background: rgba(166,61,47,0.08); color: var(--color-error);">
-                    Missing {missing.replace(/([A-Z])/g, ' $1').toLowerCase()}
+                    {t('people.missingField')}: {missing.replace(/([A-Z])/g, ' $1').toLowerCase()}
                   </span>
                 {/each}
               </div>
@@ -440,7 +440,7 @@
         <!-- Parents -->
         {#if selectedParents.father || selectedParents.mother}
           <section class="mb-6">
-            <h2 class="arch-section-header">Parents</h2>
+            <h2 class="arch-section-header">{t('people.parents')}</h2>
             <div class="flex gap-3">
               {#each [selectedParents.father, selectedParents.mother].filter(Boolean) as parent}
                 <button onclick={() => selectPerson(parent!)} class="flex items-center gap-2 px-3 py-2 rounded-lg arch-card hover:opacity-80 transition-colors">
@@ -458,7 +458,7 @@
         {#if selectedMedia.length > 0}
           <section class="mb-6">
             <h2 class="arch-section-header">
-              Photos & Documents ({selectedMedia.length})
+              {t('people.photosDocuments', { count: selectedMedia.length })}
             </h2>
             <div class="grid grid-cols-4 gap-3">
               {#each selectedMedia as m (m.id)}
@@ -532,7 +532,7 @@
               <div class="arch-card rounded-xl p-4 mb-3 contain-content">
                 {#if sf.spouse}
                   <div class="flex items-center gap-2 mb-3">
-                    <span class="text-xs text-ink-faint">Spouse:</span>
+                    <span class="text-xs text-ink-faint">{t('families.spouse')}:</span>
                     <button onclick={() => selectPerson(sf.spouse!)} class="flex items-center gap-2 hover:opacity-80 rounded-md px-2 py-1 transition-colors">
                       <div class="w-5 h-5 rounded-full flex items-center justify-center text-white text-[9px] font-semibold" style="background: {avatarColor(sf.spouse)}">
                         {getInitials(sf.spouse)}
@@ -540,12 +540,12 @@
                       <span class="text-sm text-ink-light">{sf.spouse.givenName} {sf.spouse.surname}</span>
                     </button>
                     {#if sf.family.marriageDate}
-                      <span class="text-xs text-ink-faint ml-auto">m. {sf.family.marriageDate}</span>
+                      <span class="text-xs text-ink-faint ml-auto">{t('families.marriage')} {sf.family.marriageDate}</span>
                     {/if}
                   </div>
                 {/if}
                 {#if sf.children.length > 0}
-                  <div class="text-xs text-ink-faint mb-2">Children ({sf.children.length}):</div>
+                  <div class="text-xs text-ink-faint mb-2">{t('families.children')} ({sf.children.length}):</div>
                   <div class="flex flex-wrap gap-2">
                     {#each sf.children as child (child.xref)}
                       <button onclick={() => selectPerson(child)} class="flex items-center gap-1.5 px-2 py-1 rounded-md hover:opacity-80 transition-colors">
@@ -572,16 +572,16 @@
 
 {#if selectedXrefs.size > 0}
   <div class="batch-bar no-print">
-    <span>{selectedXrefs.size} selected</span>
+    <span>{t('people.selectedCount', { count: selectedXrefs.size })}</span>
     <select bind:value={selectedGroupId} class="arch-input" aria-label={t('common.filter')}>
-      <option value={0}>Add to group...</option>
+      <option value={0}>{t('groups.addToGroup')}</option>
       {#each groups as group}
         <option value={group.id}>{group.name}</option>
       {/each}
     </select>
-    <button class="btn-secondary px-3 py-2" onclick={applyBatchGroup}>Add Group</button>
-    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(false)}>Bookmark</button>
-    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(true)}>Unbookmark</button>
+    <button class="btn-secondary px-3 py-2" onclick={applyBatchGroup}>{t('groups.addGroup')}</button>
+    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(false)}>{t('common.bookmark')}</button>
+    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(true)}>{t('people.unbookmark')}</button>
     <button class="btn-secondary px-3 py-2" onclick={exportSelected} aria-label={t('common.actions')}>{t('common.export')}</button>
     <button class="btn-danger px-3 py-2" onclick={applyBatchDelete} aria-label={t('common.actions')}>{t('common.delete')}</button>
   </div>
