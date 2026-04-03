@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getResearchLogs, insertResearchLog, deleteResearchLog } from '$lib/db';
   import type { ResearchLogEntry } from '$lib/types';
 
@@ -37,7 +38,7 @@
 <div class="p-8 max-w-4xl animate-fade-in">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Research Log</h1>
+      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.researchLog')}</h1>
       <p class="text-sm text-ink-muted mt-1">Track searches and conclusions per the Genealogical Proof Standard</p>
     </div>
     <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent">
@@ -64,25 +65,25 @@
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
       <div class="grid grid-cols-2 gap-4 mb-4">
-        <input bind:value={repository} placeholder="Repository/Source" class="px-3 py-2 text-sm arch-input" />
+        <input bind:value={repository} placeholder={t('research.repositorySource')} class="px-3 py-2 text-sm arch-input" />
         <input bind:value={searchDate} placeholder="Search Date (YYYY-MM-DD)" class="px-3 py-2 text-sm arch-input" />
       </div>
-      <input bind:value={searchTerms} placeholder="Search Terms" class="w-full px-3 py-2 text-sm arch-input mb-4" />
-      <textarea bind:value={recordsViewed} placeholder="Records Viewed" class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
-      <textarea bind:value={conclusion} placeholder="Conclusion" class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
+      <input bind:value={searchTerms} placeholder={t('research.searchTerms')} class="w-full px-3 py-2 text-sm arch-input mb-4" />
+      <textarea bind:value={recordsViewed} placeholder={t('research.recordsViewed')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
+      <textarea bind:value={conclusion} placeholder={t('research.conclusion')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
       <div class="flex gap-2 mb-4">
         {#each (['POSITIVE', 'NEGATIVE', 'INCONCLUSIVE'] as const) as rt}
           <button onclick={() => resultType = rt} class="px-3 py-1.5 text-xs rounded-lg {resultType === rt ? 'btn-filter-active' : 'btn-filter'}">{rt.charAt(0) + rt.slice(1).toLowerCase()}</button>
         {/each}
       </div>
-      <button onclick={save} class="px-4 py-2 text-sm font-medium btn-accent">Save</button>
+      <button onclick={save} class="px-4 py-2 text-sm font-medium btn-accent">{t('common.save')}</button>
     </div>
   {/if}
 
   <!-- Entries -->
   {#if filtered.length === 0}
     <div class="arch-card rounded-xl p-8 text-center">
-      <p class="text-ink-muted text-sm">No research log entries yet</p>
+      <p class="text-ink-muted text-sm">{t('research.noEntries')}</p>
     </div>
   {:else}
     <div class="space-y-3">

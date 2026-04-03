@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import {
     getMediaForManagement,
     updateMediaCategory,
@@ -335,15 +336,15 @@
 <div class="arch-page max-w-none h-full overflow-y-auto">
   <div class="space-y-4 pb-12">
     <section class="arch-card p-6 spirit-surface animate-fade-up">
-      <h1 class="display-gradient text-4xl">Media Management</h1>
+      <h1 class="display-gradient text-4xl">{t('media.management')}</h1>
       <p class="text-muted mt-2">Category management, deduplication, delete queue, and filename normalization.</p>
       <div class="mt-4 flex flex-wrap gap-3">
-        <button class="btn-primary" onclick={runDedupPipeline} disabled={busy}>Deduplicate Media</button>
+        <button class="btn-primary" onclick={runDedupPipeline} disabled={busy}>{t('cleanup.deduplicateMedia')}</button>
         <button class="btn-outline" onclick={runHeadshotCleanup} disabled={busy}>Move Non-Portrait Headshots</button>
       </div>
       {#if dedupResult}
         <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{dedupResult.duplicateGroups}</div><div class="text-muted">Groups</div></div>
+          <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{dedupResult.duplicateGroups}</div><div class="text-muted">{t('nav.groups')}</div></div>
           <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{dedupResult.entriesRemoved}</div><div class="text-muted">Removed</div></div>
           <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{dedupResult.linksTransferred}</div><div class="text-muted">Links Merged</div></div>
           <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{dedupResult.categorizedUpdated}</div><div class="text-muted">Categorized</div></div>
@@ -355,7 +356,7 @@
     </section>
 
     <section class="arch-card p-6">
-      <div class="flex flex-wrap gap-2 mb-4" role="tablist" aria-label="Media categories">
+      <div class="flex flex-wrap gap-2 mb-4" role="tablist" aria-label={t('media.categories')}>
         {#each tabs as tab}
           <button
             role="tab"
@@ -371,7 +372,7 @@
       </div>
 
       <div class="flex flex-wrap gap-3 items-center mb-4">
-        <input class="arch-input flex-1 min-w-[280px]" type="text" bind:value={search} placeholder="Search title, path, or linked people" />
+        <input class="arch-input flex-1 min-w-[280px]" type="text" bind:value={search} placeholder={t('media.searchPlaceholder')} />
         <select class="arch-input min-w-[220px]" bind:value={bulkCategory}>
           {#each tabs as tab}
             <option value={tab.id}>{tab.label}</option>
@@ -441,12 +442,12 @@
         {/each}
       </div>
       {#if visibleMedia.length === 0}
-        <p class="text-muted py-8">No media in this category.</p>
+        <p class="text-muted py-8">{t('media.noMedia')}</p>
       {/if}
     </section>
 
     <section class="arch-card p-6">
-      <h2 class="display-gradient-spirit text-3xl">Rename Media</h2>
+      <h2 class="display-gradient-spirit text-3xl">{t('media.rename')}</h2>
       <p class="text-muted mt-2">Naming scheme: <span class="font-mono">[surname]-[givenname]-[event]-[sequence].[ext]</span></p>
       <div class="mt-4 flex flex-wrap gap-3">
         <button class="btn-primary" onclick={buildRenamePreview} disabled={renameBusy}>Build Preview</button>

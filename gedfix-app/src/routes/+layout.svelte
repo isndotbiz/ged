@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { appStats, treeIssues, isImporting, importProgress, importMessage } from '$lib/stores';
@@ -372,7 +373,7 @@
   });
 </script>
 
-<a href="#main-content" class="skip-nav">Skip to content</a>
+<a href="#main-content" class="skip-nav">{t('nav.skipToContent')}</a>
 <div aria-live="polite" aria-atomic="true" class="sr-only" id="announcer"></div>
 <div class="flex h-screen select-none" style="background: var(--color-charcoal);">
   <!-- Mobile hamburger -->
@@ -380,7 +381,7 @@
     class="mobile-hamburger fixed top-3 left-3 z-[60] p-2 rounded-lg"
     style="background: var(--color-charcoal); color: var(--color-white);"
     onclick={() => { sidebarOpen = !sidebarOpen; }}
-    aria-label="Toggle navigation"
+    aria-label={t('nav.toggleNavigation')}
   >
     <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
       {#if sidebarOpen}
@@ -395,20 +396,20 @@
     <button
       type="button"
       class="sidebar-backdrop"
-      aria-label="Close navigation"
+      aria-label={t('nav.closeNavigation')}
       onclick={() => { sidebarOpen = false; }}
     ></button>
   {/if}
 
   <!-- Sidebar — dark archive panel -->
   <nav
-    aria-label="Main navigation"
+    aria-label={t('nav.mainNavigation')}
     class="flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in {sidebarOpen ? 'sidebar-mobile-overlay' : ''}"
     class:sidebar-mobile-hidden={!sidebarOpen}
     style="width: var(--sidebar-width); background: var(--color-charcoal);"
   >
     <!-- Masthead — click to go home -->
-    <a href="/" class="block px-3 mb-5 no-underline transition-opacity hover:opacity-80" title="Go to Overview">
+    <a href="/" class="block px-3 mb-5 no-underline transition-opacity hover:opacity-80" title={t('nav.goToOverview')}>
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="mb-1.5" style="color: var(--color-blue);">
         <path d="M12 2L3 7v6c0 5.25 3.75 10.15 9 11.25C17.25 23.15 21 18.25 21 13V7L12 2z" stroke="currentColor" stroke-width="1.5" fill="none"/>
         <path d="M12 6l-4 3v4c0 2.5 1.8 4.8 4 5.3 2.2-.5 4-2.8 4-5.3V9L12 6z" stroke="currentColor" stroke-width="1" fill="currentColor" opacity="0.15"/>
@@ -418,7 +419,7 @@
         class="text-[15px] tracking-[0.12em] uppercase"
         style="font-family: var(--font-serif); color: var(--color-white); font-weight: 600;"
       >GedFix</h1>
-      <div class="text-[8px] tracking-[0.2em] uppercase mt-0.5" style="color: var(--color-muted); font-family: var(--font-mono);">Genealogical Research</div>
+      <div class="text-[8px] tracking-[0.2em] uppercase mt-0.5" style="color: var(--color-muted); font-family: var(--font-mono);">{t('nav.genealogicalResearch')}</div>
       <div class="mt-1.5" style="border-top: 2px double rgba(30, 159, 242, 0.15);"></div>
     </a>
 
@@ -463,8 +464,8 @@
         onclick={toggleTheme}
         aria-label="Toggle dark mode"
       >
-        <span class="text-[11px] tracking-[0.08em] uppercase">Theme</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded nav-count">Dark</span>
+        <span class="text-[11px] tracking-[0.08em] uppercase">{t('nav.theme')}</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded nav-count">{t('nav.dark')}</span>
       </button>
       <div
         class="text-[10px]"
@@ -487,7 +488,7 @@
           <div
             class="text-[11px] uppercase tracking-[0.1em] mb-4"
             style="font-family: var(--font-serif); color: var(--ink-muted); font-weight: 600; letter-spacing: 0.12em;"
-          >Importing Records</div>
+          >{t('nav.importingRecords')}</div>
           <div class="mb-4" style="border-top: 2px double var(--ink-faint);"></div>
           <div class="h-1 rounded-full overflow-hidden mb-3" style="background: var(--parchment);" role="progressbar" aria-valuenow={$importProgress} aria-valuemin={0} aria-valuemax={100}>
             <div
@@ -501,12 +502,12 @@
     {:else if showWebWelcome}
       <div class="flex items-center justify-center h-full p-6">
         <div class="arch-card rounded-xl p-8 w-full max-w-xl text-center animate-fade-in">
-          <h2 class="dossier-header" style="font-size: 1.6rem; margin-bottom: 0.75rem;">Welcome to GedFix</h2>
+          <h2 class="dossier-header" style="font-size: 1.6rem; margin-bottom: 0.75rem;">{t('nav.welcome')}</h2>
           <p class="text-sm mb-6" style="color: var(--ink-muted); font-family: var(--font-sans);">
             Import a GEDCOM file to get started.
           </p>
           <button class="btn-accent px-5 py-2.5" onclick={importWebGedcom}>
-            Import GEDCOM
+            {t('nav.importGedcom')}
           </button>
           {#if webWelcomeError}
             <p class="text-xs mt-3" style="color: var(--color-error);">{webWelcomeError}</p>
@@ -523,12 +524,12 @@
   <button
     type="button"
     class="shortcut-backdrop"
-    aria-label="Close shortcuts"
+    aria-label={t('nav.closeShortcuts')}
     onclick={() => { showShortcutOverlay = false; }}
   ></button>
   <div class="shortcut-overlay" role="dialog" aria-modal="true" aria-labelledby="shortcut-title">
     <div class="shortcut-header">
-      <h2 id="shortcut-title">Keyboard Shortcuts</h2>
+      <h2 id="shortcut-title">{t('nav.keyboardShortcuts')}</h2>
       <button type="button" class="btn-secondary px-3 py-1" onclick={() => { showShortcutOverlay = false; }}>Close</button>
     </div>
     <div class="shortcut-grid">

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { goto } from '$app/navigation';
   import { getPersons } from '$lib/db';
   import { findRelationshipPath, summarizeRelationship, type RelationshipStep } from '$lib/relationship-finder';
@@ -47,10 +48,10 @@
 </script>
 
 <div class="p-6 max-w-4xl">
-  <h1 class="text-2xl font-bold mb-4">Relationship Finder</h1>
+  <h1 class="text-2xl font-bold mb-4">{t('relationship.title')}</h1>
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 no-print">
     <div>
-      <label class="text-xs text-ink-muted" for="person-a">Person A</label>
+      <label class="text-xs text-ink-muted" for="person-a">{t('relationship.personA')}</label>
       <select id="person-a" class="arch-input w-full" bind:value={personA}>
         {#each people as p}
           <option value={p.xref}>{label(p.xref)}</option>
@@ -58,7 +59,7 @@
       </select>
     </div>
     <div>
-      <label class="text-xs text-ink-muted" for="person-b">Person B</label>
+      <label class="text-xs text-ink-muted" for="person-b">{t('relationship.personB')}</label>
       <select id="person-b" class="arch-input w-full" bind:value={personB}>
         {#each people as p}
           <option value={p.xref}>{label(p.xref)}</option>

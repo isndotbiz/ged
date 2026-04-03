@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getPlaces, getDb, getEventsForPlace } from '$lib/db';
   import type { Place, GedcomEvent } from '$lib/types';
   import { browser } from '$app/environment';
@@ -307,17 +308,17 @@
       <div class="stats-group">
         <div class="stat-item">
           <span class="stat-value">{places.length}</span>
-          <span class="stat-label">Total Places</span>
+          <span class="stat-label">{t('places.totalPlaces')}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value" style="color: var(--color-validated);">{geocodedCount}</span>
-          <span class="stat-label">Geocoded</span>
+          <span class="stat-label">{t('map.geocoded')}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-value" style="color: var(--ink-muted);">{unresolvedCount}</span>
-          <span class="stat-label">Unresolved</span>
+          <span class="stat-label">{t('common.unresolved')}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
@@ -331,7 +332,7 @@
         <div class="legend">
           <span class="legend-dot" style="background: #16a34a;" title="Birth"></span>
           <span class="legend-dot" style="background: #dc2626;" title="Death"></span>
-          <span class="legend-dot" style="background: #2563eb;" title="Marriage"></span>
+          <span class="legend-dot" style="background: #2563eb;" title={t('families.marriage')}></span>
           <span class="legend-dot" style="background: #D97706;" title="Other"></span>
         </div>
 

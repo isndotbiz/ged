@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getPlaces, getDb, getEventsForPlace } from '$lib/db';
   import type { Place, GedcomEvent } from '$lib/types';
 
@@ -144,7 +145,7 @@
 
 <div class="p-8 max-w-5xl animate-fade-in">
   <div class="flex items-start justify-between mb-1">
-    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Places</h1>
+    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.places')}</h1>
     <button
       onclick={geocodeAll}
       disabled={geocodingAll || unresolvedCount === 0}
@@ -167,13 +168,13 @@
 
   <input
     bind:value={search}
-    placeholder="Search places..."
+    placeholder={t('places.searchPlaceholder')}
     class="w-full max-w-md px-3 py-2 text-sm rounded-lg mb-6 arch-input"
   />
 
   {#if filtered.length === 0}
     <div class="arch-card rounded-xl p-8 text-center">
-      <p class="text-ink-muted text-sm">No places found</p>
+      <p class="text-ink-muted text-sm">{t('places.noPlaces')}</p>
     </div>
   {:else}
     <div class="arch-card rounded-xl overflow-hidden">
@@ -199,7 +200,7 @@
             >
               Coordinates{sortIndicator('coords')}
             </th>
-            <th class="py-2 px-4 font-medium text-right">Actions</th>
+            <th class="py-2 px-4 font-medium text-right">{t('common.actions')}</th>
           </tr>
         </thead>
         <tbody>
@@ -232,7 +233,7 @@
                     {geocodingId === place.id ? 'Looking up...' : 'Geocode'}
                   </button>
                 {:else}
-                  <span class="text-[10px] text-ink-faint">Resolved</span>
+                  <span class="text-[10px] text-ink-faint">{t('common.resolved')}</span>
                 {/if}
               </td>
             </tr>
@@ -243,14 +244,14 @@
                   {#if loadingEvents}
                     <p class="text-xs text-ink-muted py-2 pl-6">Loading events...</p>
                   {:else if expandedEvents.length === 0}
-                    <p class="text-xs text-ink-muted py-2 pl-6">No events found at this place</p>
+                    <p class="text-xs text-ink-muted py-2 pl-6">{t('map.noEvents')}</p>
                   {:else}
                     <table class="w-full text-xs ml-6" style="max-width: calc(100% - 1.5rem);">
                       <thead>
                         <tr class="text-ink-muted" style="border-bottom: 1px solid var(--border-subtle);">
                           <th class="py-1 pr-4 text-left font-medium">Event Type</th>
-                          <th class="py-1 pr-4 text-left font-medium">Date</th>
-                          <th class="py-1 text-left font-medium">Person</th>
+                          <th class="py-1 pr-4 text-left font-medium">{t('common.date')}</th>
+                          <th class="py-1 text-left font-medium">{t('common.person')}</th>
                         </tr>
                       </thead>
                       <tbody>

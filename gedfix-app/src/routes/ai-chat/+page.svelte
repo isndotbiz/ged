@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getDb, getAIChatHistory, insertAIChatMessage, clearAIChatHistory, getPersons, getEvents } from '$lib/db';
   import type { AIChatMessage, Person, GedcomEvent } from '$lib/types';
 
@@ -351,7 +352,7 @@
             oninput={onPersonSearch}
             onfocus={() => { if (personResults.length > 0) showPersonDropdown = true; }}
             onblur={() => setTimeout(() => showPersonDropdown = false, 200)}
-            placeholder="Attach person context..."
+            placeholder={t('ai.attachContext')}
             class="w-full px-3 py-1.5 text-xs rounded-lg border outline-none"
             style="background: var(--parchment, #fff); border-color: var(--border-subtle, rgba(0,0,0,0.1)); color: var(--ink);"
           />
@@ -403,8 +404,8 @@
       </div>
 
       <!-- Clear chat -->
-      <button onclick={clearChat} class="text-xs px-2 py-1 rounded transition-all" style="color: var(--ink-faint);" title="Clear conversation">
-        Clear
+      <button onclick={clearChat} class="text-xs px-2 py-1 rounded transition-all" style="color: var(--ink-faint);" title={t('ai.clearConversation')}>
+        {t('common.clear')}
       </button>
     </div>
   </div>
@@ -463,7 +464,7 @@
           <div class="flex justify-start">
             <div class="px-4 py-3 rounded-2xl arch-card text-sm" style="color: var(--ink-muted);">
               <span class="inline-flex gap-1">
-                <span class="animate-pulse">Researching</span>
+                <span class="animate-pulse">{t('ai.researching')}</span>
                 <span class="animate-pulse" style="animation-delay: 0.2s;">.</span>
                 <span class="animate-pulse" style="animation-delay: 0.4s;">.</span>
                 <span class="animate-pulse" style="animation-delay: 0.6s;">.</span>
@@ -492,7 +493,7 @@
     <div class="flex gap-2 max-w-3xl mx-auto">
       <input
         bind:value={input}
-        placeholder="Ask about your family tree..."
+        placeholder={t('ai.askPlaceholder')}
         class="flex-1 px-4 py-2.5 text-sm rounded-full border outline-none transition-all"
         style="background: var(--parchment, #fff); border-color: var(--border-subtle, rgba(0,0,0,0.12)); color: var(--ink);"
         onfocus={(e) => { const el = e.currentTarget as HTMLInputElement; el.style.borderColor = 'var(--ink-light)'; }}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getAllPersons, searchNotes, insertNote, deleteNote } from '$lib/db';
   import type { ResearchNote, Person } from '$lib/types';
 
@@ -71,7 +72,7 @@
 <div class="p-8 max-w-4xl animate-fade-in">
   <div class="flex items-center justify-between mb-8">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Notes</h1>
+      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.notes')}</h1>
       <p class="text-sm text-ink-muted mt-1">{notes.length} notes</p>
     </div>
     <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent">{showEditor ? 'Cancel' : 'New Note'}</button>
@@ -83,7 +84,7 @@
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={title} placeholder="Title" class="w-full px-3 py-2 text-sm arch-input mb-3" />
+      <input bind:value={title} placeholder={t('common.title')} class="w-full px-3 py-2 text-sm arch-input mb-3" />
       <select bind:value={personXref} class="w-full px-3 py-2 text-sm arch-input mb-3">
         <option value="">Link to person (optional)</option>
         {#each people as p}
@@ -91,7 +92,7 @@
         {/each}
       </select>
       <textarea bind:value={content} placeholder="Content" class="w-full px-3 py-2 text-sm arch-input mb-4 h-32"></textarea>
-      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent">Save</button>
+      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent">{t('common.save')}</button>
     </div>
   {/if}
 

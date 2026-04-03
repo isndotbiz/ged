@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { getPerson, getEvents, getSpouseFamilies, getChildren, getParents, getMediaForPerson, getPrimaryPhoto, getDb, getNotes, getAlternateNames, insertAlternateName, updateAlternateName, deleteAlternateName, getPersons, isBookmarked, insertBookmark, getBookmarks, deleteBookmark } from '$lib/db';
@@ -353,7 +354,7 @@
   <!-- Back navigation -->
   <div class="sticky top-0 z-10 px-6 py-3 flex items-center gap-3" style="background: var(--vellum); border-bottom: 1px solid var(--border-rule);">
     <button onclick={() => goto('/people')} class="flex items-center gap-1.5 text-sm transition-colors hover:opacity-70" style="color: var(--accent);">
-      <span style="font-size: 1.1em;">&larr;</span> Back to People
+      <span style="font-size: 1.1em;">&larr;</span> {t('people.backToPeople')}
     </button>
     <span style="color: var(--ink-faint);">/</span>
     <span class="text-sm font-medium" style="color: var(--ink-light);">{fullName(person)}</span>
@@ -395,7 +396,7 @@
               </div>
             {/if}
             <div class="header-actions">
-              <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title="Edit details">Edit</button>
+              <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title={t('people.editDetails')}>Edit</button>
               <button class="arch-btn arch-btn-sm" onclick={toggleBookmark} aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}>
                 {bookmarked ? 'Bookmarked' : 'Bookmark'}
               </button>
@@ -446,7 +447,7 @@
 
         <!-- ===== SECTION 2: FAMILY ===== -->
         <section class="detail-section">
-          <h2 class="section-heading">Family</h2>
+          <h2 class="section-heading">{t('common.family')}</h2>
 
           <!-- Parents -->
           {#if parents.father || parents.mother}
@@ -525,7 +526,7 @@
             {/if}
 
             {#if fam.children.length > 0}
-              <h3 class="subsection-heading">Children</h3>
+              <h3 class="subsection-heading">{t('families.children')}</h3>
               <div class="person-cards">
                 {#each fam.children as child}
                   <button class="mini-card" onclick={() => goto(`/people/${encodeURIComponent(child.xref)}`)}>
@@ -550,14 +551,14 @@
           {/each}
 
           {#if !parents.father && !parents.mother && spouseFamilies.length === 0}
-            <div class="empty-state">No family connections found</div>
+            <div class="empty-state">{t('relationship.noConnection')}</div>
           {/if}
         </section>
 
         <!-- ===== SECTION 3: MEDIA GALLERY ===== -->
         {#if media.length > 0}
           <section class="detail-section">
-            <h2 class="section-heading">Media Gallery</h2>
+            <h2 class="section-heading">{t('people.mediaGallery')}</h2>
             <div class="media-grid">
               {#each media as m}
                 {#if isImage(m.filePath)}
@@ -583,7 +584,7 @@
         <!-- ===== SECTION 4: SOURCES & CITATIONS ===== -->
         {#if citations.length > 0}
           <section class="detail-section">
-            <h2 class="section-heading">Sources & Citations</h2>
+            <h2 class="section-heading">{t('people.sourcesCitations')}</h2>
             <div class="citations-list">
               {#each citations as cit}
                 <div class="citation-row">
@@ -605,7 +606,7 @@
         <!-- ===== SECTION 5: NOTES ===== -->
         {#if notes.length > 0}
           <section class="detail-section">
-            <h2 class="section-heading">Notes</h2>
+            <h2 class="section-heading">{t('nav.notes')}</h2>
             {#each notes as note}
               <div class="note-card">
                 {#if note.title}
@@ -619,21 +620,21 @@
         {/if}
         {:else}
           <section class="detail-section">
-            <h2 class="section-heading">Alternate Names</h2>
+            <h2 class="section-heading">{t('people.alternateNames')}</h2>
             <p class="text-xs text-ink-muted mb-4">Store multilingual, married/maiden, or alias names for search and display.</p>
 
             <div class="arch-card rounded-xl p-4 mb-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Given name" bind:value={altDraft.givenName} />
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Surname" bind:value={altDraft.surname} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.surname')} bind:value={altDraft.surname} />
                 <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Suffix (optional)" bind:value={altDraft.suffix} />
                 <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={altDraft.nameType}>
                   {#each nameTypes as t}<option value={t}>{t}</option>{/each}
                 </select>
-                <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" placeholder="Source / notes (optional)" bind:value={altDraft.source} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" placeholder={t('evidence.sourceNotes')} bind:value={altDraft.source} />
               </div>
               <div class="mt-3">
-                <button class="btn-accent px-4 py-2 text-sm" onclick={addAlternateName}>Add Alternate Name</button>
+                <button class="btn-accent px-4 py-2 text-sm" onclick={addAlternateName}>{t('people.addAlternateName')}</button>
               </div>
             </div>
 
@@ -659,7 +660,7 @@
                       </div>
                       <div class="mt-2 flex gap-2">
                         <button class="btn-accent px-3 py-1.5 text-xs" onclick={() => saveEditAlt(a.id)}>Save</button>
-                        <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt}>Cancel</button>
+                        <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt}>{t('common.cancel')}</button>
                       </div>
                     {:else}
                       <div class="flex items-start justify-between gap-3">
@@ -685,19 +686,19 @@
       <!-- ===== SIDEBAR (30%) ===== -->
       <aside class="sidebar">
         <div class="sidebar-card">
-          <h3 class="sidebar-heading">Quick Facts</h3>
+          <h3 class="sidebar-heading">{t('people.quickFacts')}</h3>
           <dl class="fact-list">
             <div class="fact-row">
-              <dt>Given Name</dt>
+              <dt>{t('people.givenName')}</dt>
               <dd>{person.givenName || '\u2014'}</dd>
             </div>
             <div class="fact-row">
-              <dt>Surname</dt>
+              <dt>{t('people.surname')}</dt>
               <dd>{person.surname || '\u2014'}</dd>
             </div>
             {#if person.suffix}
               <div class="fact-row">
-                <dt>Suffix</dt>
+                <dt>{t('people.suffix')}</dt>
                 <dd>{person.suffix}</dd>
               </div>
             {/if}
@@ -711,7 +712,7 @@
             </div>
             {#if person.birthPlace}
               <div class="fact-row">
-                <dt>Birth Place</dt>
+                <dt>{t('people.birthPlace')}</dt>
                 <dd>{person.birthPlace}</dd>
               </div>
             {/if}
@@ -721,7 +722,7 @@
             </div>
             {#if person.deathPlace}
               <div class="fact-row">
-                <dt>Death Place</dt>
+                <dt>{t('people.deathPlace')}</dt>
                 <dd>{person.deathPlace}</dd>
               </div>
             {/if}
@@ -732,7 +733,7 @@
               </div>
             {/if}
             <div class="fact-row">
-              <dt>Living</dt>
+              <dt>{t('people.living')}</dt>
               <dd>{person.isLiving ? 'Yes' : 'No'}</dd>
             </div>
             <div class="fact-row">
@@ -751,19 +752,19 @@
               <dd>{events.length}</dd>
             </div>
             <div class="fact-row">
-              <dt>Media</dt>
+              <dt>{t('common.media')}</dt>
               <dd>{media.length}</dd>
             </div>
             <div class="fact-row">
-              <dt>Sources</dt>
+              <dt>{t('dashboard.sources')}</dt>
               <dd>{citations.length}</dd>
             </div>
             <div class="fact-row">
-              <dt>Notes</dt>
+              <dt>{t('nav.notes')}</dt>
               <dd>{notes.length}</dd>
             </div>
             <div class="fact-row">
-              <dt>Proof Status</dt>
+              <dt>{t('people.proofStatus')}</dt>
               <dd>
                 <span class="proof-badge proof-{person.proofStatus.toLowerCase()}">{person.proofStatus}</span>
               </dd>
@@ -774,7 +775,7 @@
         <!-- Sidebar families -->
         {#if spouseFamilies.length > 0}
           <div class="sidebar-card">
-            <h3 class="sidebar-heading">Families</h3>
+            <h3 class="sidebar-heading">{t('dashboard.families')}</h3>
             {#each spouseFamilies as fam}
               <div class="sidebar-family">
                 {#if fam.spouse}

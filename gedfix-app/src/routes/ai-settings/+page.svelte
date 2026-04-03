@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getDb } from '$lib/db';
 
   const providers = [
@@ -113,7 +114,7 @@
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in overflow-y-auto h-full">
-  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">AI Settings</h1>
+  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('ai.settingsTitle')}</h1>
   <p class="text-sm text-ink-muted mt-1 mb-4">Configure AI providers — keys are saved locally to your database</p>
 
   <!-- Active provider -->

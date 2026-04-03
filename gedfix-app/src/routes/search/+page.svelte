@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getPersons, getPerson, getDb, insertBookmark, isBookmarked } from '$lib/db';
   import type { Person, Source, Family, Place, GedcomEvent, GedcomMedia, ResearchNote, AlternateName } from '$lib/types';
 
@@ -167,14 +168,14 @@
 
 <div class="p-8 max-w-3xl animate-fade-in">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Search</h1>
-    <p class="text-sm text-ink-muted mt-1">Search across all data</p>
+    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('common.search')}</h1>
+    <p class="text-sm text-ink-muted mt-1">{t('search.subtitle')}</p>
   </div>
 
   <div class="mb-6">
     <input
       type="text"
-      placeholder="Search people, places, sources, events, notes, media..."
+      placeholder={t('search.placeholder')}
       bind:value={query}
       oninput={onInput}
       class="w-full px-4 py-3 text-base rounded-xl arch-input transition-all"
@@ -182,7 +183,7 @@
   </div>
 
   {#if searching}
-    <div class="text-sm text-ink-faint py-4 text-center">Searching...</div>
+    <div class="text-sm text-ink-faint py-4 text-center">{t('search.searching')}</div>
   {:else if hasSearched}
     <div class="text-xs text-ink-faint mb-4">{totalResults} results</div>
 
@@ -202,7 +203,7 @@
               <button class="btn-outline text-[10px] px-2 py-1" onclick={() => quickBookmark(r.person)} disabled={bookmarkSaving[r.person.xref]}>
                 {bookmarkSaving[r.person.xref] ? '...' : 'Bookmark'}
               </button>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Person</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.person')}</span>
             </div>
           {:else if r.type === 'Source'}
             <div class="px-4 py-2.5 flex items-start justify-between gap-3">
@@ -211,7 +212,7 @@
                 {#if r.source.author}<div class="text-xs text-ink-muted">by {r.source.author}</div>{/if}
                 {#if r.source.publisher}<div class="text-xs text-ink-faint">{r.source.publisher}</div>{/if}
               </div>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Source</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.source')}</span>
             </div>
           {:else if r.type === 'Family'}
             <div class="px-4 py-2.5 flex items-center gap-2">
@@ -225,7 +226,7 @@
                   <div class="text-xs text-ink-faint">m. {r.family.marriageDate}</div>
                 {/if}
               </div>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Family</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.family')}</span>
             </div>
           {:else if r.type === 'Place'}
             <div class="px-4 py-2.5 flex items-center justify-between gap-3">
@@ -241,7 +242,7 @@
                 <div class="text-sm text-ink">{r.event.eventType} {r.event.dateValue}</div>
                 {#if r.event.place}<div class="text-xs text-ink-faint">{r.event.place}</div>{/if}
               </div>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Event</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.event')}</span>
             </div>
           {:else if r.type === 'Note'}
             <div class="px-4 py-2.5 flex items-center justify-between gap-3">
@@ -249,7 +250,7 @@
                 <div class="text-sm text-ink truncate">{r.note.title || 'Note'}</div>
                 <div class="text-xs text-ink-faint truncate">{r.note.content}</div>
               </div>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Note</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.note')}</span>
             </div>
           {:else if r.type === 'Media'}
             <div class="px-4 py-2.5 flex items-center justify-between gap-3">
@@ -257,7 +258,7 @@
                 <div class="text-sm text-ink truncate">{r.media.title || 'Untitled media'}</div>
                 <div class="text-xs text-ink-faint truncate">{r.media.filePath}</div>
               </div>
-              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">Media</span>
+              <span class="text-[10px] uppercase tracking-wider px-2 py-1 rounded-full" style="background: var(--parchment); color: var(--ink-muted);">{t('common.media')}</span>
             </div>
           {/if}
         {/each}

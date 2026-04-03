@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getAllEvents, getPerson } from '$lib/db';
   import type { GedcomEvent, Person } from '$lib/types';
 
@@ -88,13 +89,13 @@
 
 <div class="flex flex-col h-full animate-fade-in">
   <div class="p-6 pb-3 shrink-0">
-    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Timeline</h1>
+    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.timeline')}</h1>
     <p class="text-sm text-ink-muted mt-1">{filtered.length} events across {yearGroups.length} years</p>
 
     <div class="flex gap-3 mt-4">
       <input
         type="text"
-        placeholder="Filter by person..."
+        placeholder={t('timeline.filterByPerson')}
         bind:value={filterPerson}
         class="w-56 px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
       />
@@ -102,7 +103,7 @@
         bind:value={filterType}
         class="px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
       >
-        <option value="">All event types</option>
+        <option value="">{t('timeline.allEventTypes')}</option>
         {#each eventTypes as t}
           <option value={t}>{eventLabels[t] ?? t}</option>
         {/each}
@@ -112,7 +113,7 @@
 
   <div class="flex-1 overflow-auto px-6 pb-6">
     {#if loading}
-      <div class="text-sm text-ink-faint py-8 text-center">Loading timeline...</div>
+      <div class="text-sm text-ink-faint py-8 text-center">{t('timeline.loading')}</div>
     {:else}
       <div class="relative pl-8">
         <!-- Vertical line -->
@@ -153,7 +154,7 @@
         {/each}
 
         {#if yearGroups.length === 0}
-          <div class="text-sm text-ink-faint py-8 text-center">No events match your filters</div>
+          <div class="text-sm text-ink-faint py-8 text-center">{t('timeline.noMatches')}</div>
         {/if}
       </div>
     {/if}

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getDb, getPersons, getEvents, getStories, insertStory, deleteStory, getParents, getChildren, getSpouseFamilies } from '$lib/db';
   import type { Person, GedcomEvent, GeneratedStory } from '$lib/types';
 
@@ -345,7 +346,7 @@ Write the family narrative now.`;
   <!-- Toolbar -->
   <div class="shrink-0 px-6 py-4" style="border-bottom: 1px solid var(--border-rule);">
     <div class="flex items-center gap-4 mb-3">
-      <h1 class="dossier-header mb-0 pb-0" style="border-bottom: none; margin-bottom: 0;">AI Story Generator</h1>
+      <h1 class="dossier-header mb-0 pb-0" style="border-bottom: none; margin-bottom: 0;">{t('ai.storyGenerator')}</h1>
       <div class="arch-tabs">
         <button onclick={() => view = 'generate'} class="arch-tab {view === 'generate' ? 'active' : ''}">Generate</button>
         <button onclick={() => view = 'library'} class="arch-tab {view === 'library' ? 'active' : ''}">Library ({stories.length})</button>
@@ -371,20 +372,20 @@ Write the family narrative now.`;
             <option value={ap.id}>{ap.name} — {ap.model.length > 25 ? ap.model.slice(0, 25) + '...' : ap.model}</option>
           {/each}
           {#if availableProviders.length === 0}
-            <option value="groq">No API keys configured</option>
+            <option value="groq">{t('ai.noApiKeys')}</option>
           {/if}
         </select>
 
         <!-- Cost + Time estimate -->
         <div class="flex items-center gap-3 ml-auto">
           <div class="text-right">
-            <div class="text-[10px] uppercase tracking-wider" style="color: var(--ink-faint); font-family: var(--font-mono);">Est. Cost</div>
+            <div class="text-[10px] uppercase tracking-wider" style="color: var(--ink-faint); font-family: var(--font-mono);">{t('ai.estimatedCost')}</div>
             <div class="text-sm font-bold" style="color: var(--accent); font-family: var(--font-mono);">
               {costEstimate < 0.01 ? '<$0.01' : `$${costEstimate.toFixed(2)}`}
             </div>
           </div>
           <div class="text-right">
-            <div class="text-[10px] uppercase tracking-wider" style="color: var(--ink-faint); font-family: var(--font-mono);">Est. Time</div>
+            <div class="text-[10px] uppercase tracking-wider" style="color: var(--ink-faint); font-family: var(--font-mono);">{t('ai.estimatedTime')}</div>
             <div class="text-sm font-bold" style="color: var(--ink-light); font-family: var(--font-mono);">{timeEstimate}</div>
           </div>
         </div>
@@ -510,7 +511,7 @@ Write the family narrative now.`;
         <!-- Empty state -->
         {#if selectedPeople.length === 0 && !isGenerating && !generatedPreview}
           <div class="arch-card rounded-xl p-10 text-center">
-            <div class="text-3xl mb-3" style="font-family: var(--font-serif); color: var(--ink-faint);">Stories</div>
+            <div class="text-3xl mb-3" style="font-family: var(--font-serif); color: var(--ink-faint);">{t('nav.stories')}</div>
             <p class="text-sm mb-2" style="color: var(--ink-muted);">Generate AI-powered biographical narratives from your genealogical records.</p>
             <p class="text-xs" style="color: var(--ink-faint);">
               Each story uses birth, death, marriage, and life event records enriched with historical context

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getSources, getCitationsForSource, getDb } from '$lib/db';
   import type { Source } from '$lib/types';
 
@@ -74,7 +75,7 @@
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
-  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Sources</h1>
+  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('dashboard.sources')}</h1>
   <p class="text-sm text-ink-muted mt-1 mb-6">
     {sources.length} sources &middot; {totalCitations} citations
   </p>
@@ -158,9 +159,9 @@
                   <table class="w-full text-sm">
                     <thead>
                       <tr style="background: var(--parchment);">
-                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">Person</th>
-                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">Page</th>
-                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">Quality</th>
+                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">{t('common.person')}</th>
+                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">{t('common.page')}</th>
+                        <th class="text-left px-3 py-2 text-[10px] uppercase tracking-wider font-medium text-ink-faint">{t('common.quality')}</th>
                       </tr>
                     </thead>
                     <tbody class="divide-y" style="--tw-divide-color: var(--border-subtle, #eee);">

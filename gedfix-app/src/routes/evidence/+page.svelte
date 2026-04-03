@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { addEvidence, getEvidence, getFactSummary, getGpsChecklist, getPersons, setGpsChecklist } from '$lib/db';
   import type { Person } from '$lib/types';
 
@@ -55,9 +56,9 @@
 </script>
 
 <div class="p-6 max-w-5xl">
-  <h1 class="text-2xl font-bold mb-4">Evidence Analysis</h1>
+  <h1 class="text-2xl font-bold mb-4">{t('evidence.title')}</h1>
   <div class="mb-4">
-    <label class="text-xs text-ink-muted" for="evidence-person">Person</label>
+    <label class="text-xs text-ink-muted" for="evidence-person">{t('common.person')}</label>
     <select id="evidence-person" class="arch-input w-full" bind:value={selectedXref}>
       {#each people as person}
         <option value={person.xref}>{person.givenName} {person.surname}</option>
@@ -66,14 +67,14 @@
   </div>
 
   <section class="arch-card p-4 mb-4">
-    <h2 class="font-semibold mb-2">Add Evidence</h2>
+    <h2 class="font-semibold mb-2">{t('evidence.addEvidence')}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-      <input class="arch-input" placeholder="Fact type" bind:value={draft.factType} />
-      <input class="arch-input" placeholder="Fact value" bind:value={draft.factValue} />
+      <input class="arch-input" placeholder={t('evidence.factType')} bind:value={draft.factType} />
+      <input class="arch-input" placeholder={t('evidence.factValue')} bind:value={draft.factValue} />
       <input class="arch-input" placeholder="Source XREF" bind:value={draft.sourceXref} />
       <select class="arch-input" bind:value={draft.informationType}>
-        <option value="primary">Primary</option>
-        <option value="secondary">Secondary</option>
+        <option value="primary">{t('evidence.primary')}</option>
+        <option value="secondary">{t('evidence.secondary')}</option>
         <option value="undetermined">Undetermined</option>
       </select>
       <select class="arch-input" bind:value={draft.evidenceType}>
@@ -89,13 +90,13 @@
       </select>
       <input class="arch-input md:col-span-3" placeholder="Analysis notes" bind:value={draft.analysisNotes} />
     </div>
-    <button class="btn-accent px-4 py-2 mt-3" onclick={add}>Add Evidence</button>
+    <button class="btn-accent px-4 py-2 mt-3" onclick={add}>{t('evidence.addEvidence')}</button>
   </section>
 
   <section class="arch-card p-4 mb-4">
-    <h2 class="font-semibold mb-2">Fact Summary</h2>
+    <h2 class="font-semibold mb-2">{t('evidence.factSummary')}</h2>
     {#if summaries.length === 0}
-      <div class="text-sm text-ink-faint">No evidence records yet.</div>
+      <div class="text-sm text-ink-faint">{t('evidence.noRecords')}</div>
     {:else}
       {#each summaries as row}
         <div class="py-1 text-sm text-ink-light">{row.factType}: {row.evidenceCount} entries, {row.valueCount} unique values</div>
@@ -114,7 +115,7 @@
   </section>
 
   <section class="arch-card p-4">
-    <h2 class="font-semibold mb-2">GPS Checklist</h2>
+    <h2 class="font-semibold mb-2">{t('evidence.gpsChecklist')}</h2>
     {#each gpsItems as item, idx}
       <label class="flex items-center gap-2 py-1 text-sm">
         <input type="checkbox" checked={done(idx + 1)} onchange={() => toggleItem(idx + 1, done(idx + 1) ? 1 : 0)} />

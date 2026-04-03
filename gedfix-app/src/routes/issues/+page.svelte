@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { treeIssues, isAnalyzing } from '$lib/stores';
   import { analyzeTree } from '$lib/tree-analyzer';
   import { applyIssueFix, dismissIssue, getDismissedIssueKeys, clearDismissedIssues } from '$lib/db';
@@ -163,7 +164,7 @@
 <div class="p-8 max-w-4xl animate-fade-in">
   <div class="flex items-center justify-between mb-6">
     <div>
-      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Data Quality</h1>
+      <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.dataQuality')}</h1>
       <p class="text-sm text-ink-muted mt-1">Analyze, fix, and clean your family tree</p>
     </div>
     <div class="flex gap-2">
@@ -171,7 +172,7 @@
         <button
           onclick={resetDismissed}
           class="px-3 py-2 text-xs btn-secondary transition-colors rounded-lg"
-          title="Show previously dismissed issues"
+          title={t('issues.showDismissed')}
         >Reset {dismissedKeys.size} Dismissed</button>
       {/if}
       <button
@@ -210,7 +211,7 @@
           <span class="absolute inset-0 flex items-center justify-center text-lg font-bold text-ink">{healthScore}</span>
         </div>
         <div>
-          <div class="text-sm font-semibold text-ink">Health Score</div>
+          <div class="text-sm font-semibold text-ink">{t('dashboard.healthScore')}</div>
           <div class="text-xs text-ink-muted">{$treeIssues.length} issues · {fixableCount} auto-fixable</div>
         </div>
       </div>
@@ -219,7 +220,7 @@
         <button onclick={() => { filterSeverity = filterSeverity === 'critical' ? '' : 'critical'; }}
           class="arch-card rounded-xl px-5 py-4 text-center hover:bg-red-50/50 transition-colors {filterSeverity === 'critical' ? 'ring-2 ring-red-300' : ''}">
           <div class="text-xl font-bold text-red-600">{criticalCount}</div>
-          <div class="text-xs text-ink-muted">Critical</div>
+          <div class="text-xs text-ink-muted">{t('common.critical')}</div>
         </button>
         <button onclick={() => { filterSeverity = filterSeverity === 'warning' ? '' : 'warning'; }}
           class="arch-card rounded-xl px-5 py-4 text-center hover:bg-orange-50/50 transition-colors {filterSeverity === 'warning' ? 'ring-2 ring-orange-300' : ''}">
@@ -229,7 +230,7 @@
         <button onclick={() => { filterSeverity = filterSeverity === 'info' ? '' : 'info'; }}
           class="arch-card rounded-xl px-5 py-4 text-center hover:bg-blue-50/50 transition-colors {filterSeverity === 'info' ? 'ring-2 ring-blue-300' : ''}">
           <div class="text-xl font-bold text-blue-500">{infoCount}</div>
-          <div class="text-xs text-ink-muted">Info</div>
+          <div class="text-xs text-ink-muted">{t('common.info')}</div>
         </button>
       </div>
     </div>
@@ -258,7 +259,7 @@
             onclick={dismissSelected}
             class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
             style="background: var(--parchment); color: var(--ink-light);"
-          >Dismiss Selected</button>
+          >{t('issues.dismissSelected')}</button>
         </div>
       {/if}
     </div>
@@ -332,7 +333,7 @@
         </div>
       {/each}
       {#if filtered.length === 0 && $treeIssues.length > 0}
-        <div class="text-sm text-ink-faint py-8 text-center">No issues match your filters</div>
+        <div class="text-sm text-ink-faint py-8 text-center">{t('issues.noMatches')}</div>
       {/if}
     </div>
   {/if}

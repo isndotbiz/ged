@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto, getSpouseFamilies, getChildren, getEvents } from '$lib/db';
   import type { Person, Family, GedcomEvent, GedcomMedia } from '$lib/types';
   import { isTauri } from '$lib/platform';
@@ -457,9 +458,9 @@
 
     <!-- Print actions -->
     <div class="flex items-center gap-1.5 ml-3">
-      <button onclick={handlePrintPedigree} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title="Print pedigree chart">
+      <button onclick={handlePrintPedigree} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title={t('pedigree.printChart')}>
         <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-        Pedigree
+        {t('nav.pedigree')}
       </button>
       <button onclick={handlePrintFamilyGroup} class="px-2.5 py-1 text-[11px] rounded-lg transition-all arch-btn-ghost" title="Print family group sheet">
         <svg class="w-3.5 h-3.5 inline-block mr-0.5 -mt-0.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
@@ -617,12 +618,12 @@
           </p>
 
           <div class="mt-3 space-y-1.5 text-sm">
-            {#if selected.birthDate}<div class="flex justify-between"><span class="text-ink-faint">Born</span><span class="font-medium">{selected.birthDate}</span></div>{/if}
+            {#if selected.birthDate}<div class="flex justify-between"><span class="text-ink-faint">{t('common.born')}</span><span class="font-medium">{selected.birthDate}</span></div>{/if}
             {#if selected.birthPlace}<div class="flex justify-between gap-2"><span class="text-ink-faint shrink-0">Place</span><span class="text-right text-xs">{selected.birthPlace}</span></div>{/if}
-            {#if selected.deathDate}<div class="flex justify-between"><span class="text-ink-faint">Died</span><span class="font-medium">{selected.deathDate}</span></div>{/if}
+            {#if selected.deathDate}<div class="flex justify-between"><span class="text-ink-faint">{t('common.died')}</span><span class="font-medium">{selected.deathDate}</span></div>{/if}
             {#if selected.deathPlace}<div class="flex justify-between gap-2"><span class="text-ink-faint shrink-0">Place</span><span class="text-right text-xs">{selected.deathPlace}</span></div>{/if}
-            <div class="flex justify-between"><span class="text-ink-faint">Sources</span><span>{selected.sourceCount}</span></div>
-            <div class="flex justify-between"><span class="text-ink-faint">Media</span><span>{selected.mediaCount}</span></div>
+            <div class="flex justify-between"><span class="text-ink-faint">{t('dashboard.sources')}</span><span>{selected.sourceCount}</span></div>
+            <div class="flex justify-between"><span class="text-ink-faint">{t('common.media')}</span><span>{selected.mediaCount}</span></div>
           </div>
 
           <!-- All media grid -->
@@ -662,7 +663,7 @@
         {#if familyGroupData.husband}
           {@const h = familyGroupData.husband}
           <table class="fgs-table"><tbody>
-            <tr><td class="fgs-label">Name</td><td class="fgs-value">{h.givenName} {h.surname}{h.suffix ? ` ${h.suffix}` : ''}</td></tr>
+            <tr><td class="fgs-label">{t('common.name')}</td><td class="fgs-value">{h.givenName} {h.surname}{h.suffix ? ` ${h.suffix}` : ''}</td></tr>
             {#if h.birthDate}<tr><td class="fgs-label">Birth</td><td class="fgs-value">{h.birthDate}{h.birthPlace ? ` -- ${h.birthPlace}` : ''}</td></tr>{/if}
             {#if h.deathDate}<tr><td class="fgs-label">Death</td><td class="fgs-value">{h.deathDate}{h.deathPlace ? ` -- ${h.deathPlace}` : ''}</td></tr>{/if}
             {#each familyGroupData.husbandEvents.filter(e => !['BIRT','DEAT'].includes(e.eventType)) as evt}
@@ -670,7 +671,7 @@
             {/each}
           </tbody></table>
         {:else}
-          <p class="fgs-empty">Unknown</p>
+          <p class="fgs-empty">{t('common.unknown')}</p>
         {/if}
       </div>
 
@@ -680,7 +681,7 @@
         {#if familyGroupData.wife}
           {@const w = familyGroupData.wife}
           <table class="fgs-table"><tbody>
-            <tr><td class="fgs-label">Name</td><td class="fgs-value">{w.givenName} {w.surname}{w.suffix ? ` ${w.suffix}` : ''}</td></tr>
+            <tr><td class="fgs-label">{t('common.name')}</td><td class="fgs-value">{w.givenName} {w.surname}{w.suffix ? ` ${w.suffix}` : ''}</td></tr>
             {#if w.birthDate}<tr><td class="fgs-label">Birth</td><td class="fgs-value">{w.birthDate}{w.birthPlace ? ` -- ${w.birthPlace}` : ''}</td></tr>{/if}
             {#if w.deathDate}<tr><td class="fgs-label">Death</td><td class="fgs-value">{w.deathDate}{w.deathPlace ? ` -- ${w.deathPlace}` : ''}</td></tr>{/if}
             {#each familyGroupData.wifeEvents.filter(e => !['BIRT','DEAT'].includes(e.eventType)) as evt}
@@ -688,16 +689,16 @@
             {/each}
           </tbody></table>
         {:else}
-          <p class="fgs-empty">Unknown</p>
+          <p class="fgs-empty">{t('common.unknown')}</p>
         {/if}
       </div>
 
       <!-- Marriage -->
       {#if familyGroupData.marriageDate || familyGroupData.marriagePlace}
         <div class="fgs-section">
-          <h2 class="fgs-section-title">Marriage</h2>
+          <h2 class="fgs-section-title">{t('families.marriage')}</h2>
           <table class="fgs-table"><tbody>
-            {#if familyGroupData.marriageDate}<tr><td class="fgs-label">Date</td><td class="fgs-value">{familyGroupData.marriageDate}</td></tr>{/if}
+            {#if familyGroupData.marriageDate}<tr><td class="fgs-label">{t('common.date')}</td><td class="fgs-value">{familyGroupData.marriageDate}</td></tr>{/if}
             {#if familyGroupData.marriagePlace}<tr><td class="fgs-label">Place</td><td class="fgs-value">{familyGroupData.marriagePlace}</td></tr>{/if}
           </tbody></table>
         </div>
@@ -705,18 +706,18 @@
 
       <!-- Children -->
       <div class="fgs-section">
-        <h2 class="fgs-section-title">Children</h2>
+        <h2 class="fgs-section-title">{t('families.children')}</h2>
         {#if familyGroupData.children.length > 0}
           <table class="fgs-table fgs-children-table">
             <thead>
               <tr>
                 <th>#</th>
-                <th>Name</th>
-                <th>Sex</th>
+                <th>{t('common.name')}</th>
+                <th>{t('people.sex')}</th>
                 <th>Birth</th>
-                <th>Birth Place</th>
+                <th>{t('people.birthPlace')}</th>
                 <th>Death</th>
-                <th>Death Place</th>
+                <th>{t('people.deathPlace')}</th>
               </tr>
             </thead>
             <tbody>
@@ -741,7 +742,7 @@
             </tbody>
           </table>
         {:else}
-          <p class="fgs-empty">No children recorded</p>
+          <p class="fgs-empty">{t('families.noChildren')}</p>
         {/if}
       </div>
 

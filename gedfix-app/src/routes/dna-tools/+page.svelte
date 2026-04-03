@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { predictRelationships, allRelationships, expectedCMForRelationship } from '$lib/dna-calculator';
   import { getPersons, getDb } from '$lib/db';
   import type { DNARelationshipPrediction, Person } from '$lib/types';
@@ -220,7 +221,7 @@
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
-  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">DNA Tools</h1>
+  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.dnaTools')}</h1>
   <p class="text-sm text-ink-muted mt-1 mb-8">Relationship prediction using Shared cM Project v4 data</p>
 
   <!-- cM to Relationship -->
@@ -287,7 +288,7 @@
     <table class="w-full text-sm">
       <thead>
         <tr class="text-left text-xs text-ink-muted border-b border-gray-100">
-          <th class="py-2 font-medium">Relationship</th>
+          <th class="py-2 font-medium">{t('relationship.path')}</th>
           <th class="py-2 font-medium text-right">Avg cM</th>
           <th class="py-2 font-medium text-right">Min</th>
           <th class="py-2 font-medium text-right">Max</th>
@@ -309,12 +310,12 @@
   <!-- Relationship Calculator -->
   <div class="arch-card rounded-xl p-6 mt-6">
     <h2 class="text-sm font-semibold text-ink mb-1">Relationship Calculator</h2>
-    <p class="text-xs text-ink-muted mb-4">Find the genealogical relationship between two people in your tree</p>
+    <p class="text-xs text-ink-muted mb-4">{t('relationship.subtitle')}</p>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <!-- Person A -->
       <div class="relative">
-        <label for="relationship-person-a" class="block text-xs font-medium text-ink-muted mb-1">Person A</label>
+        <label for="relationship-person-a" class="block text-xs font-medium text-ink-muted mb-1">{t('relationship.personA')}</label>
         {#if personA}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personA)}</span>
@@ -328,7 +329,7 @@
             oninput={() => searchPersons(searchA, 'A')}
             onfocus={() => { if (suggestionsA.length > 0) showDropdownA = true; }}
             onblur={() => setTimeout(() => showDropdownA = false, 200)}
-            placeholder="Search by name..."
+            placeholder={t('people.searchByName')}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
           />
           {#if showDropdownA && suggestionsA.length > 0}
@@ -349,7 +350,7 @@
 
       <!-- Person B -->
       <div class="relative">
-        <label for="relationship-person-b" class="block text-xs font-medium text-ink-muted mb-1">Person B</label>
+        <label for="relationship-person-b" class="block text-xs font-medium text-ink-muted mb-1">{t('relationship.personB')}</label>
         {#if personB}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personB)}</span>
@@ -363,7 +364,7 @@
             oninput={() => searchPersons(searchB, 'B')}
             onfocus={() => { if (suggestionsB.length > 0) showDropdownB = true; }}
             onblur={() => setTimeout(() => showDropdownB = false, 200)}
-            placeholder="Search by name..."
+            placeholder={t('people.searchByName')}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
           />
           {#if showDropdownB && suggestionsB.length > 0}

@@ -259,7 +259,7 @@
 <div class="p-8 max-w-2xl animate-fade-in">
   <div class="mb-8">
     <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('settings.title')}</h1>
-    <p class="text-sm text-ink-muted mt-1">Configure your GedFix application</p>
+    <p class="text-sm text-ink-muted mt-1">{t('settings.subtitle')}</p>
     {#if saveStatus}
       <div class="mt-2 text-xs font-medium px-3 py-1 rounded-lg inline-block" style="background: var(--parchment); color: var(--sepia);">{saveStatus}</div>
     {/if}
@@ -267,11 +267,11 @@
 
   <!-- Data Management -->
   <section class="mb-8">
-    <h2 class="arch-section-header">Data Management</h2>
+    <h2 class="arch-section-header">{t('settings.dataManagement')}</h2>
     <div class="arch-card divide-y arch-card-divide">
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Import GEDCOM</div>
+          <div class="text-sm font-medium text-ink">{t('nav.importGedcom')}</div>
           <div class="text-xs text-ink-muted">Load a GEDCOM file into the database</div>
         </div>
         <button
@@ -294,12 +294,12 @@
 
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Clear Database</div>
+          <div class="text-sm font-medium text-ink">{t('settings.clearDatabase')}</div>
           <div class="text-xs text-ink-muted">Remove all imported data</div>
         </div>
         {#if confirmClear}
           <div class="flex gap-2">
-            <button onclick={clearDatabase} class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">Confirm</button>
+            <button onclick={clearDatabase} class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">{t('common.confirm')}</button>
             <button onclick={() => { confirmClear = false; }} class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors">Cancel</button>
           </div>
         {:else}
@@ -309,7 +309,7 @@
 
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Database Stats</div>
+          <div class="text-sm font-medium text-ink">{t('settings.databaseStats')}</div>
           <div class="text-xs text-ink-muted">Current data summary</div>
         </div>
         <div class="text-xs text-ink-muted text-right">
@@ -322,10 +322,10 @@
 
   <!-- Export / Backup -->
   <section class="mb-8">
-    <h2 class="arch-section-header">Export & Backup</h2>
+    <h2 class="arch-section-header">{t('settings.exportBackup')}</h2>
     <div class="arch-card divide-y arch-card-divide">
       <div class="px-5 py-4">
-        <div class="text-sm font-medium text-ink">Export Preview</div>
+        <div class="text-sm font-medium text-ink">{t('backup.exportPreview')}</div>
         <div class="text-xs text-ink-muted mt-1">
           {exportPreview.personCount} people, {exportPreview.familyCount} families, {exportPreview.eventCount} events, {exportPreview.sourceCount} sources, {exportPreview.mediaCount} media, {exportPreview.placeCount} places
         </div>
@@ -333,7 +333,7 @@
 
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Export GEDCOM</div>
+          <div class="text-sm font-medium text-ink">{t('backup.exportGedcom')}</div>
           <div class="text-xs text-ink-muted">Download a GEDCOM file (5.5.1 or 7.0)</div>
         </div>
         <div class="flex items-center gap-2">
@@ -352,7 +352,7 @@
 
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Export JSON Backup</div>
+          <div class="text-sm font-medium text-ink">{t('backup.exportJson')}</div>
           <div class="text-xs text-ink-muted">Full database snapshot for restore</div>
         </div>
         <button onclick={exportJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
@@ -362,7 +362,7 @@
 
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Import JSON Backup</div>
+          <div class="text-sm font-medium text-ink">{t('backup.importJson')}</div>
           <div class="text-xs text-ink-muted">Restore database from a JSON export</div>
         </div>
         <button onclick={importJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
@@ -374,10 +374,10 @@
       {/if}
 
       <div class="px-5 py-4">
-        <div class="text-sm font-medium text-ink">Auto-Backups</div>
+        <div class="text-sm font-medium text-ink">{t('backup.autoBackups')}</div>
         <div class="text-xs text-ink-muted mb-2">Last 5 auto backups before import</div>
         {#if autoBackups.length === 0}
-          <div class="text-xs text-ink-faint">No web auto-backups found.</div>
+          <div class="text-xs text-ink-faint">{t('backup.noBackups')}</div>
         {:else}
           {#each autoBackups as backup}
             <div class="flex items-center justify-between py-1">
@@ -396,11 +396,11 @@
 
   <!-- Display Preferences -->
   <section class="mb-8">
-    <h2 class="arch-section-header">Display Preferences</h2>
+    <h2 class="arch-section-header">{t('settings.displayPreferences')}</h2>
     <div class="arch-card divide-y arch-card-divide">
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Living Person Threshold</div>
+          <div class="text-sm font-medium text-ink">{t('settings.livingThreshold')}</div>
           <div class="text-xs text-ink-muted">Years from birth to assume deceased (no death record)</div>
         </div>
         <div class="flex items-center gap-2">
@@ -417,7 +417,7 @@
       </div>
       <div class="flex items-center justify-between px-5 py-4">
         <div>
-          <div class="text-sm font-medium text-ink">Language</div>
+          <div class="text-sm font-medium text-ink">{t('settings.language')}</div>
           <div class="text-xs text-ink-muted">Change application locale</div>
         </div>
         <select bind:value={language} onchange={onLanguageChange} class="arch-input px-2 py-1.5 text-sm">
@@ -431,7 +431,7 @@
       {#if deferredInstallPrompt && !hideInstallPrompt}
         <div class="flex items-center justify-between px-5 py-4">
           <div>
-            <div class="text-sm font-medium text-ink">Install App</div>
+            <div class="text-sm font-medium text-ink">{t('settings.installApp')}</div>
             <div class="text-xs text-ink-muted">Install GedFix as a web app</div>
           </div>
           <div class="flex gap-2">
@@ -451,7 +451,7 @@
 
   <!-- API Keys -->
   <section class="mb-8">
-    <h2 class="arch-section-header">AI & Service API Keys</h2>
+    <h2 class="arch-section-header">{t('settings.apiKeys')}</h2>
     <div class="arch-card divide-y arch-card-divide">
       {#each apiKeys as config, i}
         <div class="flex items-center gap-3 px-5 py-3.5">
@@ -476,7 +476,7 @@
 
   <!-- About -->
   <section>
-    <h2 class="arch-section-header">About</h2>
+    <h2 class="arch-section-header">{t('settings.about')}</h2>
     <div class="arch-card px-5 py-4">
       <div class="text-sm font-medium text-ink">GedFix</div>
       <div class="text-xs text-ink-muted mt-0.5">Version 1.0.0</div>
@@ -485,7 +485,7 @@
   </section>
 
   <section class="mt-8">
-    <h2 class="arch-section-header">Edit History</h2>
+    <h2 class="arch-section-header">{t('settings.editHistory')}</h2>
     <div class="arch-card px-5 py-4">
       {#if undoHistory.length === 0}
         <div class="text-xs text-ink-faint">No recent edits logged.</div>

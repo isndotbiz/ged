@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { onMount } from 'svelte';
   import { getDb } from '$lib/db';
 
@@ -425,42 +426,42 @@
   <div class="dashboard-inner">
     <section class="hero">
       <div>
-        <p class="hero-kicker">Showcase</p>
-        <h1 class="hero-title display-gradient-spirit">Your Family Tree</h1>
-        <p class="hero-subtitle">A live pulse of your GEDCOM archive, mapped to the iSN.BiZ system.</p>
+        <p class="hero-kicker">{t('dashboard.showcase')}</p>
+        <h1 class="hero-title display-gradient-spirit">{t('dashboard.familyTreeTitle')}</h1>
+        <p class="hero-subtitle">{t('dashboard.subtitle')}</p>
       </div>
       <div class="hero-actions">
-        <a class="btn-primary" href="/settings">Import</a>
-        <a class="btn-outline" href="/search">Search</a>
-        <a class="btn-outline" href="/cleanup">Cleanup</a>
-        <a class="btn-outline" href="/media">Media</a>
+        <a class="btn-primary" href="/settings">{t('common.import')}</a>
+        <a class="btn-outline" href="/search">{t('common.search')}</a>
+        <a class="btn-outline" href="/cleanup">{t('nav.cleanup')}</a>
+        <a class="btn-outline" href="/media">{t('common.media')}</a>
       </div>
     </section>
 
     {#if loading}
       <div class="loading-state">
         <div class="spinner"></div>
-        <p>Loading analytics...</p>
+        <p>{t('dashboard.loadingAnalytics')}</p>
       </div>
     {:else}
       <section class="stats-grid">
         <div class="spirit-surface stat-card">
-          <div class="stat-label">People</div>
+          <div class="stat-label">{t('dashboard.people')}</div>
           <div class="stat-value">{fmtNum(totalPeople)}</div>
           <div class="stat-meta">{fmtNum(maleCount)} male · {fmtNum(femaleCount)} female</div>
         </div>
         <div class="spirit-surface stat-card">
-          <div class="stat-label">Families</div>
+          <div class="stat-label">{t('dashboard.families')}</div>
           <div class="stat-value">{fmtNum(totalFamilies)}</div>
           <div class="stat-meta">{totalPeople > 0 ? (totalFamilies / totalPeople * 100).toFixed(1) : 0}% family ratio</div>
         </div>
         <div class="spirit-surface stat-card">
-          <div class="stat-label">Media</div>
+          <div class="stat-label">{t('common.media')}</div>
           <div class="stat-value">{fmtNum(totalMedia)}</div>
           <div class="stat-meta">{withMedia}% of people with media</div>
         </div>
         <div class="spirit-surface stat-card">
-          <div class="stat-label">Sources</div>
+          <div class="stat-label">{t('dashboard.sources')}</div>
           <div class="stat-value">{fmtNum(totalSources)}</div>
           <div class="stat-meta">{avgCitationsPerSource} avg citations/source</div>
         </div>
@@ -468,7 +469,7 @@
 
       <section class="dashboard-grid-2">
         <div class="spirit-surface panel">
-          <div class="panel-header">Tree Completeness</div>
+          <div class="panel-header">{t('dashboard.treeCompleteness')}</div>
           <div class="panel-body">
             <div class="donut-wrap">
               <canvas bind:this={donutCanvas}></canvas>
@@ -476,22 +477,22 @@
             <div class="legend">
               <div class="legend-row">
                 <span class="legend-dot" style="background: var(--color-blue);"></span>
-                <span>Birth Date</span>
+                <span>{t('dashboard.birthDate')}</span>
                 <span class="legend-value">{withBirthDate}%</span>
               </div>
               <div class="legend-row">
                 <span class="legend-dot" style="background: var(--spirit-electric);"></span>
-                <span>Death Date</span>
+                <span>{t('dashboard.deathDate')}</span>
                 <span class="legend-value">{withDeathDate}%</span>
               </div>
               <div class="legend-row">
                 <span class="legend-dot" style="background: var(--color-cyan);"></span>
-                <span>Has Source</span>
+                <span>{t('dashboard.hasSource')}</span>
                 <span class="legend-value">{withSource}%</span>
               </div>
               <div class="legend-row">
                 <span class="legend-dot" style="background: var(--color-blue-dark);"></span>
-                <span>Has Media</span>
+                <span>{t('dashboard.hasMedia')}</span>
                 <span class="legend-value">{withMedia}%</span>
               </div>
             </div>
@@ -499,10 +500,10 @@
         </div>
 
         <div class="spirit-surface panel">
-          <div class="panel-header">Generation Depth</div>
+          <div class="panel-header">{t('dashboard.generationDepth')}</div>
           <div class="depth-wrap">
             <div class="depth-value display-gradient">{generationDepth}</div>
-            <div class="depth-sub">generations traced</div>
+            <div class="depth-sub">{t('dashboard.generationsTraced')}</div>
             <div class="depth-bars">
               {#each Array(Math.min(generationDepth, 12)) as _, i}
                 <div style="width: {100 - (i * 6)}%; opacity: {1 - (i * 0.07)};"></div>
@@ -514,13 +515,13 @@
 
       <section class="dashboard-grid-2">
         <div class="spirit-surface panel">
-          <div class="panel-header">Event Timeline by Decade</div>
+          <div class="panel-header">{t('dashboard.eventTimelineByDecade')}</div>
           <div class="chart-wrap">
             <canvas bind:this={timelineCanvas}></canvas>
           </div>
         </div>
         <div class="spirit-surface panel">
-          <div class="panel-header">Top Places by Event Count</div>
+          <div class="panel-header">{t('dashboard.topPlacesByEventCount')}</div>
           <div class="chart-wrap">
             <canvas bind:this={placesCanvas}></canvas>
           </div>
@@ -529,7 +530,7 @@
 
       <section class="dashboard-grid-3">
         <div class="spirit-surface panel">
-          <div class="panel-header">Missing Data</div>
+          <div class="panel-header">{t('dashboard.missingData')}</div>
           <div class="quality-list">
             <div>
               <div class="quality-bar"><span style="width: {totalPeople > 0 ? (missingBirth / totalPeople * 100) : 0}%; background: var(--color-warning);"></span></div>
@@ -547,7 +548,7 @@
         </div>
 
         <div class="spirit-surface panel">
-          <div class="panel-header">Orphaned Records</div>
+          <div class="panel-header">{t('dashboard.orphanedRecords')}</div>
           <div class="spotlight">
             <div class="spotlight-value" style="color: {orphanedPeople > 0 ? 'var(--color-accent)' : 'var(--color-cyan)'};">
               {fmtNum(orphanedPeople)}
@@ -564,7 +565,7 @@
               <div class="spotlight-name">{mostDocumented.name}</div>
               <div class="spotlight-meta">{mostDocumented.xref}</div>
               <div class="spotlight-value display-gradient">{fmtNum(mostDocumented.score)}</div>
-              <div class="spotlight-meta">events + sources + media</div>
+              <div class="spotlight-meta">{t('people.eventsSourcesMedia')}</div>
             </div>
           {:else}
             <div class="empty-state">No data available</div>

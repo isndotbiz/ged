@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getBookmarks, deleteBookmark, getPerson, updateBookmarkCategory, reorderBookmarks } from '$lib/db';
   import type { Bookmark, Person } from '$lib/types';
 
@@ -42,7 +43,7 @@
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
-  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Bookmarks</h1>
+  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.bookmarks')}</h1>
   <p class="text-sm text-ink-muted mt-1 mb-8">{bookmarks.length} bookmarked people</p>
 
   <div class="flex flex-wrap gap-2 mb-4 items-center">

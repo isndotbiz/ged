@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getPersons, getEvents, getSpouseFamilies, getChildren, getParents, getMediaWithPaths, getPrimaryPhoto, getGroups, batchAddToGroup, batchBookmark, batchRemoveBookmarks, batchDeletePersons } from '$lib/db';
   import { runResearchAgent } from '$lib/research-agent';
   import { findSources } from '$lib/source-finder';
@@ -340,7 +341,7 @@
                 {selected.sex === 'F' ? 'Female' : selected.sex === 'M' ? 'Male' : 'Unknown'}
               </span>
               {#if selected.isLiving}
-                <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">Living</span>
+                <span class="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-600">{t('people.living')}</span>
               {/if}
               {#if selected.proofStatus && selected.proofStatus !== 'UNKNOWN'}
                 <span class="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-600">{selected.proofStatus}</span>
@@ -459,7 +460,7 @@
         <!-- Events -->
         {#if selectedEvents.length > 0}
           <section class="mb-6">
-            <h2 class="arch-section-header">Life Events</h2>
+            <h2 class="arch-section-header">{t('people.lifeEvents')}</h2>
             <div class="arch-card rounded-xl divide-y arch-card-divide">
               {#each selectedEvents as ev (ev.id)}
                 <div class="flex items-start gap-3 px-4 py-3 contain-content">
@@ -483,7 +484,7 @@
         <!-- Families -->
         {#if selectedFamilies.length > 0}
           <section class="mb-6">
-            <h2 class="arch-section-header">Families</h2>
+            <h2 class="arch-section-header">{t('dashboard.families')}</h2>
             {#each selectedFamilies as sf (sf.family.xref)}
               <div class="arch-card rounded-xl p-4 mb-3 contain-content">
                 {#if sf.spouse}
@@ -520,7 +521,7 @@
       </div>
     {:else}
       <div class="flex items-center justify-center h-full text-sm text-ink-faint">
-        Select a person to view details
+        {t('people.selectPrompt')}
       </div>
     {/if}
   </div>
@@ -538,8 +539,8 @@
     <button class="btn-secondary px-3 py-2" onclick={applyBatchGroup}>Add Group</button>
     <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(false)}>Bookmark</button>
     <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(true)}>Unbookmark</button>
-    <button class="btn-secondary px-3 py-2" onclick={exportSelected}>Export</button>
-    <button class="btn-danger px-3 py-2" onclick={applyBatchDelete}>Delete</button>
+    <button class="btn-secondary px-3 py-2" onclick={exportSelected}>{t('common.export')}</button>
+    <button class="btn-danger px-3 py-2" onclick={applyBatchDelete}>{t('common.delete')}</button>
   </div>
 {/if}
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { goto } from '$app/navigation';
   import { getChildren, getPerson, getPersons, getSpouseFamilies } from '$lib/db';
   import type { Person } from '$lib/types';
@@ -80,7 +81,7 @@
 <div class="p-6 descendants-page">
   <div class="flex items-end gap-3 mb-4 no-print">
     <div class="flex-1">
-      <label class="text-xs text-ink-muted" for="root-person">Root person</label>
+      <label class="text-xs text-ink-muted" for="root-person">{t('pedigree.rootPerson')}</label>
       <select id="root-person" class="arch-input w-full" bind:value={selectedXref}>
         {#each people as person}
           <option value={person.xref}>{nameFor(person)}</option>
@@ -88,18 +89,18 @@
       </select>
     </div>
     <div>
-      <label class="text-xs text-ink-muted" for="depth">Depth</label>
+      <label class="text-xs text-ink-muted" for="depth">{t('descendants.depth')}</label>
       <select id="depth" class="arch-input" bind:value={maxDepth}>
         {#each Array.from({ length: 10 }, (_, i) => i + 1) as d}
           <option value={d}>{d}</option>
         {/each}
       </select>
     </div>
-    <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label="Print descendants chart">Print</button>
+    <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label={t('descendants.printChart')}>Print</button>
   </div>
 
   {#if loading}
-    <p class="text-ink-muted">Loading descendants...</p>
+    <p class="text-ink-muted">{t('descendants.loading')}</p>
   {:else if root}
     <h1 class="text-xl font-bold mb-4" tabindex="-1">Descendants of {nameFor(root.person)}</h1>
     <div class="tree-root">

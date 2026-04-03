@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getFamilies, getPerson, getChildren, getEvents } from '$lib/db';
   import type { Person, Family, GedcomEvent } from '$lib/types';
 
@@ -90,7 +91,7 @@
 
 <div class="p-8 max-w-5xl animate-fade-in">
   <div class="mb-6">
-    <h1 class="text-2xl font-bold tracking-tight display-gradient-spirit">Families</h1>
+    <h1 class="text-2xl font-bold tracking-tight display-gradient-spirit">{t('dashboard.families')}</h1>
     <p class="text-sm mt-1" style="color: var(--color-muted);">{families.length} family records</p>
   </div>
 
@@ -179,7 +180,7 @@
               <!-- Marriage details -->
               {#if row.family.marriageDate || row.family.marriagePlace || row.marriageEvent}
                 <div class="mb-3 px-3 py-2 rounded-lg" style="background: rgba(13, 17, 23, 0.55); border: 1px solid rgba(30, 159, 242, 0.15);">
-                  <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-muted);">Marriage</div>
+                  <div class="text-xs font-semibold uppercase tracking-wider mb-1" style="color: var(--color-muted);">{t('families.marriage')}</div>
                   <div class="flex flex-wrap gap-x-6 gap-y-1">
                     {#if row.family.marriageDate || row.marriageEvent?.dateValue}
                       <div class="text-sm" style="color: var(--color-white);">
@@ -188,7 +189,7 @@
                     {/if}
                     {#if row.family.marriagePlace || row.marriageEvent?.place}
                       <div class="text-sm" style="color: var(--color-white);">
-                        <span style="color: var(--color-muted);">Place:</span> {row.family.marriagePlace || row.marriageEvent?.place}
+                        <span style="color: var(--color-muted);">{t('map.place')}</span> {row.family.marriagePlace || row.marriageEvent?.place}
                       </div>
                     {/if}
                   </div>
@@ -203,7 +204,7 @@
                 {#if isLoadingThis}
                   <div class="text-xs py-2" style="color: var(--color-muted);">Loading children...</div>
                 {:else if children.length === 0}
-                  <div class="text-xs py-2" style="color: var(--color-muted);">No children recorded</div>
+                  <div class="text-xs py-2" style="color: var(--color-muted);">{t('families.noChildren')}</div>
                 {:else}
                   <div class="space-y-1">
                     {#each children as child}
@@ -237,7 +238,7 @@
         </div>
       {/each}
       {#if filtered.length === 0}
-        <div class="p-6 text-center text-sm" style="color: var(--color-muted);">No families found</div>
+        <div class="p-6 text-center text-sm" style="color: var(--color-muted);">{t('families.noFamiliesFound')}</div>
       {/if}
     </div>
   {/if}

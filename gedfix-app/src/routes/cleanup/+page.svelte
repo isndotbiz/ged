@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { appStats } from '$lib/stores';
   import { getDb, findSameNameGenerations, findCollateralRelatives, updatePerson, deduplicateMediaByNormalizedPath, autoCategorizeMediaAfterDedup } from '$lib/db';
   import type { Person } from '$lib/types';
@@ -437,8 +438,8 @@
 <div class="p-8 max-w-4xl animate-fade-in">
   <!-- Page Header -->
   <div class="mb-6">
-    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Tree Cleanup</h1>
-    <p class="text-sm text-ink-muted mt-1">Match media, deduplicate records, and export your tree</p>
+    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('cleanup.title')}</h1>
+    <p class="text-sm text-ink-muted mt-1">{t('cleanup.subtitle')}</p>
     <div class="mt-3" style="border-top: 2px double var(--ink-faint);"></div>
   </div>
 
@@ -453,7 +454,7 @@
           </svg>
         </div>
         <div>
-          <h2 class="text-sm font-semibold text-ink">Database Overview</h2>
+          <h2 class="text-sm font-semibold text-ink">{t('cleanup.databaseOverview')}</h2>
           <p class="text-xs text-ink-muted">Current record counts and media status</p>
         </div>
       </div>
@@ -462,15 +463,15 @@
         <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
             <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{totalPeople.toLocaleString()}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">People</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">{t('dashboard.people')}</div>
           </div>
           <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
             <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{totalFamilies.toLocaleString()}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">Families</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">{t('dashboard.families')}</div>
           </div>
           <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
             <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{totalSources.toLocaleString()}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">Sources</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">{t('dashboard.sources')}</div>
           </div>
           <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
             <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{linkedMedia.toLocaleString()}</div>
@@ -498,7 +499,7 @@
           </svg>
         </div>
         <div>
-          <h2 class="text-sm font-semibold text-ink">Media Stats</h2>
+          <h2 class="text-sm font-semibold text-ink">{t('cleanup.mediaStats')}</h2>
           <p class="text-xs text-ink-muted">Verify dedup and linking without raw SQL</p>
         </div>
       </div>
@@ -574,7 +575,7 @@
     <div class="arch-card rounded-xl p-6">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h2 class="text-sm font-semibold text-ink">Dedup Verification</h2>
+          <h2 class="text-sm font-semibold text-ink">{t('cleanup.dedupVerification')}</h2>
           <p class="text-xs text-ink-muted">Runs the SQL checks and shows results inline</p>
         </div>
         <button onclick={runDedupChecks} disabled={dedupChecksRunning} class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
@@ -638,7 +639,7 @@
           <div class="rounded-lg p-4" style="background: var(--vellum);">
             <div class="text-xs font-semibold text-ink mb-2">People with 50+ Links</div>
             {#if dedupChecks.suspiciousPeople.length === 0}
-              <div class="text-xs" style="color: var(--color-validated);">None</div>
+              <div class="text-xs" style="color: var(--color-validated);">{t('common.none')}</div>
             {:else}
               <div class="space-y-2 max-h-[180px] overflow-y-auto">
                 {#each dedupChecks.suspiciousPeople as row}
@@ -654,7 +655,7 @@
           <div class="rounded-lg p-4" style="background: var(--vellum);">
             <div class="text-xs font-semibold text-ink mb-2">Duplicate Media Links</div>
             {#if dedupChecks.duplicateLinks.length === 0}
-              <div class="text-xs" style="color: var(--color-validated);">None</div>
+              <div class="text-xs" style="color: var(--color-validated);">{t('common.none')}</div>
             {:else}
               <div class="space-y-2 max-h-[180px] overflow-y-auto">
                 {#each dedupChecks.duplicateLinks as row}
@@ -670,7 +671,7 @@
           <div class="rounded-lg p-4" style="background: var(--vellum);">
             <div class="text-xs font-semibold text-ink mb-2">Shared Media (10+ People)</div>
             {#if dedupChecks.sharedMedia.length === 0}
-              <div class="text-xs text-ink-muted">None</div>
+              <div class="text-xs text-ink-muted">{t('common.none')}</div>
             {:else}
               <div class="space-y-2 max-h-[180px] overflow-y-auto">
                 {#each dedupChecks.sharedMedia as row}
@@ -697,7 +698,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Match Unlinked Media</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.matchUnlinked')}</h2>
             <p class="text-xs text-ink-muted">Scan photos and renamed media directories, match files to people</p>
           </div>
         </div>
@@ -751,7 +752,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Deduplicate Media</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.deduplicateMedia')}</h2>
             <p class="text-xs text-ink-muted">Merge duplicates by normalized path, transfer links, then auto-categorize</p>
           </div>
         </div>
@@ -777,19 +778,19 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.duplicateGroups}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Groups Found</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">{t('cleanup.groupsFound')}</div>
           </div>
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold" style="color: var(--color-validated); font-family: var(--font-mono);">{dedupeResult.entriesRemoved}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Entries Removed</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">{t('cleanup.entriesRemoved')}</div>
           </div>
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.linksTransferred}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Links Transferred</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">{t('cleanup.linksTransferred')}</div>
           </div>
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.categorizedUpdated}</div>
-            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Categories Updated</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">{t('cleanup.categoriesUpdated')}</div>
           </div>
         </div>
       {/if}
@@ -805,7 +806,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Find Duplicate People</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.findDuplicates')}</h2>
             <p class="text-xs text-ink-muted">Detect potential duplicate person records and merge them</p>
           </div>
         </div>
@@ -896,7 +897,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Export GEDCOM</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('backup.exportGedcom')}</h2>
             <p class="text-xs text-ink-muted">Export your full tree as a GEDCOM 5.5.1 file to Downloads</p>
           </div>
         </div>
@@ -946,7 +947,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" d="M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3" />
           </svg>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Merge History</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.mergeHistory')}</h2>
             <p class="text-xs text-ink-muted">View and undo recent person merges</p>
           </div>
         </div>
@@ -984,7 +985,7 @@
           {/each}
         </div>
       {:else if !mergeLogLoading}
-        <p class="text-xs text-ink-faint text-center py-4">No merge history yet. Future merges will be logged here.</p>
+        <p class="text-xs text-ink-faint text-center py-4">{t('cleanup.noMergeHistory')}</p>
       {/if}
     </div>
 
@@ -998,7 +999,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Sr/Jr Generation Labeling</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.srJr')}</h2>
             <p class="text-xs text-ink-muted">Find people with same first+last name born 20-50 years apart (father-son)</p>
           </div>
         </div>
@@ -1029,7 +1030,7 @@
                 <th class="pb-2 pr-3">Younger</th>
                 <th class="pb-2 pr-3">Birth</th>
                 <th class="pb-2 pr-3">Gap</th>
-                <th class="pb-2 text-right">Actions</th>
+                <th class="pb-2 text-right">{t('common.actions')}</th>
               </tr>
             </thead>
             <tbody>
@@ -1082,7 +1083,7 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Collateral Line Tagging</h2>
+            <h2 class="text-sm font-semibold text-ink">{t('cleanup.collateral')}</h2>
             <p class="text-xs text-ink-muted">Identify siblings of direct-line ancestors and tag them as collateral</p>
           </div>
         </div>
@@ -1128,10 +1129,10 @@
             <thead>
               <tr class="text-left text-[10px] uppercase tracking-wider text-ink-muted" style="border-bottom: 1px solid var(--ink-faint);">
                 <th class="pb-2 pr-3">XREF</th>
-                <th class="pb-2 pr-3">Name</th>
+                <th class="pb-2 pr-3">{t('common.name')}</th>
                 <th class="pb-2 pr-3">Birth</th>
                 <th class="pb-2 pr-3">Death</th>
-                <th class="pb-2 pr-3">Status</th>
+                <th class="pb-2 pr-3">{t('common.status')}</th>
                 <th class="pb-2 text-right">Action</th>
               </tr>
             </thead>

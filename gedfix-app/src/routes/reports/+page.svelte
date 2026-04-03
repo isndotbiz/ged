@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { getChildren, getDb, getEvents, getParents, getPersons, getSpouseFamilies } from '$lib/db';
   import type { GedcomEvent, Person } from '$lib/types';
 
@@ -129,12 +130,12 @@
 <div class="arch-page" style="max-width: 78rem; overflow-y: auto; height: 100vh; padding-bottom: 4rem;">
   <div class="mb-6 no-print">
     <h1 class="dossier-header" style="margin-bottom: 0.5rem;">Ancestry Reports</h1>
-    <p class="text-sm" style="color: var(--ink-muted);">Generate printable direct-line reports with events, sources, and media references.</p>
+    <p class="text-sm" style="color: var(--ink-muted);">{t('reports.subtitle')}</p>
   </div>
 
   <div class="arch-card p-4 mb-4 no-print">
-    <label for="report-person-search" class="block text-xs mb-1" style="color: var(--ink-muted);">Person</label>
-    <input id="report-person-search" class="arch-input w-full px-3 py-2 text-sm" bind:value={search} placeholder="Search people..." />
+    <label for="report-person-search" class="block text-xs mb-1" style="color: var(--ink-muted);">{t('common.person')}</label>
+    <input id="report-person-search" class="arch-input w-full px-3 py-2 text-sm" bind:value={search} placeholder={t('people.searchPlaceholder')} />
     {#if suggestions.length > 0}
       <div class="mt-2 grid gap-1">
         {#each suggestions as person}
@@ -155,17 +156,17 @@
 
     <div class="mt-4 flex flex-wrap items-end gap-3">
       <div>
-        <label for="report-type" class="block text-xs mb-1" style="color: var(--ink-muted);">Report Type</label>
+        <label for="report-type" class="block text-xs mb-1" style="color: var(--ink-muted);">{t('reports.reportType')}</label>
         <select id="report-type" class="arch-input px-3 py-2 text-sm" bind:value={reportType}>
-          <option value="ascending">Ascending (Ancestors)</option>
-          <option value="descending">Descending (Descendants)</option>
+          <option value="ascending">{t('descendants.ascending')}</option>
+          <option value="descending">{t('descendants.descending')}</option>
         </select>
       </div>
       <button class="btn-accent px-4 py-2" onclick={generateReport} disabled={!selected || generating}>
         {generating ? 'Generating...' : 'Generate'}
       </button>
       <button class="btn-secondary px-4 py-2" onclick={printReport} disabled={!generated}>
-        Print Report
+        {t('reports.print')}
       </button>
     </div>
   </div>

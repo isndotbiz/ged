@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import {
     getProposals, approveProposal, rejectProposal, undoChange,
     getAgentRuns, getChangeLog, getQualityRules, toggleQualityRule,
@@ -272,17 +273,17 @@
   <div class="flex items-center justify-between mb-6">
     <div>
       <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">
-        Research Proposals
+        {t('proposals.title')}
       </h1>
       <p class="text-sm mt-1" style="color: var(--ink-muted);">
-        Review AI research findings before they enter your tree
+        {t('proposals.subtitle')}
       </p>
     </div>
     <button
       onclick={openResearchSearch}
       class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg transition-colors"
     >
-      Research a Person
+      {t('proposals.researchPerson')}
     </button>
   </div>
 
@@ -408,19 +409,19 @@
   <div class="flex gap-3 mb-6">
     <div class="arch-card rounded-xl px-5 py-3 text-center">
       <div class="text-xl font-bold" style="color: #d97706;">{pendingCount}</div>
-      <div class="text-xs" style="color: var(--ink-muted);">Pending</div>
+      <div class="text-xs" style="color: var(--ink-muted);">{t('common.pending')}</div>
     </div>
     <div class="arch-card rounded-xl px-5 py-3 text-center">
       <div class="text-xl font-bold" style="color: #16a34a;">{approvedCount}</div>
-      <div class="text-xs" style="color: var(--ink-muted);">Approved</div>
+      <div class="text-xs" style="color: var(--ink-muted);">{t('proposals.approved')}</div>
     </div>
     <div class="arch-card rounded-xl px-5 py-3 text-center">
       <div class="text-xl font-bold" style="color: #dc2626;">{rejectedCount}</div>
-      <div class="text-xs" style="color: var(--ink-muted);">Rejected</div>
+      <div class="text-xs" style="color: var(--ink-muted);">{t('proposals.rejected')}</div>
     </div>
     <div class="arch-card rounded-xl px-5 py-3 text-center">
       <div class="text-xl font-bold" style="color: var(--ink);">{totalRuns}</div>
-      <div class="text-xs" style="color: var(--ink-muted);">Agent Runs</div>
+      <div class="text-xs" style="color: var(--ink-muted);">{t('proposals.agentRuns')}</div>
     </div>
   </div>
 
@@ -469,7 +470,7 @@
     {#if pendingProposals.length === 0}
       <div class="text-center py-16">
         <div class="text-4xl mb-3" style="color: var(--ink-faint);">&#10003;</div>
-        <p class="text-sm" style="color: var(--ink-muted);">No pending proposals. Use "Research a Person" to generate new findings.</p>
+        <p class="text-sm" style="color: var(--ink-muted);">{t('proposals.noPending')}</p>
       </div>
     {:else}
       <div class="space-y-6">
@@ -562,13 +563,13 @@
                         onclick={() => handleApprove(proposal)}
                         class="px-3 py-1.5 text-xs font-medium rounded-lg text-white transition-colors"
                         style="background: var(--color-validated, #16a34a);"
-                        title="Approve this change"
+                        title={t('proposals.approve')}
                       >Approve</button>
                       <button
                         onclick={() => handleReject(proposal)}
                         class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
                         style="background: rgba(220,38,38,0.1); color: #dc2626;"
-                        title="Reject this change"
+                        title={t('proposals.reject')}
                       >Reject</button>
                     </div>
                   </div>
@@ -620,7 +621,7 @@
                   onclick={() => handleUndo(entry)}
                   class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
                   style="background: var(--parchment); color: var(--ink-light);"
-                  title="Undo this change"
+                  title={t('proposals.undo')}
                 >Undo</button>
               {/if}
             </div>
