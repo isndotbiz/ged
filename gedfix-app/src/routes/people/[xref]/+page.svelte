@@ -24,6 +24,8 @@
   let activeTab = $state<'overview' | 'names'>('overview');
   let currentPeople = $state.raw<Person[]>([]);
   let bookmarked = $state(false);
+  let swipeStartX = $state<number | null>(null);
+  let swipeDelta = $state(0);
 
   // Alternate names
   let alternateNames = $state.raw<AlternateName[]>([]);
@@ -251,6 +253,25 @@
     }
   }
 
+  function handleSwipeStart(e: TouchEvent): void {
+    const start = e.changedTouches[0]?.clientX ?? 0;
+    if (start > 24) return;
+    swipeStartX = start;
+    swipeDelta = 0;
+  }
+
+  function handleSwipeMove(e: TouchEvent): void {
+    if (swipeStartX === null) return;
+    const current = e.changedTouches[0]?.clientX ?? 0;
+    swipeDelta = Math.max(0, current - swipeStartX);
+  }
+
+  function handleSwipeEnd(): void {
+    if (swipeStartX !== null && swipeDelta > 100) history.back();
+    swipeStartX = null;
+    swipeDelta = 0;
+  }
+
   async function refreshAlternateNames() {
     if (!person) return;
     altLoading = true;
@@ -361,7 +382,8 @@
     <span class="text-sm font-medium" style="color: var(--ink-light);">{fullName(person)}</span>
   </div>
 
-  <div class="person-detail-page">
+  <div class="person-detail-page" ontouchstart={handleSwipeStart} ontouchmove={handleSwipeMove} ontouchend={handleSwipeEnd}>
+    <div class="swipe-back-indicator" style="opacity: {Math.min(swipeDelta / 120, 1)};">←</div>
     <!-- ===== Two-column layout ===== -->
     <div class="detail-layout">
       <!-- ===== MAIN CONTENT (70%) ===== -->
@@ -827,6 +849,26 @@
     margin: 0 auto;
     padding: 1.5rem;
     min-height: calc(100vh - 52px);
+    position: relative;
+  }
+
+  .swipe-back-indicator {
+    position: fixed;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in srgb, var(--parchment) 70%, transparent);
+    color: var(--ink);
+    border: 1px solid var(--border-rule);
+    pointer-events: none;
+    transition: opacity 100ms linear;
+    z-index: 40;
   }
 
   .detail-layout {
