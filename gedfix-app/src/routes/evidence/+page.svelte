@@ -59,7 +59,7 @@
   <h1 class="text-2xl font-bold mb-4">{t('evidence.title')}</h1>
   <div class="mb-4">
     <label class="text-xs text-ink-muted" for="evidence-person">{t('common.person')}</label>
-    <select id="evidence-person" class="arch-input w-full" bind:value={selectedXref}>
+    <select id="evidence-person" class="arch-input w-full" bind:value={selectedXref} aria-label={t('common.filter')}>
       {#each people as person}
         <option value={person.xref}>{person.givenName} {person.surname}</option>
       {/each}
@@ -69,28 +69,28 @@
   <section class="arch-card p-4 mb-4">
     <h2 class="font-semibold mb-2">{t('evidence.addEvidence')}</h2>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-      <input class="arch-input" placeholder={t('evidence.factType')} bind:value={draft.factType} />
-      <input class="arch-input" placeholder={t('evidence.factValue')} bind:value={draft.factValue} />
-      <input class="arch-input" placeholder="Source XREF" bind:value={draft.sourceXref} />
-      <select class="arch-input" bind:value={draft.informationType}>
+      <input class="arch-input" placeholder={t('evidence.factType')} bind:value={draft.factType}  aria-label={t('evidence.factType')} />
+      <input class="arch-input" placeholder={t('evidence.factValue')} bind:value={draft.factValue}  aria-label={t('evidence.factValue')} />
+      <input class="arch-input" placeholder="Source XREF" bind:value={draft.sourceXref}  aria-label="Source XREF" />
+      <select class="arch-input" bind:value={draft.informationType} aria-label={t('common.filter')}>
         <option value="primary">{t('evidence.primary')}</option>
         <option value="secondary">{t('evidence.secondary')}</option>
         <option value="undetermined">Undetermined</option>
       </select>
-      <select class="arch-input" bind:value={draft.evidenceType}>
+      <select class="arch-input" bind:value={draft.evidenceType} aria-label={t('common.filter')}>
         <option value="direct">Direct</option>
         <option value="indirect">Indirect</option>
         <option value="negative">Negative</option>
       </select>
-      <select class="arch-input" bind:value={draft.quality}>
+      <select class="arch-input" bind:value={draft.quality} aria-label={t('common.filter')}>
         <option value="proven">Proven</option>
         <option value="probable">Probable</option>
         <option value="possible">Possible</option>
         <option value="undetermined">Undetermined</option>
       </select>
-      <input class="arch-input md:col-span-3" placeholder="Analysis notes" bind:value={draft.analysisNotes} />
+      <input class="arch-input md:col-span-3" placeholder="Analysis notes" bind:value={draft.analysisNotes}  aria-label="Analysis notes" />
     </div>
-    <button class="btn-accent px-4 py-2 mt-3" onclick={add}>{t('evidence.addEvidence')}</button>
+    <button class="btn-accent px-4 py-2 mt-3" onclick={add} aria-label={t('common.actions')}>{t('evidence.addEvidence')}</button>
   </section>
 
   <section class="arch-card p-4 mb-4">
@@ -118,7 +118,12 @@
     <h2 class="font-semibold mb-2">{t('evidence.gpsChecklist')}</h2>
     {#each gpsItems as item, idx}
       <label class="flex items-center gap-2 py-1 text-sm">
-        <input type="checkbox" checked={done(idx + 1)} onchange={() => toggleItem(idx + 1, done(idx + 1) ? 1 : 0)} />
+        <input
+          type="checkbox"
+          checked={done(idx + 1)}
+          onchange={() => toggleItem(idx + 1, done(idx + 1) ? 1 : 0)}
+          aria-label={`GPS item ${idx + 1}`}
+        />
         <span>{idx + 1}. {item}</span>
       </label>
     {/each}

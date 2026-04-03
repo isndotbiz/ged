@@ -372,8 +372,8 @@
       </div>
 
       <div class="flex flex-wrap gap-3 items-center mb-4">
-        <input class="arch-input flex-1 min-w-[280px]" type="text" bind:value={search} placeholder={t('media.searchPlaceholder')} />
-        <select class="arch-input min-w-[220px]" bind:value={bulkCategory}>
+        <input class="arch-input flex-1 min-w-[280px]" type="text" bind:value={search} placeholder={t('media.searchPlaceholder')} aria-label={t('media.searchPlaceholder')} />
+        <select class="arch-input min-w-[220px]" bind:value={bulkCategory} aria-label={t('common.filter')}>
           {#each tabs as tab}
             <option value={tab.id}>{tab.label}</option>
           {/each}
@@ -428,7 +428,7 @@
               </button>
               {#if selectedFace?.mediaId === item.id}
                 <div class="mt-2 flex gap-2">
-                  <select class="arch-input flex-1" bind:value={selectedPersonXref} onclick={(e) => e.stopPropagation()}>
+                  <select class="arch-input flex-1" bind:value={selectedPersonXref} onclick={(e) => e.stopPropagation()} aria-label={t('common.filter')}>
                     <option value="">Assign person...</option>
                     {#each people as p}
                       <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>

@@ -418,10 +418,11 @@ export async function mergePersons(keepXref: string, removeXref: string): Promis
     const removedChildLinks = await db.select<any[]>(`SELECT * FROM child_link WHERE childXref = $1`, [removeXref]);
 
     // Log the merge for future undo
-    await db.execute(
+    const mergeLogResult = await db.execute(
       `INSERT INTO merge_log (keepXref, removeXref, removedPersonJson, removedEventsJson, removedMediaLinksJson, removedChildLinksJson) VALUES ($1, $2, $3, $4, $5, $6)`,
       [keepXref, removeXref, JSON.stringify(removedPerson), JSON.stringify(removedEvents), JSON.stringify(removedMediaLinks), JSON.stringify(removedChildLinks)]
     );
+    const mergeLogId = mergeLogResult.lastInsertId ?? 0;
 
     // Transfer events
     await db.execute(`UPDATE event SET ownerXref = $1 WHERE ownerXref = $2`, [keepXref, removeXref]);
@@ -457,6 +458,23 @@ export async function mergePersons(keepXref: string, removeXref: string): Promis
     }
     // Delete the removed person
     await db.execute(`DELETE FROM person WHERE xref = $1`, [removeXref]);
+    const { undoManager } = await import('./undo-manager');
+    await undoManager.push({
+      id: crypto.randomUUID(),
+      description: `Merged ${removeXref} into ${keepXref}`,
+      timestamp: new Date().toISOString(),
+      undo: async () => {
+        await unmergePersons(mergeLogId);
+      },
+      redo: async () => {
+        await mergePersons(keepXref, removeXref);
+      },
+    }, {
+      tableName: 'merge_log',
+      rowId: String(mergeLogId),
+      oldData: { keepXref, removeXref },
+      newData: { keepXref, removeXref, mergeLogId },
+    });
     return { success: true };
   } catch (e) {
     return { success: false, error: String(e) };

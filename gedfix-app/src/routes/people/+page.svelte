@@ -239,7 +239,12 @@
     <div class="p-3" style="border-bottom: 1px solid var(--border-rule);">
       <div class="mb-2">
         <label class="text-xs text-ink-muted inline-flex items-center gap-2">
-          <input type="checkbox" checked={selectedXrefs.size === persons.length && persons.length > 0} onchange={toggleSelectAll} />
+          <input
+            type="checkbox"
+            checked={selectedXrefs.size === persons.length && persons.length > 0}
+            onchange={toggleSelectAll}
+            aria-label="Select all people"
+          />
           Select all
         </label>
       </div>
@@ -249,7 +254,7 @@
         bind:value={search}
         oninput={onSearchInput}
         class="w-full px-3 py-2 text-sm rounded-lg border-none outline-none transition-colors arch-input"
-      />
+       aria-label="Search {persons.length} people..." />
     </div>
 
     <!-- Virtual scroll list — only renders visible items, handles 10K+ -->
@@ -359,7 +364,7 @@
           <button onclick={researchSelected} disabled={isResearchingPerson}
             class="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-50"
             style="background: var(--accent);"
-          >{isResearchingPerson ? '...' : 'AI Research'}</button>
+           aria-label={t('common.actions')}>{isResearchingPerson ? '...' : 'AI Research'}</button>
           <button onclick={findSourcesForSelected} disabled={isResearchingPerson}
             class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-50"
             style="background: var(--parchment); color: var(--ink);"
@@ -530,7 +535,7 @@
 {#if selectedXrefs.size > 0}
   <div class="batch-bar no-print">
     <span>{selectedXrefs.size} selected</span>
-    <select bind:value={selectedGroupId} class="arch-input">
+    <select bind:value={selectedGroupId} class="arch-input" aria-label={t('common.filter')}>
       <option value={0}>Add to group...</option>
       {#each groups as group}
         <option value={group.id}>{group.name}</option>
@@ -539,8 +544,8 @@
     <button class="btn-secondary px-3 py-2" onclick={applyBatchGroup}>Add Group</button>
     <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(false)}>Bookmark</button>
     <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(true)}>Unbookmark</button>
-    <button class="btn-secondary px-3 py-2" onclick={exportSelected}>{t('common.export')}</button>
-    <button class="btn-danger px-3 py-2" onclick={applyBatchDelete}>{t('common.delete')}</button>
+    <button class="btn-secondary px-3 py-2" onclick={exportSelected} aria-label={t('common.actions')}>{t('common.export')}</button>
+    <button class="btn-danger px-3 py-2" onclick={applyBatchDelete} aria-label={t('common.actions')}>{t('common.delete')}</button>
   </div>
 {/if}
 

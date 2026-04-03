@@ -278,7 +278,7 @@
           onclick={importFile}
           disabled={$isImporting}
           class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {$isImporting ? 'Importing...' : 'Choose File'}
         </button>
       </div>
@@ -299,7 +299,7 @@
         </div>
         {#if confirmClear}
           <div class="flex gap-2">
-            <button onclick={clearDatabase} class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors">{t('common.confirm')}</button>
+            <button onclick={clearDatabase} class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors" aria-label={t('common.actions')}>{t('common.confirm')}</button>
             <button onclick={() => { confirmClear = false; }} class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors">Cancel</button>
           </div>
         {:else}
@@ -337,7 +337,7 @@
           <div class="text-xs text-ink-muted">Download a GEDCOM file (5.5.1 or 7.0)</div>
         </div>
         <div class="flex items-center gap-2">
-          <select bind:value={exportFormat} class="px-2 py-1.5 text-xs rounded-lg arch-input">
+          <select bind:value={exportFormat} class="px-2 py-1.5 text-xs rounded-lg arch-input" aria-label={t('common.filter')}>
             <option value="5.5.1">5.5.1</option>
             <option value="7.0">7.0</option>
           </select>
@@ -355,7 +355,7 @@
           <div class="text-sm font-medium text-ink">{t('backup.exportJson')}</div>
           <div class="text-xs text-ink-muted">Full database snapshot for restore</div>
         </div>
-        <button onclick={exportJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+        <button onclick={exportJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
           {jsonBusy ? 'Exporting...' : 'Export JSON'}
         </button>
       </div>
@@ -365,7 +365,7 @@
           <div class="text-sm font-medium text-ink">{t('backup.importJson')}</div>
           <div class="text-xs text-ink-muted">Restore database from a JSON export</div>
         </div>
-        <button onclick={importJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+        <button onclick={importJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
           {jsonBusy ? 'Importing...' : 'Import JSON'}
         </button>
       </div>
@@ -411,7 +411,7 @@
             min="80"
             max="130"
             class="w-16 px-2 py-1.5 text-sm rounded-lg border outline-none text-center arch-input"
-          />
+           aria-label={t('common.search')} />
           <span class="text-xs text-ink-faint">years</span>
         </div>
       </div>
@@ -420,7 +420,7 @@
           <div class="text-sm font-medium text-ink">{t('settings.language')}</div>
           <div class="text-xs text-ink-muted">Change application locale</div>
         </div>
-        <select bind:value={language} onchange={onLanguageChange} class="arch-input px-2 py-1.5 text-sm">
+        <select bind:value={language} onchange={onLanguageChange} class="arch-input px-2 py-1.5 text-sm" aria-label={t('common.filter')}>
           <option value="en">English</option>
           <option value="es">Español</option>
           <option value="de">Deutsch</option>
@@ -461,7 +461,7 @@
             bind:value={apiKeys[i].key}
             placeholder={config.placeholder}
             class="flex-1 px-3 py-1.5 text-sm rounded-lg outline-none placeholder:text-gray-300 transition-colors arch-input"
-          />
+           aria-label={config.placeholder} />
           <button
             onclick={() => saveApiKey(config)}
             class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors shrink-0"

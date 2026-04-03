@@ -84,7 +84,7 @@
     bind:value={search}
     placeholder="Search sources by title or author..."
     class="w-full max-w-md px-3 py-2 text-sm rounded-lg mb-6 border-none outline-none transition-colors arch-input"
-  />
+   aria-label="Search sources by title or author..." />
 
   {#if sortedFiltered.length === 0}
     <div class="arch-card rounded-xl p-8 text-center">

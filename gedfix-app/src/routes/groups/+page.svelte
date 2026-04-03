@@ -2,6 +2,7 @@
   import { t } from '$lib/i18n';
   import { getGroups, insertGroup, deleteGroup, getGroupMembers, getGroupMemberCount, getPerson, getAllPersons, addGroupMember, removeGroupMember } from '$lib/db';
   import type { PersonGroup, Person } from '$lib/types';
+  import { focusTrap } from '$lib/accessibility';
 
   let groups = $state<(PersonGroup & { memberCount: number })[]>([]);
   let showEditor = $state(false);
@@ -103,8 +104,8 @@
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={newName} placeholder="Group Name" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20" />
-      <input bind:value={newDesc} placeholder="Description (optional)" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20" />
+      <input bind:value={newName} placeholder="Group Name" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label="Group Name" />
+      <input bind:value={newDesc} placeholder="Description (optional)" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label="Description (optional)" />
       <div class="flex gap-2 mb-4">
         {#each presetColors as c}
           <button
@@ -115,7 +116,7 @@
           ></button>
         {/each}
       </div>
-      <button onclick={createGroup} disabled={!newName.trim()} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg disabled:opacity-50">{t('common.create')}</button>
+      <button onclick={createGroup} disabled={!newName.trim()} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg disabled:opacity-50" aria-label={t('common.actions')}>{t('common.create')}</button>
     </div>
   {/if}
 
@@ -165,17 +166,17 @@
   {#if showPicker}
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
       <button class="absolute inset-0" style="background: rgba(0,0,0,0.55); border: 0;" onclick={() => showPicker = false} aria-label="Close person picker"></button>
-      <div class="arch-card w-full max-w-xl p-5 relative z-10" role="dialog" aria-modal="true" aria-label="Add person to group" tabindex="-1" onkeydown={handlePickerKeydown}>
-        <h2 class="text-base mb-3" style="color: var(--ink);">Add Person to Group</h2>
-        <input bind:this={pickerInputEl} bind:value={pickerQuery} placeholder={t('people.searchPlaceholder')} class="w-full px-3 py-2 text-sm arch-input mb-3" />
-        <select bind:value={pickerSelectedXref} class="w-full px-3 py-2 text-sm arch-input mb-3" size="8">
+      <div class="arch-card w-full max-w-xl p-5 relative z-10" role="dialog" aria-modal="true" aria-labelledby="group-picker-title" tabindex="-1" onkeydown={handlePickerKeydown} use:focusTrap>
+        <h2 id="group-picker-title" class="text-base mb-3" style="color: var(--ink);">Add Person to Group</h2>
+        <input bind:this={pickerInputEl} bind:value={pickerQuery} placeholder={t('people.searchPlaceholder')} class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label={t('people.searchPlaceholder')} />
+        <select bind:value={pickerSelectedXref} class="w-full px-3 py-2 text-sm arch-input mb-3" size="8" aria-label={t('common.filter')}>
           {#each pickerOptions as p}
             <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
           {/each}
         </select>
         <div class="flex justify-end gap-2">
           <button class="btn-outline" onclick={() => showPicker = false}>Cancel</button>
-          <button class="btn-primary" onclick={addSelectedPersonToGroup} disabled={!pickerSelectedXref}>{t('common.add')}</button>
+          <button class="btn-primary" onclick={addSelectedPersonToGroup} disabled={!pickerSelectedXref} aria-label={t('common.actions')}>{t('common.add')}</button>
         </div>
       </div>
     </div>

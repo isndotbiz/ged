@@ -367,6 +367,7 @@ Write the family narrative now.`;
           onchange={() => { model = getDefaultModel(provider); }}
           class="px-3 py-1.5 text-xs rounded-lg border"
           style="background: var(--parchment); border-color: var(--border-subtle); color: var(--ink); font-family: var(--font-sans);"
+          aria-label={t('common.filter')}
         >
           {#each availableProviders as ap}
             <option value={ap.id}>{ap.name} — {ap.model.length > 25 ? ap.model.slice(0, 25) + '...' : ap.model}</option>
@@ -428,6 +429,7 @@ Write the family narrative now.`;
               onblur={() => setTimeout(() => showDropdown = false, 200)}
               placeholder="Search for a person to add..."
               class="w-full arch-input px-3 py-2 text-sm"
+              aria-label="Search for a person to add..."
             />
             {#if showDropdown && personResults.length > 0}
               <div class="absolute top-full left-0 right-0 mt-1 arch-card rounded-lg z-50 max-h-48 overflow-y-auto" style="box-shadow: var(--shadow-lg);">

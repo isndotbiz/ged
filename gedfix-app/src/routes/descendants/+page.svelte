@@ -82,7 +82,7 @@
   <div class="flex items-end gap-3 mb-4 no-print">
     <div class="flex-1">
       <label class="text-xs text-ink-muted" for="root-person">{t('pedigree.rootPerson')}</label>
-      <select id="root-person" class="arch-input w-full" bind:value={selectedXref}>
+      <select id="root-person" class="arch-input w-full" bind:value={selectedXref} aria-label={t('common.filter')}>
         {#each people as person}
           <option value={person.xref}>{nameFor(person)}</option>
         {/each}
@@ -90,7 +90,7 @@
     </div>
     <div>
       <label class="text-xs text-ink-muted" for="depth">{t('descendants.depth')}</label>
-      <select id="depth" class="arch-input" bind:value={maxDepth}>
+      <select id="depth" class="arch-input" bind:value={maxDepth} aria-label={t('common.filter')}>
         {#each Array.from({ length: 10 }, (_, i) => i + 1) as d}
           <option value={d}>{d}</option>
         {/each}

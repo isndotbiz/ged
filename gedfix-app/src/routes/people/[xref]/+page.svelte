@@ -6,6 +6,7 @@
   import { getThumbUrl } from '$lib/photo';
   import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
+  import { focusTrap } from '$lib/accessibility';
   import type { Person, GedcomEvent, Family, GedcomMedia, ResearchNote, AlternateName } from '$lib/types';
 
   // --- State ---
@@ -625,16 +626,16 @@
 
             <div class="arch-card rounded-xl p-4 mb-4">
               <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Given name" bind:value={altDraft.givenName} />
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.surname')} bind:value={altDraft.surname} />
-                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Suffix (optional)" bind:value={altDraft.suffix} />
-                <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={altDraft.nameType}>
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Given name" bind:value={altDraft.givenName}  aria-label="Given name" />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder={t('people.surname')} bind:value={altDraft.surname}  aria-label={t('people.surname')} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Suffix (optional)" bind:value={altDraft.suffix}  aria-label="Suffix (optional)" />
+                <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={altDraft.nameType} aria-label={t('common.filter')}>
                   {#each nameTypes as t}<option value={t}>{t}</option>{/each}
                 </select>
-                <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" placeholder={t('evidence.sourceNotes')} bind:value={altDraft.source} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" placeholder={t('evidence.sourceNotes')} bind:value={altDraft.source}  aria-label={t('evidence.sourceNotes')} />
               </div>
               <div class="mt-3">
-                <button class="btn-accent px-4 py-2 text-sm" onclick={addAlternateName}>{t('people.addAlternateName')}</button>
+                <button class="btn-accent px-4 py-2 text-sm" onclick={addAlternateName} aria-label={t('common.actions')}>{t('people.addAlternateName')}</button>
               </div>
             </div>
 
@@ -650,17 +651,17 @@
                   <div class="px-4 py-3">
                     {#if editingAltId === a.id}
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.givenName} />
-                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.surname} />
-                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.suffix} />
-                        <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.nameType}>
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.givenName}  aria-label={t('common.search')} />
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.surname}  aria-label={t('common.search')} />
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.suffix}  aria-label={t('common.search')} />
+                        <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.nameType} aria-label={t('common.filter')}>
                           {#each nameTypes as t}<option value={t}>{t}</option>{/each}
                         </select>
-                        <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" bind:value={editDraft.source} />
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" bind:value={editDraft.source}  aria-label={t('common.search')} />
                       </div>
                       <div class="mt-2 flex gap-2">
                         <button class="btn-accent px-3 py-1.5 text-xs" onclick={() => saveEditAlt(a.id)}>Save</button>
-                        <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt}>{t('common.cancel')}</button>
+                        <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt} aria-label={t('common.actions')}>{t('common.cancel')}</button>
                       </div>
                     {:else}
                       <div class="flex items-start justify-between gap-3">
@@ -802,10 +803,12 @@
       onclick={() => lightboxMedia = null}
       onkeydown={handleLightboxKeydown}
       role="dialog"
-      aria-label="Media lightbox"
+      aria-labelledby="media-lightbox-title"
       tabindex="-1"
+      use:focusTrap
     >
-      <button class="lightbox-close" onclick={() => lightboxMedia = null}>&times;</button>
+      <h2 id="media-lightbox-title" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">Media lightbox</h2>
+      <button class="lightbox-close" onclick={() => lightboxMedia = null} aria-label={t('common.close')}>&times;</button>
       <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div class="lightbox-content" onclick={(e) => e.stopPropagation()} role="presentation">
         <img use:lazyImage={lightboxMedia.filePath} alt={lightboxMedia.title || 'Photo'} class="lightbox-img" />

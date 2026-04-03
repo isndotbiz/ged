@@ -135,7 +135,7 @@
 
   <div class="arch-card p-4 mb-4 no-print">
     <label for="report-person-search" class="block text-xs mb-1" style="color: var(--ink-muted);">{t('common.person')}</label>
-    <input id="report-person-search" class="arch-input w-full px-3 py-2 text-sm" bind:value={search} placeholder={t('people.searchPlaceholder')} />
+    <input id="report-person-search" class="arch-input w-full px-3 py-2 text-sm" bind:value={search} placeholder={t('people.searchPlaceholder')}  aria-label={t('people.searchPlaceholder')} />
     {#if suggestions.length > 0}
       <div class="mt-2 grid gap-1">
         {#each suggestions as person}
@@ -157,15 +157,15 @@
     <div class="mt-4 flex flex-wrap items-end gap-3">
       <div>
         <label for="report-type" class="block text-xs mb-1" style="color: var(--ink-muted);">{t('reports.reportType')}</label>
-        <select id="report-type" class="arch-input px-3 py-2 text-sm" bind:value={reportType}>
+        <select id="report-type" class="arch-input px-3 py-2 text-sm" bind:value={reportType} aria-label={t('common.filter')}>
           <option value="ascending">{t('descendants.ascending')}</option>
           <option value="descending">{t('descendants.descending')}</option>
         </select>
       </div>
-      <button class="btn-accent px-4 py-2" onclick={generateReport} disabled={!selected || generating}>
+      <button class="btn-accent px-4 py-2" onclick={generateReport} disabled={!selected || generating} aria-label={t('common.actions')}>
         {generating ? 'Generating...' : 'Generate'}
       </button>
-      <button class="btn-secondary px-4 py-2" onclick={printReport} disabled={!generated}>
+      <button class="btn-secondary px-4 py-2" onclick={printReport} disabled={!generated} aria-label={t('common.actions')}>
         {t('reports.print')}
       </button>
     </div>

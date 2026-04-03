@@ -79,20 +79,20 @@
   </div>
 
   <div class="mb-4">
-    <input bind:value={search} oninput={onSearchInput} placeholder="Search notes..." class="w-full px-3 py-2 text-sm arch-input" />
+    <input bind:value={search} oninput={onSearchInput} placeholder="Search notes..." class="w-full px-3 py-2 text-sm arch-input"  aria-label="Search notes..." />
   </div>
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={title} placeholder={t('common.title')} class="w-full px-3 py-2 text-sm arch-input mb-3" />
-      <select bind:value={personXref} class="w-full px-3 py-2 text-sm arch-input mb-3">
+      <input bind:value={title} placeholder={t('common.title')} class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label={t('common.title')} />
+      <select bind:value={personXref} class="w-full px-3 py-2 text-sm arch-input mb-3" aria-label={t('common.filter')}>
         <option value="">Link to person (optional)</option>
         {#each people as p}
           <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
         {/each}
       </select>
       <textarea bind:value={content} placeholder="Content" class="w-full px-3 py-2 text-sm arch-input mb-4 h-32"></textarea>
-      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent">{t('common.save')}</button>
+      <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent" aria-label={t('common.actions')}>{t('common.save')}</button>
     </div>
   {/if}
 

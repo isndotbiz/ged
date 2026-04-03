@@ -578,7 +578,7 @@
           <h2 class="text-sm font-semibold text-ink">{t('cleanup.dedupVerification')}</h2>
           <p class="text-xs text-ink-muted">Runs the SQL checks and shows results inline</p>
         </div>
-        <button onclick={runDedupChecks} disabled={dedupChecksRunning} class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
+        <button onclick={runDedupChecks} disabled={dedupChecksRunning} class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
           {dedupChecksRunning ? 'Running...' : 'Run Dedup Checks'}
         </button>
       </div>
@@ -706,7 +706,7 @@
           onclick={scanAndMatch}
           disabled={mediaScanning}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {mediaScanning ? 'Scanning...' : 'Scan & Match Media'}
         </button>
       </div>
@@ -760,7 +760,7 @@
           onclick={deduplicateMedia}
           disabled={deduping}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {deduping ? 'Processing...' : 'Deduplicate Media'}
         </button>
       </div>
@@ -814,7 +814,7 @@
           onclick={scanDuplicatePeople}
           disabled={dupScanning}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {dupScanning ? 'Scanning...' : 'Scan for Duplicates'}
         </button>
       </div>
@@ -951,7 +951,7 @@
             <p class="text-xs text-ink-muted">View and undo recent person merges</p>
           </div>
         </div>
-        <button onclick={loadMergeLog} disabled={mergeLogLoading} class="px-4 py-2 text-xs btn-accent">
+        <button onclick={loadMergeLog} disabled={mergeLogLoading} class="px-4 py-2 text-xs btn-accent" aria-label={t('common.actions')}>
           {mergeLogLoading ? 'Loading...' : 'Load History'}
         </button>
       </div>
@@ -1007,7 +1007,7 @@
           onclick={scanSameNameGenerations}
           disabled={genScanning}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {genScanning ? 'Scanning...' : 'Scan for Same-Name Generations'}
         </button>
       </div>
@@ -1096,12 +1096,12 @@
           placeholder="Root person XREF (e.g., @I1@)"
           class="flex-1 px-3 py-2 text-sm rounded-lg text-ink"
           style="background: var(--parchment); border: 1px solid var(--ink-faint); font-family: var(--font-mono);"
-        />
+         aria-label="Root person XREF (e.g., @I1@)" />
         <button
           onclick={scanCollaterals}
           disabled={collateralScanning}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
-        >
+         aria-label={t('common.actions')}>
           {collateralScanning ? 'Scanning...' : 'Find Collateral Relatives'}
         </button>
       </div>

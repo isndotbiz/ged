@@ -282,7 +282,7 @@
     <button
       onclick={openResearchSearch}
       class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg transition-colors"
-    >
+     aria-label={t('common.actions')}>
       {t('proposals.researchPerson')}
     </button>
   </div>
@@ -293,7 +293,7 @@
       <div class="arch-card rounded-xl p-6 w-full max-w-md animate-fade-in" style="background: var(--paper);">
         <div class="flex items-center justify-between mb-4">
           <h2 class="text-lg font-semibold" style="font-family: var(--font-serif); color: var(--ink);">Search Person to Research</h2>
-          <button onclick={closeResearchSearch} class="text-xl leading-none" style="color: var(--ink-faint);">&times;</button>
+          <button onclick={closeResearchSearch} class="text-xl leading-none" style="color: var(--ink-faint);" aria-label={t('common.actions')}>&times;</button>
         </div>
         <input
           type="text"
@@ -302,7 +302,7 @@
           placeholder="Type a name..."
           class="w-full px-3 py-2 rounded-lg text-sm border"
           style="border-color: var(--ink-faint); font-family: var(--font-sans); color: var(--ink); background: var(--paper);"
-        />
+         aria-label="Type a name..." />
         {#if researchResults.length > 0}
           <div class="mt-2 max-h-60 overflow-y-auto space-y-1">
             {#each researchResults as person}
@@ -657,6 +657,7 @@
                   checked={!!rule.isActive}
                   onchange={() => handleToggleRule(rule)}
                   class="sr-only peer"
+                  aria-label={`Toggle rule ${rule.name}`}
                 />
                 <div class="w-9 h-5 rounded-full peer transition-colors"
                   style="background: {rule.isActive ? 'var(--color-validated, #16a34a)' : 'var(--ink-faint)'};"

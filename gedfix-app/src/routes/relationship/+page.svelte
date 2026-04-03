@@ -52,7 +52,7 @@
   <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4 no-print">
     <div>
       <label class="text-xs text-ink-muted" for="person-a">{t('relationship.personA')}</label>
-      <select id="person-a" class="arch-input w-full" bind:value={personA}>
+      <select id="person-a" class="arch-input w-full" bind:value={personA} aria-label={t('common.filter')}>
         {#each people as p}
           <option value={p.xref}>{label(p.xref)}</option>
         {/each}
@@ -60,14 +60,14 @@
     </div>
     <div>
       <label class="text-xs text-ink-muted" for="person-b">{t('relationship.personB')}</label>
-      <select id="person-b" class="arch-input w-full" bind:value={personB}>
+      <select id="person-b" class="arch-input w-full" bind:value={personB} aria-label={t('common.filter')}>
         {#each people as p}
           <option value={p.xref}>{label(p.xref)}</option>
         {/each}
       </select>
     </div>
     <div class="flex items-end gap-2">
-      <button class="btn-accent px-4 py-2 w-full" onclick={run} disabled={loading}>
+      <button class="btn-accent px-4 py-2 w-full" onclick={run} disabled={loading} aria-label={t('common.actions')}>
         {loading ? 'Finding...' : 'Find Relationship'}
       </button>
       <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label="Print relationship">Print</button>

@@ -170,7 +170,7 @@
     bind:value={search}
     placeholder={t('places.searchPlaceholder')}
     class="w-full max-w-md px-3 py-2 text-sm rounded-lg mb-6 arch-input"
-  />
+   aria-label={t('places.searchPlaceholder')} />
 
   {#if filtered.length === 0}
     <div class="arch-card rounded-xl p-8 text-center">

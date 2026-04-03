@@ -235,6 +235,7 @@
         placeholder="e.g. 850"
         class="w-40 px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
         onkeydown={(e) => e.key === 'Enter' && predict()}
+        aria-label="e.g. 850"
       />
       <button onclick={predict} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg transition-colors">
         Predict
@@ -260,7 +261,7 @@
   <div class="arch-card rounded-xl p-6 mb-6">
     <h2 class="text-sm font-semibold text-ink mb-4">Relationship → Expected cM</h2>
     <div class="flex gap-3 items-end mb-4">
-      <select bind:value={selectedRel} onchange={lookupRel} class="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20">
+      <select bind:value={selectedRel} onchange={lookupRel} class="px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20" aria-label={t('common.filter')}>
         <option value="">Select relationship...</option>
         {#each rels as r}
           <option value={r.label}>{r.label}</option>
@@ -331,6 +332,7 @@
             onblur={() => setTimeout(() => showDropdownA = false, 200)}
             placeholder={t('people.searchByName')}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+            aria-label={t('people.searchByName')}
           />
           {#if showDropdownA && suggestionsA.length > 0}
             <div class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -366,6 +368,7 @@
             onblur={() => setTimeout(() => showDropdownB = false, 200)}
             placeholder={t('people.searchByName')}
             class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-amber-500/20 focus:border-amber-500"
+            aria-label={t('people.searchByName')}
           />
           {#if showDropdownB && suggestionsB.length > 0}
             <div class="absolute z-10 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
@@ -388,7 +391,7 @@
       onclick={calculateRelationship}
       disabled={!personA || !personB || relLoading}
       class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-    >
+     aria-label={t('common.actions')}>
       {relLoading ? 'Calculating...' : 'Calculate Relationship'}
     </button>
 

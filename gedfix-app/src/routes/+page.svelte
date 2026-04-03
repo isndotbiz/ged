@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { t } from '$lib/i18n';
   import { appStats } from '$lib/stores';
-  import { getPerson, getParents, getPrimaryPhoto, getMediaWithPaths, getStats, getDb } from '$lib/db';
+  import { getPerson, getParents, getPrimaryPhoto, getMediaWithPaths, getStats, getDb, isDbEmpty } from '$lib/db';
   import type { Person, GedcomMedia } from '$lib/types';
   import { getThumbUrl, cropFace, saveFaceCrop, clearCache, getFullImageBase64 } from '$lib/photo';
+  import { focusTrap } from '$lib/accessibility';
+  import LandingPage from '$lib/components/LandingPage.svelte';
 
   interface TreeNode {
     person: Person | null;
@@ -17,6 +20,7 @@
   let treeReady = $state(false);
   let treeLoading = $state(false);
   let history = $state<string[]>([]);
+  let showLanding = $state(false);
 
   // Face picker state
   let showPicker = $state(false);
@@ -262,7 +266,17 @@
     return g;
   }
 
-  $effect(() => { if (!treeReady && !treeLoading) loadTree(); });
+  function handleLandingImported() {
+    showLanding = false;
+    loadTree();
+  }
+
+  $effect(() => {
+    (async () => {
+      showLanding = await isDbEmpty();
+      if (!showLanding && !treeReady && !treeLoading) loadTree();
+    })();
+  });
 </script>
 
 <style>
@@ -292,6 +306,9 @@
   }
 </style>
 
+{#if showLanding}
+  <LandingPage onImported={handleLandingImported} />
+{:else}
 <div class="flex flex-col h-full overflow-hidden">
   <!-- Research desk toolbar -->
   <div
@@ -313,7 +330,7 @@
         onclick={back}
         class="px-2.5 py-1 text-xs rounded-md transition-all"
         style="background: var(--parchment); color: var(--ink-light); font-family: var(--font-sans); border: 1px solid var(--border-subtle);"
-      >&larr;</button>
+       aria-label={t('common.actions')}>&larr;</button>
     {/if}
     <h1
       class="text-lg"
@@ -394,17 +411,19 @@
     {/if}
   </div>
 </div>
+{/if}
 
 <!-- FACE PICKER OVERLAY -->
 {#if showPicker && pickerPerson && !showCrop}
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.6);" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.6);" role="dialog" aria-modal="true" aria-labelledby="face-picker-title" tabindex="-1" use:focusTrap>
     <div class="max-w-3xl w-full max-h-[80vh] overflow-hidden flex flex-col rounded-xl animate-dossier" style="background: var(--vellum); box-shadow: var(--shadow-overlay);">
       <div class="flex items-center justify-between px-6 py-3 shrink-0" style="border-bottom: 1px solid var(--border-rule);">
-        <h2 style="font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--ink);">Pick Photo — {pickerPerson.givenName} {pickerPerson.surname}</h2>
+        <h2 id="face-picker-title" style="font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--ink);">Pick Photo — {pickerPerson.givenName} {pickerPerson.surname}</h2>
         <button
           onclick={() => showPicker = false}
           class="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all"
           style="background: var(--parchment); color: var(--ink-muted);"
+          aria-label={t('common.close')}
         >&times;</button>
       </div>
       <div class="flex-1 overflow-auto p-6">
@@ -416,8 +435,9 @@
                 onclick={() => startCrop(ph.media)}
                 class="group relative aspect-square rounded-lg overflow-hidden border-2 border-transparent hover:border-amber-600 transition-all"
                 style="box-shadow: var(--shadow-sm);"
+                aria-label={t('media.title')}
               >
-                <img src={ph.url} alt="" class="w-full h-full object-cover" onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                <img src={ph.url} alt={t('media.title')} class="w-full h-full object-cover" onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 <div class="absolute inset-0 group-hover:bg-black/20 flex items-center justify-center transition-all">
                   <span class="text-white font-medium text-sm opacity-0 group-hover:opacity-100 px-3 py-1 rounded-full" style="background: rgba(26,22,18,0.6); font-family: var(--font-sans);">Crop Face</span>
                 </div>
@@ -440,11 +460,11 @@
 
 <!-- CROP TOOL OVERLAY -->
 {#if showCrop && cropMedia && pickerPerson}
-  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.7);" role="dialog" aria-modal="true" tabindex="-1">
+  <div class="fixed inset-0 z-50 flex items-center justify-center p-6 animate-fade-in" style="background: rgba(26,22,18,0.7);" role="dialog" aria-modal="true" aria-labelledby="crop-face-title" tabindex="-1" use:focusTrap>
     <div class="max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col rounded-xl animate-dossier" style="background: var(--vellum); box-shadow: var(--shadow-overlay);">
       <div class="flex items-center justify-between px-6 py-3 shrink-0" style="border-bottom: 1px solid var(--border-rule);">
         <div>
-          <h2 style="font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--ink);">Crop Face — {pickerPerson.givenName} {pickerPerson.surname}</h2>
+          <h2 id="crop-face-title" style="font-family: var(--font-serif); font-weight: 700; font-size: 1.1rem; color: var(--ink);">Crop Face — {pickerPerson.givenName} {pickerPerson.surname}</h2>
           <p class="text-xs" style="color: var(--ink-muted); font-family: var(--font-sans);">Click on the face you want, adjust zoom, then save</p>
         </div>
         <div class="flex gap-2">
@@ -452,11 +472,13 @@
             onclick={() => showCrop = false}
             class="px-3 py-1.5 text-xs rounded-md"
             style="background: var(--parchment); color: var(--ink-light); font-family: var(--font-sans); border: 1px solid var(--border-subtle);"
+            aria-label={t('common.cancel')}
           >&larr; Back</button>
           <button
             onclick={() => { showCrop = false; showPicker = false; }}
             class="w-8 h-8 rounded-full flex items-center justify-center text-lg transition-all"
             style="background: var(--parchment); color: var(--ink-muted);"
+            aria-label={t('common.close')}
           >&times;</button>
         </div>
       </div>
@@ -492,6 +514,7 @@
                 bind:value={cropZoom}
                 oninput={onZoomChange}
                 class="flex-1"
+                aria-label="Zoom"
               />
               <span class="text-xs w-10 text-right" style="color: var(--ink-light); font-family: var(--font-mono);">{cropZoom.toFixed(1)}x</span>
             </div>
@@ -527,7 +550,7 @@
               disabled={isSaving || !cropPreviewUrl}
               class="btn-accent w-full px-4 py-2.5 text-sm font-medium rounded-lg disabled:opacity-50 mt-4 transition-all"
               style="background: var(--accent); color: white; font-family: var(--font-sans);"
-            >
+             aria-label={t('common.actions')}>
               {isSaving ? 'Saving...' : 'Save as Icon'}
             </button>
 

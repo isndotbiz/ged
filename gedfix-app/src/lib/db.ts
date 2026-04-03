@@ -3,6 +3,32 @@ import type { Person, Family, GedcomEvent, Source, GedcomMedia, ChildLink, AppSt
 
 let db: PlatformDatabase | null = null;
 
+type UndoMetadata = {
+  tableName?: string;
+  rowId?: string;
+  oldData?: unknown;
+  newData?: unknown;
+};
+
+async function pushUndoAction(
+  description: string,
+  undo: () => Promise<void>,
+  redo: () => Promise<void>,
+  metadata?: UndoMetadata
+): Promise<void> {
+  const { undoManager } = await import('./undo-manager');
+  await undoManager.push(
+    {
+      id: crypto.randomUUID(),
+      description,
+      timestamp: new Date().toISOString(),
+      undo,
+      redo,
+    },
+    metadata
+  );
+}
+
 export function parseDateForSort(dateValue: string | null | undefined): number {
   if (!dateValue) return 0;
   const trimmed = dateValue.trim();
@@ -488,20 +514,46 @@ export async function getPerson(xref: string): Promise<Person | null> {
 
 export async function updatePerson(xref: string, data: Partial<Person>): Promise<void> {
   const d = await getDb();
+  const before = await getPerson(xref);
+  if (!before) return;
   const validFields = SAFE_FIELDS.person;
   const sets: string[] = [];
   const vals: any[] = [];
+  const oldData: Record<string, unknown> = {};
+  const newData: Record<string, unknown> = {};
   let i = 1;
   for (const [k, v] of Object.entries(data)) {
     if (k === 'id' || k === 'xref') continue;
     if (!validFields.has(k)) continue;
     sets.push(`${k} = $${i}`);
     vals.push(v);
+    oldData[k] = (before as any)[k];
+    newData[k] = v;
     i++;
   }
   if (sets.length === 0) return;
   vals.push(xref);
   await d.execute(`UPDATE person SET ${sets.join(', ')} WHERE xref = $${i}`, vals);
+  await pushUndoAction(
+    `Updated person ${xref}`,
+    async () => {
+      const db = await getDb();
+      const undoSets = Object.keys(oldData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE person SET ${undoSets.join(', ')} WHERE xref = $${undoSets.length + 1}`,
+        [...Object.values(oldData), xref]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      const redoSets = Object.keys(newData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE person SET ${redoSets.join(', ')} WHERE xref = $${redoSets.length + 1}`,
+        [...Object.values(newData), xref]
+      );
+    },
+    { tableName: 'person', rowId: xref, oldData, newData }
+  );
 }
 
 export async function updatePersonField(xref: string, field: string, value: string): Promise<void> {
@@ -695,18 +747,98 @@ export async function getPeopleForMedia(mediaId: number): Promise<{ personXref: 
 
 export async function linkMediaToPerson(mediaId: number, personXref: string, isPrimary: boolean = false, role: string = 'tagged'): Promise<void> {
   const d = await getDb();
+  const before = await d.select<any[]>(
+    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
+    [mediaId, personXref]
+  );
   await d.execute(`
     INSERT OR IGNORE INTO media_person_link (mediaId, personXref, isPrimary, role, addedBy, createdAt)
     VALUES ($1, $2, $3, $4, 'gedcom_import', datetime('now'))
   `, [mediaId, personXref, isPrimary ? 1 : 0, role]);
+  const after = await d.select<any[]>(
+    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
+    [mediaId, personXref]
+  );
+  if (before.length === 0 && after.length > 0) {
+    await pushUndoAction(
+      `Linked media ${mediaId} to ${personXref}`,
+      async () => {
+        const db = await getDb();
+        await db.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
+      },
+      async () => {
+        const db = await getDb();
+        await db.execute(
+          `INSERT OR IGNORE INTO media_person_link (mediaId, personXref, isPrimary, role, addedBy, createdAt)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [mediaId, personXref, isPrimary ? 1 : 0, role, after[0].addedBy || 'gedcom_import', after[0].createdAt || new Date().toISOString()]
+        );
+      },
+      { tableName: 'media_person_link', rowId: `${mediaId}:${personXref}`, newData: after[0] }
+    );
+  }
+}
+
+export async function unlinkMediaFromPerson(mediaId: number, personXref: string): Promise<void> {
+  const d = await getDb();
+  const before = await d.select<any[]>(
+    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
+    [mediaId, personXref]
+  );
+  if (before.length === 0) return;
+  await d.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
+  const row = before[0];
+  await pushUndoAction(
+    `Unlinked media ${mediaId} from ${personXref}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT OR IGNORE INTO media_person_link (mediaId, personXref, role, isPrimary, sortOrder, faceX, faceY, faceW, faceH, caption, addedBy, verified, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
+        [row.mediaId, row.personXref, row.role, row.isPrimary, row.sortOrder, row.faceX, row.faceY, row.faceW, row.faceH, row.caption, row.addedBy, row.verified, row.createdAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
+    },
+    { tableName: 'media_person_link', rowId: `${mediaId}:${personXref}`, oldData: row }
+  );
 }
 
 export async function setMediaPrimary(mediaId: number, personXref: string): Promise<void> {
   const d = await getDb();
+  const before = await d.select<{ mediaId: number; isPrimary: number }[]>(
+    `SELECT mediaId, isPrimary FROM media_person_link WHERE personXref = $1`,
+    [personXref]
+  );
+  const oldPrimaryId = before.find((row) => row.isPrimary === 1)?.mediaId ?? null;
   // Clear old primary for this person
   await d.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
   // Set new primary
   await d.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
+  if (oldPrimaryId === mediaId) return;
+  await pushUndoAction(
+    `Changed primary media for ${personXref}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
+      if (oldPrimaryId !== null) {
+        await db.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [oldPrimaryId, personXref]);
+      }
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
+      await db.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
+    },
+    {
+      tableName: 'media_person_link',
+      rowId: personXref,
+      oldData: { primaryMediaId: oldPrimaryId },
+      newData: { primaryMediaId: mediaId },
+    }
+  );
 }
 
 export type MediaCategory = 'headshots' | 'other' | 'delete-queue' | 'uncategorized';
@@ -739,11 +871,34 @@ export async function getMediaForManagement(): Promise<(GedcomMedia & {
 export async function updateMediaCategory(mediaIds: number[], category: MediaCategory): Promise<number> {
   if (mediaIds.length === 0) return 0;
   const d = await getDb();
-  const placeholders = mediaIds.map((_, i) => `$${i + 2}`).join(', ');
+  const selectPlaceholders = mediaIds.map((_, i) => `$${i + 1}`).join(', ');
+  const before = await d.select<{ id: number; category: string }[]>(
+    `SELECT id, COALESCE(category, 'uncategorized') as category FROM media WHERE id IN (${selectPlaceholders})`,
+    mediaIds
+  );
+  const oldById = new Map(before.map((row) => [row.id, row.category]));
+  const updatePlaceholders = mediaIds.map((_, i) => `$${i + 2}`).join(', ');
   const result = await d.execute(
-    `UPDATE media SET category = $1 WHERE id IN (${placeholders})`,
+    `UPDATE media SET category = $1 WHERE id IN (${updatePlaceholders})`,
     [category, ...mediaIds]
   );
+  if (result.rowsAffected > 0) {
+    await pushUndoAction(
+      `Updated media category to ${category}`,
+      async () => {
+        const db = await getDb();
+        for (const id of mediaIds) {
+          await db.execute(`UPDATE media SET category = $1 WHERE id = $2`, [oldById.get(id) || 'uncategorized', id]);
+        }
+      },
+      async () => {
+        const db = await getDb();
+        const redoPlaceholders = mediaIds.map((_, i) => `$${i + 2}`).join(', ');
+        await db.execute(`UPDATE media SET category = $1 WHERE id IN (${redoPlaceholders})`, [category, ...mediaIds]);
+      },
+      { tableName: 'media', rowId: mediaIds.join(','), oldData: Object.fromEntries(oldById), newData: { category } }
+    );
+  }
   return result.rowsAffected;
 }
 
@@ -876,7 +1031,28 @@ export async function moveNonPortraitHeadshotsToOther(): Promise<number> {
 
 export async function updateMediaFilePath(mediaId: number, filePath: string): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<{ filePath: string }[]>(`SELECT filePath FROM media WHERE id = $1`, [mediaId]);
+  if (rows.length === 0) return;
+  const oldPath = rows[0].filePath || '';
+  if (oldPath === filePath) return;
   await d.execute(`UPDATE media SET filePath = $1 WHERE id = $2`, [filePath, mediaId]);
+  await pushUndoAction(
+    `Updated media path for ${mediaId}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE media SET filePath = $1 WHERE id = $2`, [oldPath, mediaId]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE media SET filePath = $1 WHERE id = $2`, [filePath, mediaId]);
+    },
+    {
+      tableName: 'media',
+      rowId: String(mediaId),
+      oldData: { filePath: oldPath },
+      newData: { filePath },
+    }
+  );
 }
 
 // ===== Place queries =====
@@ -904,33 +1080,96 @@ export async function getAlternateNames(personXref: string): Promise<AlternateNa
 
 export async function insertAlternateName(n: Omit<AlternateName, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO alternate_name (personXref, givenName, surname, suffix, nameType, source)
      VALUES ($1,$2,$3,$4,$5,$6)`,
     [n.personXref, n.givenName, n.surname, n.suffix, n.nameType, n.source]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added alternate name for ${n.personXref}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM alternate_name WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO alternate_name (id, personXref, givenName, surname, suffix, nameType, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [id, n.personXref, n.givenName, n.surname, n.suffix, n.nameType, n.source]
+      );
+    },
+    { tableName: 'alternate_name', rowId: String(id), newData: n }
   );
 }
 
 export async function updateAlternateName(id: number, data: Partial<AlternateName>): Promise<void> {
   const d = await getDb();
+  const beforeRows = await d.select<AlternateName[]>(`SELECT * FROM alternate_name WHERE id = $1`, [id]);
+  if (beforeRows.length === 0) return;
+  const before = beforeRows[0];
   const sets: string[] = [];
   const vals: any[] = [];
+  const oldData: Record<string, unknown> = {};
+  const newData: Record<string, unknown> = {};
   let i = 1;
   for (const [k, v] of Object.entries(data)) {
     if (k === 'id' || k === 'personXref') continue;
     if (!['givenName','surname','suffix','nameType','source'].includes(k)) continue;
     sets.push(`${k} = $${i}`);
     vals.push(v);
+    oldData[k] = (before as any)[k];
+    newData[k] = v;
     i++;
   }
   if (sets.length === 0) return;
   vals.push(id);
   await d.execute(`UPDATE alternate_name SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+  await pushUndoAction(
+    `Updated alternate name ${id}`,
+    async () => {
+      const db = await getDb();
+      const undoSets = Object.keys(oldData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE alternate_name SET ${undoSets.join(', ')} WHERE id = $${undoSets.length + 1}`,
+        [...Object.values(oldData), id]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      const redoSets = Object.keys(newData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE alternate_name SET ${redoSets.join(', ')} WHERE id = $${redoSets.length + 1}`,
+        [...Object.values(newData), id]
+      );
+    },
+    { tableName: 'alternate_name', rowId: String(id), oldData, newData }
+  );
 }
 
 export async function deleteAlternateName(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<AlternateName[]>(`SELECT * FROM alternate_name WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM alternate_name WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted alternate name ${id}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO alternate_name (id, personXref, givenName, surname, suffix, nameType, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [old.id, old.personXref, old.givenName, old.surname, old.suffix, old.nameType, old.source]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM alternate_name WHERE id = $1`, [id]);
+    },
+    { tableName: 'alternate_name', rowId: String(id), oldData: old }
+  );
 }
 
 // ===== Group queries =====
@@ -942,16 +1181,62 @@ export async function getGroups(): Promise<PersonGroup[]> {
 
 export async function insertGroup(g: Omit<PersonGroup, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO custom_group (name, color, description, createdAt) VALUES ($1,$2,$3,$4)`,
     [g.name, g.color, g.description, g.createdAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added group ${g.name}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM custom_group WHERE id = $1`, [id]);
+      await db.execute(`DELETE FROM group_member WHERE groupId = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO custom_group (id, name, color, description, createdAt) VALUES ($1,$2,$3,$4,$5)`,
+        [id, g.name, g.color, g.description, g.createdAt]
+      );
+    },
+    { tableName: 'custom_group', rowId: String(id), newData: g }
   );
 }
 
 export async function deleteGroup(id: number): Promise<void> {
   const d = await getDb();
+  const groups = await d.select<PersonGroup[]>(`SELECT * FROM custom_group WHERE id = $1`, [id]);
+  if (groups.length === 0) return;
+  const group = groups[0];
+  const members = await d.select<{ groupId: number; personXref: string; addedAt: string }[]>(
+    `SELECT groupId, personXref, addedAt FROM group_member WHERE groupId = $1`,
+    [id]
+  );
   await d.execute(`DELETE FROM group_member WHERE groupId = $1`, [id]);
   await d.execute(`DELETE FROM custom_group WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted group ${group.name}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO custom_group (id, name, color, description, createdAt) VALUES ($1,$2,$3,$4,$5)`,
+        [group.id, group.name, group.color, group.description, group.createdAt]
+      );
+      for (const m of members) {
+        await db.execute(
+          `INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`,
+          [m.groupId, m.personXref, m.addedAt]
+        );
+      }
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM group_member WHERE groupId = $1`, [id]);
+      await db.execute(`DELETE FROM custom_group WHERE id = $1`, [id]);
+    },
+    { tableName: 'custom_group', rowId: String(id), oldData: { group, members } }
+  );
 }
 
 export async function getGroupMembers(groupId: number): Promise<string[]> {
@@ -962,12 +1247,52 @@ export async function getGroupMembers(groupId: number): Promise<string[]> {
 
 export async function addGroupMember(groupId: number, personXref: string): Promise<void> {
   const d = await getDb();
-  await d.execute(`INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`, [groupId, personXref, new Date().toISOString()]);
+  const before = await d.select<{ groupId: number; personXref: string; addedAt: string }[]>(
+    `SELECT groupId, personXref, addedAt FROM group_member WHERE groupId = $1 AND personXref = $2`,
+    [groupId, personXref]
+  );
+  const addedAt = new Date().toISOString();
+  await d.execute(`INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`, [groupId, personXref, addedAt]);
+  if (before.length === 0) {
+    await pushUndoAction(
+      `Added ${personXref} to group ${groupId}`,
+      async () => {
+        const db = await getDb();
+        await db.execute(`DELETE FROM group_member WHERE groupId = $1 AND personXref = $2`, [groupId, personXref]);
+      },
+      async () => {
+        const db = await getDb();
+        await db.execute(`INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`, [groupId, personXref, addedAt]);
+      },
+      { tableName: 'group_member', rowId: `${groupId}:${personXref}`, newData: { groupId, personXref, addedAt } }
+    );
+  }
 }
 
 export async function removeGroupMember(groupId: number, personXref: string): Promise<void> {
   const d = await getDb();
+  const before = await d.select<{ groupId: number; personXref: string; addedAt: string }[]>(
+    `SELECT groupId, personXref, addedAt FROM group_member WHERE groupId = $1 AND personXref = $2`,
+    [groupId, personXref]
+  );
+  if (before.length === 0) return;
+  const old = before[0];
   await d.execute(`DELETE FROM group_member WHERE groupId = $1 AND personXref = $2`, [groupId, personXref]);
+  await pushUndoAction(
+    `Removed ${personXref} from group ${groupId}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`,
+        [old.groupId, old.personXref, old.addedAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM group_member WHERE groupId = $1 AND personXref = $2`, [groupId, personXref]);
+    },
+    { tableName: 'group_member', rowId: `${groupId}:${personXref}`, oldData: old }
+  );
 }
 
 export async function getGroupMemberCount(groupId: number): Promise<number> {
@@ -988,15 +1313,51 @@ export async function getResearchLogs(personXref?: string): Promise<ResearchLogE
 
 export async function insertResearchLog(entry: Omit<ResearchLogEntry, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO research_log (personXref, repository, searchTerms, recordsViewed, conclusion, sourceXref, resultType, searchDate, createdAt) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
     [entry.personXref, entry.repository, entry.searchTerms, entry.recordsViewed, entry.conclusion, entry.sourceXref, entry.resultType, entry.searchDate, entry.createdAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added research log entry`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM research_log WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO research_log (id, personXref, repository, searchTerms, recordsViewed, conclusion, sourceXref, resultType, searchDate, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [id, entry.personXref, entry.repository, entry.searchTerms, entry.recordsViewed, entry.conclusion, entry.sourceXref, entry.resultType, entry.searchDate, entry.createdAt]
+      );
+    },
+    { tableName: 'research_log', rowId: String(id), newData: entry }
   );
 }
 
 export async function deleteResearchLog(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<ResearchLogEntry[]>(`SELECT * FROM research_log WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM research_log WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted research log entry`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO research_log (id, personXref, repository, searchTerms, recordsViewed, conclusion, sourceXref, resultType, searchDate, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [old.id, old.personXref, old.repository, old.searchTerms, old.recordsViewed, old.conclusion, old.sourceXref, old.resultType, old.searchDate, old.createdAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM research_log WHERE id = $1`, [id]);
+    },
+    { tableName: 'research_log', rowId: String(id), oldData: old }
+  );
 }
 
 // ===== Notes queries =====
@@ -1023,15 +1384,49 @@ export async function searchNotes(query: string): Promise<ResearchNote[]> {
 
 export async function insertNote(n: Omit<ResearchNote, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO note (ownerXref, ownerType, title, content, createdAt, updatedAt) VALUES ($1,$2,$3,$4,$5,$6)`,
     [n.ownerXref, n.ownerType, n.title, n.content, n.createdAt, n.updatedAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added note`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM note WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO note (id, ownerXref, ownerType, title, content, createdAt, updatedAt) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [id, n.ownerXref, n.ownerType, n.title, n.content, n.createdAt, n.updatedAt]
+      );
+    },
+    { tableName: 'note', rowId: String(id), newData: n }
   );
 }
 
 export async function deleteNote(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<ResearchNote[]>(`SELECT * FROM note WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM note WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted note`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO note (id, ownerXref, ownerType, title, content, createdAt, updatedAt) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [old.id, old.ownerXref, old.ownerType, old.title, old.content, old.createdAt, old.updatedAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM note WHERE id = $1`, [id]);
+    },
+    { tableName: 'note', rowId: String(id), oldData: old }
+  );
 }
 
 // ===== Task queries =====
@@ -1046,20 +1441,75 @@ export async function getTasks(personXref?: string): Promise<ResearchTask[]> {
 
 export async function insertTask(t: Omit<ResearchTask, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO research_task (personXref, title, description, status, priority, dueDate, createdAt, completedAt) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
     [t.personXref, t.title, t.description, t.status, t.priority, t.dueDate, t.createdAt, t.completedAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added task`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM research_task WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO research_task (id, personXref, title, description, status, priority, dueDate, createdAt, completedAt) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [id, t.personXref, t.title, t.description, t.status, t.priority, t.dueDate, t.createdAt, t.completedAt]
+      );
+    },
+    { tableName: 'research_task', rowId: String(id), newData: t }
   );
 }
 
 export async function updateTask(id: number, status: string, completedAt: string): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<ResearchTask[]>(`SELECT * FROM research_task WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`UPDATE research_task SET status = $1, completedAt = $2 WHERE id = $3`, [status, completedAt, id]);
+  await pushUndoAction(
+    `Updated task ${id}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE research_task SET status = $1, completedAt = $2 WHERE id = $3`, [old.status, old.completedAt, id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE research_task SET status = $1, completedAt = $2 WHERE id = $3`, [status, completedAt, id]);
+    },
+    {
+      tableName: 'research_task',
+      rowId: String(id),
+      oldData: { status: old.status, completedAt: old.completedAt },
+      newData: { status, completedAt },
+    }
+  );
 }
 
 export async function deleteTask(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<ResearchTask[]>(`SELECT * FROM research_task WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM research_task WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted task`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO research_task (id, personXref, title, description, status, priority, dueDate, createdAt, completedAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [old.id, old.personXref, old.title, old.description, old.status, old.priority, old.dueDate, old.createdAt, old.completedAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM research_task WHERE id = $1`, [id]);
+    },
+    { tableName: 'research_task', rowId: String(id), oldData: old }
+  );
 }
 
 // ===== Bookmark queries =====
@@ -1076,15 +1526,53 @@ export async function insertBookmark(b: Omit<Bookmark, 'id'>): Promise<void> {
     const row = await d.select<[{ maxSort: number | null }]>(`SELECT MAX(sortOrder) as maxSort FROM bookmark`);
     nextSortOrder = (row[0]?.maxSort ?? -1) + 1;
   }
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO bookmark (personXref, label, category, sortOrder, createdAt) VALUES ($1,$2,$3,$4,$5)`,
     [b.personXref, b.label, b.category || 'General', nextSortOrder, b.createdAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added bookmark for ${b.personXref}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM bookmark WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO bookmark (id, personXref, label, category, sortOrder, createdAt) VALUES ($1,$2,$3,$4,$5,$6)`,
+        [id, b.personXref, b.label, b.category || 'General', nextSortOrder, b.createdAt]
+      );
+    },
+    {
+      tableName: 'bookmark',
+      rowId: String(id),
+      newData: { personXref: b.personXref, label: b.label, category: b.category || 'General', sortOrder: nextSortOrder, createdAt: b.createdAt },
+    }
   );
 }
 
 export async function deleteBookmark(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<Bookmark[]>(`SELECT * FROM bookmark WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM bookmark WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted bookmark`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO bookmark (id, personXref, label, category, sortOrder, createdAt) VALUES ($1,$2,$3,$4,$5,$6)`,
+        [old.id, old.personXref, old.label, old.category || 'General', old.sortOrder ?? 0, old.createdAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM bookmark WHERE id = $1`, [id]);
+    },
+    { tableName: 'bookmark', rowId: String(id), oldData: old }
+  );
 }
 
 export async function isBookmarked(personXref: string): Promise<boolean> {
@@ -1095,12 +1583,33 @@ export async function isBookmarked(personXref: string): Promise<boolean> {
 
 export async function updateBookmarkCategory(id: number, category: string): Promise<void> {
   const d = await getDb();
-  await d.execute(`UPDATE bookmark SET category = $1 WHERE id = $2`, [category.trim() || 'General', id]);
+  const rows = await d.select<Bookmark[]>(`SELECT * FROM bookmark WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
+  const next = category.trim() || 'General';
+  await d.execute(`UPDATE bookmark SET category = $1 WHERE id = $2`, [next, id]);
+  await pushUndoAction(
+    `Updated bookmark category`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE bookmark SET category = $1 WHERE id = $2`, [old.category || 'General', id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE bookmark SET category = $1 WHERE id = $2`, [next, id]);
+    },
+    { tableName: 'bookmark', rowId: String(id), oldData: { category: old.category }, newData: { category: next } }
+  );
 }
 
 export async function reorderBookmarks(orderedIds: number[]): Promise<void> {
   if (orderedIds.length === 0) return;
   const d = await getDb();
+  const oldRows = await d.select<{ id: number; sortOrder: number }[]>(
+    `SELECT id, sortOrder FROM bookmark WHERE id IN (${orderedIds.map((_, i) => `$${i + 1}`).join(', ')})`,
+    orderedIds
+  );
+  const oldById = new Map(oldRows.map((row) => [row.id, row.sortOrder]));
   await d.execute('BEGIN');
   try {
     for (let i = 0; i < orderedIds.length; i++) {
@@ -1111,11 +1620,38 @@ export async function reorderBookmarks(orderedIds: number[]): Promise<void> {
     await d.execute('ROLLBACK');
     throw e;
   }
+  await pushUndoAction(
+    `Reordered bookmarks`,
+    async () => {
+      const db = await getDb();
+      for (const id of orderedIds) {
+        if (!oldById.has(id)) continue;
+        await db.execute(`UPDATE bookmark SET sortOrder = $1 WHERE id = $2`, [oldById.get(id), id]);
+      }
+    },
+    async () => {
+      const db = await getDb();
+      for (let i = 0; i < orderedIds.length; i++) {
+        await db.execute(`UPDATE bookmark SET sortOrder = $1 WHERE id = $2`, [i, orderedIds[i]]);
+      }
+    },
+    {
+      tableName: 'bookmark',
+      rowId: orderedIds.join(','),
+      oldData: Object.fromEntries(oldById),
+      newData: { orderedIds },
+    }
+  );
 }
 
 export async function batchAddToGroup(xrefs: string[], groupId: number): Promise<void> {
   if (xrefs.length === 0) return;
   const d = await getDb();
+  const before = await d.select<{ personXref: string }[]>(
+    `SELECT personXref FROM group_member WHERE groupId = $1`,
+    [groupId]
+  );
+  const beforeSet = new Set(before.map((r) => r.personXref));
   await d.execute('BEGIN');
   try {
     for (const xref of xrefs) {
@@ -1125,6 +1661,27 @@ export async function batchAddToGroup(xrefs: string[], groupId: number): Promise
       );
     }
     await d.execute('COMMIT');
+    const added = xrefs.filter((xref) => !beforeSet.has(xref));
+    if (added.length > 0) {
+      await pushUndoAction(
+        `Added ${added.length} people to group ${groupId}`,
+        async () => {
+          const db = await getDb();
+          const placeholders = added.map((_, i) => `$${i + 2}`).join(', ');
+          await db.execute(`DELETE FROM group_member WHERE groupId = $1 AND personXref IN (${placeholders})`, [groupId, ...added]);
+        },
+        async () => {
+          const db = await getDb();
+          for (const xref of added) {
+            await db.execute(
+              `INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`,
+              [groupId, xref, new Date().toISOString()]
+            );
+          }
+        },
+        { tableName: 'group_member', rowId: String(groupId), newData: { added } }
+      );
+    }
   } catch (e) {
     await d.execute('ROLLBACK');
     throw e;
@@ -1134,6 +1691,8 @@ export async function batchAddToGroup(xrefs: string[], groupId: number): Promise
 export async function batchBookmark(xrefs: string[], label = ''): Promise<void> {
   if (xrefs.length === 0) return;
   const d = await getDb();
+  const before = await d.select<{ personXref: string }[]>(`SELECT DISTINCT personXref FROM bookmark`);
+  const beforeSet = new Set(before.map((r) => r.personXref));
   await d.execute('BEGIN');
   try {
     for (const xref of xrefs) {
@@ -1144,6 +1703,28 @@ export async function batchBookmark(xrefs: string[], label = ''): Promise<void> 
       );
     }
     await d.execute('COMMIT');
+    const added = xrefs.filter((xref) => !beforeSet.has(xref));
+    if (added.length > 0) {
+      await pushUndoAction(
+        `Bookmarked ${added.length} people`,
+        async () => {
+          const db = await getDb();
+          const placeholders = added.map((_, i) => `$${i + 1}`).join(', ');
+          await db.execute(`DELETE FROM bookmark WHERE personXref IN (${placeholders})`, added);
+        },
+        async () => {
+          const db = await getDb();
+          for (const xref of added) {
+            await db.execute(
+              `INSERT OR IGNORE INTO bookmark (personXref, label, category, sortOrder, createdAt)
+               VALUES ($1,$2,'General',0,$3)`,
+              [xref, label, new Date().toISOString()]
+            );
+          }
+        },
+        { tableName: 'bookmark', rowId: added.join(','), newData: { added, label } }
+      );
+    }
   } catch (e) {
     await d.execute('ROLLBACK');
     throw e;
@@ -1153,14 +1734,41 @@ export async function batchBookmark(xrefs: string[], label = ''): Promise<void> 
 export async function batchRemoveBookmarks(xrefs: string[]): Promise<void> {
   if (xrefs.length === 0) return;
   const d = await getDb();
-  const placeholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
-  await d.execute(`DELETE FROM bookmark WHERE personXref IN (${placeholders})`, xrefs);
+  const lookupPlaceholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+  const removed = await d.select<Bookmark[]>(`SELECT * FROM bookmark WHERE personXref IN (${lookupPlaceholders})`, xrefs);
+  await d.execute(`DELETE FROM bookmark WHERE personXref IN (${lookupPlaceholders})`, xrefs);
+  if (removed.length > 0) {
+    await pushUndoAction(
+      `Removed ${removed.length} bookmarks`,
+      async () => {
+        const db = await getDb();
+        for (const row of removed) {
+          await db.execute(
+            `INSERT OR IGNORE INTO bookmark (id, personXref, label, category, sortOrder, createdAt)
+             VALUES ($1,$2,$3,$4,$5,$6)`,
+            [row.id, row.personXref, row.label, row.category || 'General', row.sortOrder ?? 0, row.createdAt]
+          );
+        }
+      },
+      async () => {
+        const db = await getDb();
+        const redoPlaceholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+        await db.execute(`DELETE FROM bookmark WHERE personXref IN (${redoPlaceholders})`, xrefs);
+      },
+      { tableName: 'bookmark', rowId: xrefs.join(','), oldData: removed }
+    );
+  }
 }
 
 export async function batchDeletePersons(xrefs: string[]): Promise<void> {
   if (xrefs.length === 0) return;
   const d = await getDb();
   const placeholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+  const people = await d.select<Person[]>(`SELECT * FROM person WHERE xref IN (${placeholders})`, xrefs);
+  const events = await d.select<GedcomEvent[]>(`SELECT * FROM event WHERE ownerXref IN (${placeholders})`, xrefs);
+  const childLinks = await d.select<ChildLink[]>(`SELECT * FROM child_link WHERE childXref IN (${placeholders})`, xrefs);
+  const mediaLinks = await d.select<any[]>(`SELECT * FROM media_person_link WHERE personXref IN (${placeholders})`, xrefs);
+  const bookmarks = await d.select<Bookmark[]>(`SELECT * FROM bookmark WHERE personXref IN (${placeholders})`, xrefs);
   await d.execute('BEGIN');
   try {
     await d.execute(`DELETE FROM media_person_link WHERE personXref IN (${placeholders})`, xrefs);
@@ -1169,6 +1777,57 @@ export async function batchDeletePersons(xrefs: string[]): Promise<void> {
     await d.execute(`DELETE FROM bookmark WHERE personXref IN (${placeholders})`, xrefs);
     await d.execute(`DELETE FROM person WHERE xref IN (${placeholders})`, xrefs);
     await d.execute('COMMIT');
+    if (people.length > 0) {
+      await pushUndoAction(
+        `Deleted ${people.length} people`,
+        async () => {
+          const db = await getDb();
+          for (const p of people) {
+            await db.execute(
+              `INSERT OR IGNORE INTO person (id, xref, givenName, surname, suffix, sex, isLiving, birthDate, birthPlace, deathDate, deathPlace, sourceCount, mediaCount, personColor, proofStatus)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+              [p.id, p.xref, p.givenName, p.surname, p.suffix, p.sex, p.isLiving ? 1 : 0, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace, p.sourceCount, p.mediaCount, p.personColor, p.proofStatus]
+            );
+          }
+          for (const e of events) {
+            await db.execute(
+              `INSERT OR IGNORE INTO event (id, ownerXref, ownerType, eventType, dateValue, place, description)
+               VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+              [e.id, e.ownerXref, e.ownerType, e.eventType, e.dateValue, e.place, e.description]
+            );
+          }
+          for (const cl of childLinks) {
+            await db.execute(
+              `INSERT OR IGNORE INTO child_link (familyXref, childXref, childOrder) VALUES ($1,$2,$3)`,
+              [cl.familyXref, cl.childXref, cl.childOrder]
+            );
+          }
+          for (const ml of mediaLinks) {
+            await db.execute(
+              `INSERT OR IGNORE INTO media_person_link (id, mediaId, personXref, role, isPrimary, sortOrder, faceX, faceY, faceW, faceH, caption, addedBy, verified, createdAt)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
+              [ml.id, ml.mediaId, ml.personXref, ml.role, ml.isPrimary, ml.sortOrder, ml.faceX, ml.faceY, ml.faceW, ml.faceH, ml.caption, ml.addedBy, ml.verified, ml.createdAt]
+            );
+          }
+          for (const b of bookmarks) {
+            await db.execute(
+              `INSERT OR IGNORE INTO bookmark (id, personXref, label, category, sortOrder, createdAt) VALUES ($1,$2,$3,$4,$5,$6)`,
+              [b.id, b.personXref, b.label, b.category || 'General', b.sortOrder ?? 0, b.createdAt]
+            );
+          }
+        },
+        async () => {
+          const db = await getDb();
+          const redoPlaceholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+          await db.execute(`DELETE FROM media_person_link WHERE personXref IN (${redoPlaceholders})`, xrefs);
+          await db.execute(`DELETE FROM child_link WHERE childXref IN (${redoPlaceholders})`, xrefs);
+          await db.execute(`DELETE FROM event WHERE ownerXref IN (${redoPlaceholders})`, xrefs);
+          await db.execute(`DELETE FROM bookmark WHERE personXref IN (${redoPlaceholders})`, xrefs);
+          await db.execute(`DELETE FROM person WHERE xref IN (${redoPlaceholders})`, xrefs);
+        },
+        { tableName: 'person', rowId: xrefs.join(','), oldData: { people, events, childLinks, mediaLinks, bookmarks } }
+      );
+    }
   } catch (e) {
     await d.execute('ROLLBACK');
     throw e;
@@ -1187,15 +1846,52 @@ export async function getAIChatHistory(personXref?: string): Promise<AIChatMessa
 
 export async function insertAIChatMessage(m: Omit<AIChatMessage, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(
+  const result = await d.execute(
     `INSERT INTO ai_chat (provider, model, role, content, personXref, timestamp) VALUES ($1,$2,$3,$4,$5,$6)`,
     [m.provider, m.model, m.role, m.content, m.personXref, m.timestamp]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added chat message`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM ai_chat WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO ai_chat (id, provider, model, role, content, personXref, timestamp) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [id, m.provider, m.model, m.role, m.content, m.personXref, m.timestamp]
+      );
+    },
+    { tableName: 'ai_chat', rowId: String(id), newData: m }
   );
 }
 
 export async function clearAIChatHistory(): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<AIChatMessage[]>(`SELECT * FROM ai_chat`);
   await d.execute(`DELETE FROM ai_chat`);
+  if (rows.length > 0) {
+    await pushUndoAction(
+      `Cleared chat history`,
+      async () => {
+        const db = await getDb();
+        for (const row of rows) {
+          await db.execute(
+            `INSERT OR IGNORE INTO ai_chat (id, provider, model, role, content, personXref, timestamp)
+             VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+            [row.id, row.provider, row.model, row.role, row.content, row.personXref, row.timestamp]
+          );
+        }
+      },
+      async () => {
+        const db = await getDb();
+        await db.execute(`DELETE FROM ai_chat`);
+      },
+      { tableName: 'ai_chat', rowId: 'all', oldData: rows }
+    );
+  }
 }
 
 // ===== Story queries =====
@@ -1212,16 +1908,52 @@ export async function getStoriesForPerson(xref: string): Promise<GeneratedStory[
 
 export async function insertStory(story: Omit<GeneratedStory, 'id'>): Promise<void> {
   const db = await getDb();
-  await db.execute(
+  const result = await db.execute(
     `INSERT INTO stories (personXref, familyXref, storyType, title, content, provider, model, tokensUsed, costEstimate, createdAt)
      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`,
     [story.personXref, story.familyXref, story.storyType, story.title, story.content, story.provider, story.model, story.tokensUsed, story.costEstimate, story.createdAt]
+  );
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added story`,
+    async () => {
+      const d = await getDb();
+      await d.execute(`DELETE FROM stories WHERE id = $1`, [id]);
+    },
+    async () => {
+      const d = await getDb();
+      await d.execute(
+        `INSERT INTO stories (id, personXref, familyXref, storyType, title, content, provider, model, tokensUsed, costEstimate, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [id, story.personXref, story.familyXref, story.storyType, story.title, story.content, story.provider, story.model, story.tokensUsed, story.costEstimate, story.createdAt]
+      );
+    },
+    { tableName: 'stories', rowId: String(id), newData: story }
   );
 }
 
 export async function deleteStory(id: number): Promise<void> {
   const db = await getDb();
+  const rows = await db.select<GeneratedStory[]>(`SELECT * FROM stories WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await db.execute('DELETE FROM stories WHERE id = $1', [id]);
+  await pushUndoAction(
+    `Deleted story`,
+    async () => {
+      const d = await getDb();
+      await d.execute(
+        `INSERT INTO stories (id, personXref, familyXref, storyType, title, content, provider, model, tokensUsed, costEstimate, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [old.id, old.personXref, old.familyXref, old.storyType, old.title, old.content, old.provider, old.model, old.tokensUsed, old.costEstimate, old.createdAt]
+      );
+    },
+    async () => {
+      const d = await getDb();
+      await d.execute(`DELETE FROM stories WHERE id = $1`, [id]);
+    },
+    { tableName: 'stories', rowId: String(id), oldData: old }
+  );
 }
 
 // ===== Stats =====
@@ -1494,14 +2226,43 @@ export async function approveProposal(proposalId: number): Promise<{ success: bo
     await d.execute(`UPDATE ${table} SET ${p.fieldName} = $1 WHERE ${idCol} = $2`, [p.newValue, p.entityId]);
 
     // Write change_log
-    await d.execute(
+    const changeResult = await d.execute(
       `INSERT INTO change_log (proposalId, entityType, entityId, fieldName, oldValue, newValue, actor)
        VALUES ($1,$2,$3,$4,$5,$6,$7)`,
       [proposalId, p.entityType, p.entityId, p.fieldName, p.oldValue, p.newValue, 'user']
     );
+    const changeLogId = changeResult.lastInsertId ?? 0;
 
     // Mark proposal as approved
     await d.execute(`UPDATE proposal SET status = 'approved', resolvedAt = datetime('now') WHERE id = $1`, [proposalId]);
+
+    await pushUndoAction(
+      `Approved proposal ${proposalId}`,
+      async () => {
+        const db = await getDb();
+        await db.execute(`UPDATE ${table} SET ${p.fieldName} = $1 WHERE ${idCol} = $2`, [p.oldValue, p.entityId]);
+        if (changeLogId) await db.execute(`DELETE FROM change_log WHERE id = $1`, [changeLogId]);
+        await db.execute(`UPDATE proposal SET status = 'pending', resolvedAt = NULL WHERE id = $1`, [proposalId]);
+      },
+      async () => {
+        const db = await getDb();
+        await db.execute(`UPDATE ${table} SET ${p.fieldName} = $1 WHERE ${idCol} = $2`, [p.newValue, p.entityId]);
+        if (changeLogId) {
+          await db.execute(
+            `INSERT OR IGNORE INTO change_log (id, proposalId, entityType, entityId, fieldName, oldValue, newValue, actor)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+            [changeLogId, proposalId, p.entityType, p.entityId, p.fieldName, p.oldValue, p.newValue, 'user']
+          );
+        }
+        await db.execute(`UPDATE proposal SET status = 'approved', resolvedAt = datetime('now') WHERE id = $1`, [proposalId]);
+      },
+      {
+        tableName: 'proposal',
+        rowId: String(proposalId),
+        oldData: { status: 'pending', value: p.oldValue },
+        newData: { status: 'approved', value: p.newValue, changeLogId },
+      }
+    );
 
     return { success: true };
   } catch (e) {
@@ -1511,7 +2272,22 @@ export async function approveProposal(proposalId: number): Promise<{ success: bo
 
 export async function rejectProposal(proposalId: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<Proposal[]>(`SELECT * FROM proposal WHERE id = $1`, [proposalId]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`UPDATE proposal SET status = 'rejected', resolvedAt = datetime('now') WHERE id = $1`, [proposalId]);
+  await pushUndoAction(
+    `Rejected proposal ${proposalId}`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE proposal SET status = $1, resolvedAt = $2 WHERE id = $3`, [old.status, old.resolvedAt || null, proposalId]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE proposal SET status = 'rejected', resolvedAt = datetime('now') WHERE id = $1`, [proposalId]);
+    },
+    { tableName: 'proposal', rowId: String(proposalId), oldData: { status: old.status }, newData: { status: 'rejected' } }
+  );
 }
 
 export async function undoChange(changeLogId: number): Promise<{ success: boolean; error?: string }> {
@@ -1963,27 +2739,90 @@ export async function addEvidence(e: Omit<EvidenceRecord, 'id' | 'createdAt'>): 
      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
     [e.personXref, e.factType, e.factValue, e.sourceXref, e.informationType, e.evidenceType, e.quality, e.analysisNotes]
   );
-  return result.lastInsertId ?? 0;
+  const id = result.lastInsertId ?? 0;
+  await pushUndoAction(
+    `Added evidence`,
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM evidence WHERE id = $1`, [id]);
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO evidence (id, personXref, factType, factValue, sourceXref, informationType, evidenceType, quality, analysisNotes)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+        [id, e.personXref, e.factType, e.factValue, e.sourceXref, e.informationType, e.evidenceType, e.quality, e.analysisNotes]
+      );
+    },
+    { tableName: 'evidence', rowId: String(id), newData: e }
+  );
+  return id;
 }
 
 export async function updateEvidence(id: number, updates: Partial<EvidenceRecord>): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<EvidenceRecord[]>(`SELECT * FROM evidence WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const before = rows[0];
   const sets: string[] = [];
   const vals: any[] = [];
+  const oldData: Record<string, unknown> = {};
+  const newData: Record<string, unknown> = {};
   let i = 1;
   for (const [k, v] of Object.entries(updates)) {
     if (k === 'id' || k === 'createdAt') continue;
     sets.push(`${k} = $${i++}`);
     vals.push(v);
+    oldData[k] = (before as any)[k];
+    newData[k] = v;
   }
   if (sets.length === 0) return;
   vals.push(id);
   await d.execute(`UPDATE evidence SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+  await pushUndoAction(
+    `Updated evidence ${id}`,
+    async () => {
+      const db = await getDb();
+      const undoSets = Object.keys(oldData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE evidence SET ${undoSets.join(', ')} WHERE id = $${undoSets.length + 1}`,
+        [...Object.values(oldData), id]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      const redoSets = Object.keys(newData).map((k, idx) => `${k} = $${idx + 1}`);
+      await db.execute(
+        `UPDATE evidence SET ${redoSets.join(', ')} WHERE id = $${redoSets.length + 1}`,
+        [...Object.values(newData), id]
+      );
+    },
+    { tableName: 'evidence', rowId: String(id), oldData, newData }
+  );
 }
 
 export async function deleteEvidence(id: number): Promise<void> {
   const d = await getDb();
+  const rows = await d.select<EvidenceRecord[]>(`SELECT * FROM evidence WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
   await d.execute(`DELETE FROM evidence WHERE id = $1`, [id]);
+  await pushUndoAction(
+    `Deleted evidence`,
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO evidence (id, personXref, factType, factValue, sourceXref, informationType, evidenceType, quality, analysisNotes, createdAt)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)`,
+        [old.id, old.personXref, old.factType, old.factValue, old.sourceXref, old.informationType, old.evidenceType, old.quality, old.analysisNotes, old.createdAt]
+      );
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM evidence WHERE id = $1`, [id]);
+    },
+    { tableName: 'evidence', rowId: String(id), oldData: old }
+  );
 }
 
 export async function getFactSummary(personXref: string): Promise<{ factType: string; valueCount: number; evidenceCount: number }[]> {
@@ -2005,10 +2844,45 @@ export async function getGpsChecklist(personXref: string): Promise<{ item: numbe
 
 export async function setGpsChecklist(personXref: string, item: number, completed: number, notes: string): Promise<void> {
   const d = await getDb();
+  const beforeRows = await d.select<{ personXref: string; item: number; completed: number; notes: string }[]>(
+    `SELECT personXref, item, completed, notes FROM gps_checklist WHERE personXref = $1 AND item = $2`,
+    [personXref, item]
+  );
+  const hadBefore = beforeRows.length > 0;
+  const before = beforeRows[0];
   await d.execute(
     `INSERT INTO gps_checklist (personXref, item, completed, notes)
      VALUES ($1,$2,$3,$4)
      ON CONFLICT(personXref, item) DO UPDATE SET completed = $3, notes = $4`,
     [personXref, item, completed, notes]
+  );
+  await pushUndoAction(
+    `Updated GPS checklist item ${item}`,
+    async () => {
+      const db = await getDb();
+      if (hadBefore) {
+        await db.execute(
+          `UPDATE gps_checklist SET completed = $1, notes = $2 WHERE personXref = $3 AND item = $4`,
+          [before.completed, before.notes, personXref, item]
+        );
+      } else {
+        await db.execute(`DELETE FROM gps_checklist WHERE personXref = $1 AND item = $2`, [personXref, item]);
+      }
+    },
+    async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO gps_checklist (personXref, item, completed, notes)
+         VALUES ($1,$2,$3,$4)
+         ON CONFLICT(personXref, item) DO UPDATE SET completed = $3, notes = $4`,
+        [personXref, item, completed, notes]
+      );
+    },
+    {
+      tableName: 'gps_checklist',
+      rowId: `${personXref}:${item}`,
+      oldData: hadBefore ? before : null,
+      newData: { personXref, item, completed, notes },
+    }
   );
 }
