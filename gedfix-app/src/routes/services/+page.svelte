@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getDb, getSetting, setSetting } from '$lib/db';
+  import { getAllPersons, getDb, getSetting, setSetting } from '$lib/db';
   import { isTauri } from '$lib/platform';
   import { exportGedcom } from '$lib/gedcom-exporter';
 
@@ -25,10 +25,33 @@
   let fsSearchLoading = $state(false);
   let fsSearchResults = $state<{ id: string; title: string; summary: string }[]>([]);
 
+  interface MatchCandidate {
+    externalId: string;
+    externalName: string;
+    localXref: string;
+    localName: string;
+    confidence: number;
+    reason: string;
+    source: 'familysearch' | 'geni' | 'wikitree';
+    payload: string;
+  }
+
+  interface SyncProgress {
+    active: boolean;
+    message: string;
+    pct: number;
+  }
+
+  let fsSyncProgress = $state<SyncProgress>({ active: false, message: '', pct: 0 });
+  let geniSyncProgress = $state<SyncProgress>({ active: false, message: '', pct: 0 });
+  let wtSearchProgress = $state<SyncProgress>({ active: false, message: '', pct: 0 });
+  let geniMatches = $state<MatchCandidate[]>([]);
+  let wikitreeMatches = $state<MatchCandidate[]>([]);
+
   // --- Load saved connection state ---
   async function loadConnectionState() {
     try {
-      const fsToken = await getSetting('service_familysearch_access_token');
+      const fsToken = await getSetting('service_familysearch_token');
       const fsUser = await getSetting('service_familysearch_user');
       const fsSync = await getSetting('service_familysearch_last_sync');
       if (fsToken) {
@@ -42,7 +65,7 @@
         geni = { ...geni, connected: true, username: geniUser ?? '', lastSync: geniSync ?? '' };
       }
 
-      const wtKey = await getSetting('service_wikitree_api_key');
+      const wtKey = await getSetting('service_wikitree_app_id');
       const wtUser = await getSetting('service_wikitree_user');
       if (wtKey) {
         wikitreeApiKey = wtKey;
@@ -78,7 +101,7 @@
   }
 
   async function disconnectFamilySearch() {
-    await setSetting('service_familysearch_access_token', '');
+    await setSetting('service_familysearch_token', '');
     await setSetting('service_familysearch_refresh_token', '');
     await setSetting('service_familysearch_user', '');
     await setSetting('service_familysearch_last_sync', '');
@@ -95,8 +118,10 @@
         geni = { ...geni, loading: false, error: 'Set your Geni App Key in the field below first.' };
         return;
       }
-      const redirectUri = encodeURIComponent(window.location.origin + '/services/callback/geni');
-      const authUrl = `https://www.geni.com/platform/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code`;
+      const state = cryptoRandomString(32);
+      await setSetting('service_geni_oauth_state', state);
+      const redirectUri = `${window.location.origin}/services?service=geni`;
+      const authUrl = `https://www.geni.com/platform/oauth/authorize?client_id=${encodeURIComponent(clientId)}&redirect_uri=${encodeURIComponent(redirectUri)}&response_type=code&state=${encodeURIComponent(state)}`;
       window.location.href = authUrl;
     } catch (e) {
       geni = { ...geni, loading: false, error: `Connection failed: ${e}` };
@@ -126,7 +151,7 @@
       if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
       const data = await resp.json();
       const profileName = data?.[0]?.profile?.RealName ?? data?.[0]?.profile?.Name ?? 'Connected';
-      await setSetting('service_wikitree_api_key', wikitreeApiKey.trim());
+      await setSetting('service_wikitree_app_id', wikitreeApiKey.trim());
       await setSetting('service_wikitree_user', profileName);
       wikitree = { connected: true, username: profileName, lastSync: '', loading: false, error: '' };
     } catch (e) {
@@ -135,7 +160,7 @@
   }
 
   async function disconnectWikiTree() {
-    await setSetting('service_wikitree_api_key', '');
+    await setSetting('service_wikitree_app_id', '');
     await setSetting('service_wikitree_user', '');
     wikitreeApiKey = '';
     wikitree = { connected: false, username: '', lastSync: '', loading: false, error: '' };
@@ -250,7 +275,7 @@
       const refreshToken = tokenData.refresh_token as string;
       if (!accessToken) throw new Error('No access token returned');
 
-      await setSetting('service_familysearch_access_token', accessToken);
+      await setSetting('service_familysearch_token', accessToken);
       await setSetting('service_familysearch_refresh_token', refreshToken || '');
       await setSetting('service_familysearch_last_sync', new Date().toISOString());
       await setSetting('service_familysearch_pkce_verifier', '');
@@ -284,12 +309,145 @@
     }
   }
 
+  async function handleGeniCallback() {
+    const params = new URLSearchParams(window.location.search);
+    const code = params.get('code');
+    const service = params.get('service');
+    const returnedState = params.get('state');
+    if (!code || service !== 'geni') return;
+
+    geni = { ...geni, loading: true, error: '' };
+    try {
+      const expectedState = await getSetting('service_geni_oauth_state');
+      const clientId = await getSetting('service_geni_client_id');
+      if (!clientId) throw new Error('Missing Geni App Key');
+      if (!returnedState || returnedState !== expectedState) throw new Error('OAuth state mismatch');
+
+      const tokenResp = await fetch('https://www.geni.com/platform/oauth/access_token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type: 'authorization_code',
+          code,
+          client_id: clientId,
+          redirect_uri: `${window.location.origin}/services?service=geni`
+        }).toString()
+      });
+      if (!tokenResp.ok) {
+        const err = await tokenResp.text();
+        throw new Error(`Token exchange failed (${tokenResp.status}): ${err}`);
+      }
+      const tokenData = await tokenResp.json();
+      const accessToken = tokenData.access_token as string;
+      if (!accessToken) throw new Error('No access token returned');
+
+      await setSetting('service_geni_token', accessToken);
+      await setSetting('service_geni_oauth_state', '');
+
+      let username = 'Connected';
+      try {
+        const meResp = await fetch('https://www.geni.com/api/profile', {
+          headers: { Authorization: `Bearer ${accessToken}` }
+        });
+        if (meResp.ok) {
+          const me = await meResp.json();
+          username = me?.name || me?.first_name || username;
+        }
+      } catch {}
+
+      await setSetting('service_geni_user', username);
+      await setSetting('service_geni_last_sync', new Date().toISOString());
+      geni = { connected: true, username, lastSync: new Date().toISOString(), loading: false, error: '' };
+
+      const clean = new URL(window.location.href);
+      clean.searchParams.delete('code');
+      clean.searchParams.delete('state');
+      clean.searchParams.delete('service');
+      window.history.replaceState({}, '', clean.toString());
+    } catch (e) {
+      geni = { ...geni, loading: false, error: `Geni OAuth failed: ${e}` };
+    }
+  }
+
+  async function familysearchApiCall(path: string): Promise<any> {
+    const token = await getSetting('service_familysearch_token');
+    if (!token) throw new Error('No FamilySearch token found. Connect FamilySearch first.');
+    const resp = await fetch(`https://api.familysearch.org${path}`, {
+      headers: { Authorization: `Bearer ${token}`, Accept: 'application/json' }
+    });
+    if (!resp.ok) {
+      const err = await resp.text();
+      throw new Error(`FamilySearch API failed (${resp.status}): ${err}`);
+    }
+    return await resp.json();
+  }
+
+  function parseYear(text: string): number | null {
+    const m = (text || '').match(/(\d{4})/);
+    return m ? Number.parseInt(m[1], 10) : null;
+  }
+
+  function fullName(givenName: string, surname: string): string {
+    return `${givenName || ''} ${surname || ''}`.trim().replace(/\s+/g, ' ').toLowerCase();
+  }
+
+  function personMatchConfidence(
+    localGiven: string,
+    localSurname: string,
+    localBirthDate: string,
+    extGiven: string,
+    extSurname: string,
+    extBirthDate: string
+  ): { score: number; reason: string } {
+    const local = fullName(localGiven, localSurname);
+    const ext = fullName(extGiven, extSurname);
+    const localYear = parseYear(localBirthDate);
+    const extYear = parseYear(extBirthDate);
+    const sameName = local && ext && local === ext;
+    const sharedSurname = (localSurname || '').trim().toLowerCase() && (localSurname || '').trim().toLowerCase() === (extSurname || '').trim().toLowerCase();
+    if (sameName && localYear && extYear && Math.abs(localYear - extYear) <= 1) {
+      return { score: 0.95, reason: 'Exact name and birth year match' };
+    }
+    if (sameName) return { score: 0.82, reason: 'Exact full-name match' };
+    if (sharedSurname && localYear && extYear && Math.abs(localYear - extYear) <= 2) {
+      return { score: 0.74, reason: 'Surname and close birth year match' };
+    }
+    if (sharedSurname) return { score: 0.62, reason: 'Surname match' };
+    return { score: 0, reason: '' };
+  }
+
+  async function createImportProposal(
+    source: 'familysearch' | 'geni' | 'wikitree',
+    externalId: string,
+    localXref: string,
+    payload: unknown,
+    reasoning: string,
+    confidence: number
+  ) {
+    const db = await getDb();
+    await db.execute(
+      `INSERT INTO proposal (agentRunId, entityType, entityId, fieldName, oldValue, newValue, confidence, reasoning, evidenceSource, status, createdAt)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending',datetime('now'))`,
+      [
+        `${source}_sync`,
+        'person',
+        localXref || externalId,
+        'external_import',
+        '',
+        JSON.stringify(payload),
+        confidence,
+        reasoning,
+        source
+      ]
+    );
+  }
+
   async function searchFamilySearch() {
     fsSearchLoading = true;
     fsSearchResults = [];
     familysearch = { ...familysearch, error: '' };
     try {
-      const token = await getSetting('service_familysearch_access_token');
+      const token = await getSetting('service_familysearch_token');
       if (!token) throw new Error('No FamilySearch access token. Connect first.');
       const givenName = fsSearchGiven.trim();
       const surname = fsSearchSurname.trim();
@@ -326,8 +484,8 @@
   async function importFamilySearchResult(result: { id: string; title: string; summary: string }) {
     const db = await getDb();
     await db.execute(
-      `INSERT INTO proposal (agentRunId, entityType, entityId, fieldName, oldValue, newValue, confidence, reasoning, evidenceSource, status)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending')`,
+      `INSERT INTO proposal (agentRunId, entityType, entityId, fieldName, oldValue, newValue, confidence, reasoning, evidenceSource, status, createdAt)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,'pending',datetime('now'))`,
       [
         'familysearch_search',
         'person',
@@ -346,17 +504,178 @@
 
   $effect(() => {
     handleFamilySearchCallback();
+    handleGeniCallback();
   });
 
-  // --- Placeholder actions ---
-  function syncFamilySearchTree() {
-    alert('Tree sync with FamilySearch is a planned feature. This will allow bidirectional sync of person and family records.');
+  async function syncFamilySearchTree() {
+    fsSyncProgress = { active: true, pct: 5, message: 'Loading FamilySearch tree persons...' };
+    familysearch = { ...familysearch, error: '' };
+    try {
+      const data = await familysearchApiCall('/platform/tree/persons?count=200');
+      const entries = data?.persons || data?.entries || [];
+      fsSyncProgress = { active: true, pct: 35, message: `Fetched ${entries.length} external profiles. Matching local tree...` };
+
+      const locals = await getAllPersons();
+      let created = 0;
+      for (let i = 0; i < entries.length; i++) {
+        const ext = entries[i];
+        const extId = ext?.id || ext?.personId || `fs_${i}`;
+        const extGiven = ext?.names?.[0]?.nameForms?.[0]?.parts?.find((p: any) => p.type === 'http://gedcomx.org/Given')?.value || ext?.display?.name?.split(' ')[0] || '';
+        const extSurname = ext?.names?.[0]?.nameForms?.[0]?.parts?.find((p: any) => p.type === 'http://gedcomx.org/Surname')?.value || ext?.display?.name?.split(' ').slice(1).join(' ') || '';
+        const extBirth = ext?.display?.birthDate || '';
+
+        let bestLocal = '';
+        let bestScore = 0;
+        let bestReason = '';
+        for (const p of locals) {
+          const m = personMatchConfidence(p.givenName, p.surname, p.birthDate, extGiven, extSurname, extBirth);
+          if (m.score > bestScore) {
+            bestScore = m.score;
+            bestLocal = p.xref;
+            bestReason = m.reason;
+          }
+        }
+
+        if (bestScore >= 0.72) {
+          await createImportProposal('familysearch', extId, bestLocal, ext, `FamilySearch sync candidate: ${bestReason}`, bestScore);
+          created++;
+        } else {
+          await createImportProposal('familysearch', extId, '', ext, 'No confident local match found; review as potential new person', 0.6);
+          created++;
+        }
+
+        if (i % 10 === 0) {
+          fsSyncProgress = { active: true, pct: 35 + Math.round(((i + 1) / Math.max(entries.length, 1)) * 55), message: `Creating proposals ${i + 1}/${entries.length}...` };
+        }
+      }
+      const now = new Date().toISOString();
+      familysearch = { ...familysearch, lastSync: now };
+      await setSetting('service_familysearch_last_sync', now);
+      fsSyncProgress = { active: true, pct: 100, message: `Created ${created} FamilySearch proposals.` };
+      setTimeout(() => { fsSyncProgress = { active: false, pct: 0, message: '' }; }, 2500);
+    } catch (e) {
+      familysearch = { ...familysearch, error: String(e) };
+      fsSyncProgress = { active: false, pct: 0, message: '' };
+    }
   }
-  function importFromGeni() {
-    alert('Geni import will pull profile data from your Geni tree. Coming soon.');
+
+  async function importFromGeni() {
+    geniSyncProgress = { active: true, pct: 8, message: 'Loading managed profiles from Geni...' };
+    geni = { ...geni, error: '' };
+    try {
+      const token = await getSetting('service_geni_token');
+      if (!token) throw new Error('No Geni token found. Connect Geni first.');
+
+      const resp = await fetch('https://www.geni.com/api/user/managed-profiles', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!resp.ok) {
+        const err = await resp.text();
+        throw new Error(`Geni request failed (${resp.status}): ${err}`);
+      }
+      const data = await resp.json();
+      const profiles = Array.isArray(data?.results) ? data.results : (Array.isArray(data) ? data : []);
+      const locals = await getAllPersons();
+      geniMatches = [];
+      let created = 0;
+
+      for (let i = 0; i < profiles.length; i++) {
+        const profile = profiles[i];
+        const extGiven = profile?.first_name || profile?.name?.split(' ')[0] || '';
+        const extSurname = profile?.last_name || profile?.name?.split(' ').slice(1).join(' ') || '';
+        const extBirth = profile?.birth?.date || profile?.birth_date || '';
+
+        let best: MatchCandidate | null = null;
+        for (const p of locals) {
+          const m = personMatchConfidence(p.givenName, p.surname, p.birthDate, extGiven, extSurname, extBirth);
+          if (m.score > (best?.confidence ?? 0)) {
+            best = {
+              externalId: String(profile?.id || profile?.guid || ''),
+              externalName: `${extGiven} ${extSurname}`.trim(),
+              localXref: p.xref,
+              localName: `${p.givenName} ${p.surname}`.trim(),
+              confidence: m.score,
+              reason: m.reason,
+              source: 'geni',
+              payload: JSON.stringify(profile),
+            };
+          }
+        }
+        if (best && best.confidence >= 0.65) {
+          geniMatches = [...geniMatches, best];
+          await createImportProposal('geni', best.externalId, best.localXref, profile, `Geni import candidate: ${best.reason}`, best.confidence);
+          created++;
+        }
+        if (i % 10 === 0) {
+          geniSyncProgress = { active: true, pct: 25 + Math.round(((i + 1) / Math.max(profiles.length, 1)) * 70), message: `Matching profiles ${i + 1}/${profiles.length}...` };
+        }
+      }
+      const now = new Date().toISOString();
+      geni = { ...geni, lastSync: now };
+      await setSetting('service_geni_last_sync', now);
+      geniSyncProgress = { active: true, pct: 100, message: `Imported ${created} Geni matches as proposals.` };
+      setTimeout(() => { geniSyncProgress = { active: false, pct: 0, message: '' }; }, 2500);
+    } catch (e) {
+      geni = { ...geni, error: String(e) };
+      geniSyncProgress = { active: false, pct: 0, message: '' };
+    }
   }
-  function searchWikiTree() {
-    alert('WikiTree search will query profiles matching people in your tree. Coming soon.');
+
+  async function searchWikiTree() {
+    wtSearchProgress = { active: true, pct: 10, message: 'Searching WikiTree+ against local people...' };
+    wikitree = { ...wikitree, error: '' };
+    wikitreeMatches = [];
+    try {
+      const key = await getSetting('service_wikitree_app_id');
+      if (!key) throw new Error('No WikiTree API key found. Connect WikiTree first.');
+
+      const locals = (await getAllPersons()).slice(0, 25);
+      for (let i = 0; i < locals.length; i++) {
+        const p = locals[i];
+        const body = new URLSearchParams({
+          action: 'searchPerson',
+          key,
+          appId: key,
+          FirstName: p.givenName || '',
+          LastNameAtBirth: p.surname || '',
+          BirthDate: p.birthDate || '',
+        }).toString();
+
+        const resp = await fetch('https://api.wikitree.com/api.php', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body
+        });
+        if (!resp.ok) continue;
+        const raw = await resp.json();
+        const candidates = raw?.[0]?.matches || raw?.[0]?.people || [];
+        for (const c of candidates.slice(0, 2)) {
+          const wtGiven = c?.FirstName || '';
+          const wtSurname = c?.LastNameAtBirth || c?.LastNameCurrent || '';
+          const wtBirth = c?.BirthDate || '';
+          const m = personMatchConfidence(p.givenName, p.surname, p.birthDate, wtGiven, wtSurname, wtBirth);
+          if (m.score < 0.55) continue;
+          const match: MatchCandidate = {
+            externalId: String(c?.Id || c?.Name || ''),
+            externalName: `${wtGiven} ${wtSurname}`.trim(),
+            localXref: p.xref,
+            localName: `${p.givenName} ${p.surname}`.trim(),
+            confidence: m.score,
+            reason: m.reason,
+            source: 'wikitree',
+            payload: JSON.stringify(c),
+          };
+          wikitreeMatches = [...wikitreeMatches, match];
+          await createImportProposal('wikitree', match.externalId, match.localXref, c, `WikiTree search candidate: ${match.reason}`, match.confidence);
+        }
+        wtSearchProgress = { active: true, pct: 15 + Math.round(((i + 1) / Math.max(locals.length, 1)) * 80), message: `Searching ${i + 1}/${locals.length} local people...` };
+      }
+      wtSearchProgress = { active: true, pct: 100, message: `Found ${wikitreeMatches.length} WikiTree matches (saved as proposals).` };
+      setTimeout(() => { wtSearchProgress = { active: false, pct: 0, message: '' }; }, 2500);
+    } catch (e) {
+      wikitree = { ...wikitree, error: String(e) };
+      wtSearchProgress = { active: false, pct: 0, message: '' };
+    }
   }
 </script>
 
@@ -427,6 +746,14 @@
         </button>
         <button class="btn-danger-outline" onclick={disconnectFamilySearch}>Disconnect</button>
       </div>
+      {#if fsSyncProgress.active}
+        <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
+          <div class="text-[11px] mb-1" style="color: var(--ink-muted);">{fsSyncProgress.message}</div>
+          <div class="h-1 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08);">
+            <div class="h-full rounded-full transition-all" style="width: {fsSyncProgress.pct}%; background: var(--accent);"></div>
+          </div>
+        </div>
+      {/if}
     {:else}
       <div class="mb-4">
         <label for="familysearch-client-id" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">FamilySearch Client ID</label>
@@ -495,6 +822,26 @@
         </button>
         <button class="btn-danger-outline" onclick={disconnectGeni}>Disconnect</button>
       </div>
+      {#if geniSyncProgress.active}
+        <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
+          <div class="text-[11px] mb-1" style="color: var(--ink-muted);">{geniSyncProgress.message}</div>
+          <div class="h-1 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08);">
+            <div class="h-full rounded-full transition-all" style="width: {geniSyncProgress.pct}%; background: var(--accent);"></div>
+          </div>
+        </div>
+      {/if}
+      {#if geniMatches.length > 0}
+        <div class="mt-3 divide-y arch-card-divide rounded-lg" style="border: 1px solid var(--border);">
+          {#each geniMatches.slice(0, 6) as m}
+            <div class="px-3 py-2 flex items-center justify-between gap-2">
+              <div class="text-xs" style="color: var(--ink-muted);">
+                <strong style="color: var(--ink);">{m.externalName}</strong> → {m.localName}
+              </div>
+              <span class="text-[10px]" style="color: var(--accent);">{Math.round(m.confidence * 100)}%</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
     {:else}
       <div class="mb-4">
         <label for="geni-client-id" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">Geni App Key (Client ID)</label>
@@ -560,6 +907,26 @@
         </button>
         <button class="btn-danger-outline" onclick={disconnectWikiTree}>Disconnect</button>
       </div>
+      {#if wtSearchProgress.active}
+        <div class="mt-3 p-3 rounded-lg" style="background: var(--parchment); border: 1px solid var(--border);">
+          <div class="text-[11px] mb-1" style="color: var(--ink-muted);">{wtSearchProgress.message}</div>
+          <div class="h-1 rounded-full overflow-hidden" style="background: rgba(255,255,255,0.08);">
+            <div class="h-full rounded-full transition-all" style="width: {wtSearchProgress.pct}%; background: var(--accent);"></div>
+          </div>
+        </div>
+      {/if}
+      {#if wikitreeMatches.length > 0}
+        <div class="mt-3 divide-y arch-card-divide rounded-lg" style="border: 1px solid var(--border);">
+          {#each wikitreeMatches.slice(0, 6) as m}
+            <div class="px-3 py-2 flex items-center justify-between gap-2">
+              <div class="text-xs" style="color: var(--ink-muted);">
+                <strong style="color: var(--ink);">{m.externalName}</strong> → {m.localName}
+              </div>
+              <span class="text-[10px]" style="color: var(--accent);">{Math.round(m.confidence * 100)}%</span>
+            </div>
+          {/each}
+        </div>
+      {/if}
     {:else}
       <div class="mb-4">
         <label for="wikitree-api-key" class="block text-xs font-medium mb-1.5" style="color: var(--ink-muted); font-family: var(--font-sans);">WikiTree API Key</label>

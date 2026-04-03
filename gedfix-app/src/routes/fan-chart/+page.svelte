@@ -231,12 +231,15 @@
 </script>
 
 <div class="arch-page" style="max-width: 90rem; overflow-y: auto; height: 100vh; padding-bottom: 3rem;">
-  <div class="mb-4">
+  <div class="mb-4 no-print flex items-start justify-between gap-3">
+    <div>
     <h1 class="dossier-header" style="margin-bottom: 0.5rem;">Fan Chart</h1>
     <p class="text-sm" style="color: var(--ink-muted);">Semicircular ancestor chart. Click any ancestor segment to re-root the chart.</p>
+    </div>
+    <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label="Print fan chart">Print</button>
   </div>
 
-  <div class="arch-card p-4 mb-4">
+  <div class="arch-card p-4 mb-4 no-print">
     <label for="fan-chart-person-search" class="block text-xs mb-2" style="color: var(--ink-muted);">Root Person</label>
     <input
       id="fan-chart-person-search"
@@ -274,3 +277,11 @@
     {/if}
   </div>
 </div>
+
+<style>
+  @media print {
+    @page { size: landscape; }
+    .no-print { display: none !important; }
+    canvas { max-width: 100% !important; max-height: 100% !important; }
+  }
+</style>

@@ -10,6 +10,7 @@
   let totalSources = $state(0);
   let avgCitationsPerSource = $state(0);
   let totalEvents = $state(0);
+  let totalMedia = $state(0);
   let eventBreakdown = $state<{type: string; count: number}[]>([]);
 
   // Completeness
@@ -54,14 +55,14 @@
     const styles = getComputedStyle(document.documentElement);
     const read = (name: string, fallback: string) => styles.getPropertyValue(name).trim() || fallback;
     return {
-      ink: read('--ink', '#1A1612'),
-      muted: read('--ink-muted', '#7A6F62'),
-      faint: read('--ink-faint', '#B5AA9A'),
-      accent: read('--accent', '#8B6914'),
-      accentAlt: read('--aged-gold', '#C4A44A'),
-      validated: read('--color-validated', '#4A7C3F'),
-      media: read('--card-male-border-hover', '#3D6B8A'),
-      grid: 'rgba(26, 22, 18, 0.08)',
+      ink: read('--color-white', '#F0F4F8'),
+      muted: read('--color-muted', '#6B7280'),
+      faint: read('--ink-faint', 'rgba(240, 244, 248, 0.6)'),
+      accent: read('--color-blue', '#1E9FF2'),
+      accentAlt: read('--spirit-electric', '#8B5CF6'),
+      validated: read('--color-cyan', '#5FDFDF'),
+      media: read('--color-blue-dark', '#1578C2'),
+      grid: 'rgba(95, 223, 223, 0.12)',
     };
   }
 
@@ -100,11 +101,11 @@
 
     // Center text
     ctx.fillStyle = palette.ink;
-    ctx.font = `bold ${Math.floor(outerR * 0.4)}px Georgia, serif`;
+    ctx.font = `bold ${Math.floor(outerR * 0.4)}px "Archivo Black", sans-serif`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(`${Math.round(completenessScore)}%`, cx, cy - 6);
-    ctx.font = `${Math.floor(outerR * 0.15)}px "Gill Sans", sans-serif`;
+    ctx.font = `${Math.floor(outerR * 0.15)}px "JetBrains Mono", monospace`;
     ctx.fillStyle = palette.muted;
     ctx.fillText('complete', cx, cy + outerR * 0.18);
   }
@@ -140,7 +141,7 @@
       ctx.stroke();
 
       ctx.fillStyle = palette.muted;
-      ctx.font = '10px "Gill Sans", sans-serif';
+      ctx.font = '10px "JetBrains Mono", monospace';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.fillText(String(Math.round(maxVal * i / 4)), pad.left - 6, y);
@@ -171,7 +172,7 @@
       const step = Math.max(1, Math.floor(data.length / 8));
       if (i % step === 0) {
         ctx.fillStyle = palette.muted;
-        ctx.font = '9px "Gill Sans", sans-serif';
+        ctx.font = '9px "JetBrains Mono", monospace';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText(d.label, x + barW / 2, pad.top + plotH + 6);
@@ -224,7 +225,7 @@
 
       // Label
       ctx.fillStyle = palette.ink;
-      ctx.font = '11px "Gill Sans", sans-serif';
+      ctx.font = '11px "JetBrains Mono", monospace';
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       const label = d.label.length > 18 ? d.label.slice(0, 16) + '...' : d.label;
@@ -232,7 +233,7 @@
 
       // Value
       ctx.fillStyle = palette.muted;
-      ctx.font = '10px "Gill Sans", sans-serif';
+      ctx.font = '10px "JetBrains Mono", monospace';
       ctx.textAlign = 'left';
       ctx.fillText(String(d.value), pad.left + barW + 6, y + barH / 2);
     });
@@ -267,6 +268,8 @@
 
     const [evtStats] = await db.select<{cnt: number}[]>(`SELECT COUNT(*) as cnt FROM event`);
     totalEvents = evtStats.cnt;
+    const [mediaStats] = await db.select<{cnt: number}[]>(`SELECT COUNT(*) as cnt FROM media`);
+    totalMedia = mediaStats.cnt;
 
     eventBreakdown = await db.select<{type: string; count: number}[]>(
       `SELECT eventType as type, COUNT(*) as count FROM event GROUP BY eventType ORDER BY count DESC LIMIT 6`
@@ -418,246 +421,158 @@
   }
 </script>
 
-<div class="arch-page" style="max-width: 80rem; overflow-y: auto; height: 100vh; padding-bottom: 4rem;">
-  <!-- Header -->
-  <div style="margin-bottom: 1.5rem;">
-    <h1 style="font-size: 1.75rem; margin: 0 0 0.25rem 0;" class="dossier-header" style:border-bottom="none" style:padding-bottom="0" style:margin-bottom="0.25rem">
-      Analytics Dashboard
-    </h1>
-    <p style="color: var(--ink-muted); font-size: 0.85rem; margin: 0;">
-      Family tree statistics and data quality overview
-    </p>
-  </div>
-
-  {#if loading}
-    <div style="display: flex; align-items: center; justify-content: center; height: 60vh;">
-      <div style="text-align: center;">
-        <div style="width: 36px; height: 36px; border: 3px solid var(--parchment); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;"></div>
-        <p style="color: var(--ink-muted); font-size: 0.85rem;">Loading analytics...</p>
+<div class="dashboard-shell immersive-bg">
+  <div class="dashboard-inner">
+    <section class="hero">
+      <div>
+        <p class="hero-kicker">Showcase</p>
+        <h1 class="hero-title display-gradient-spirit">Your Family Tree</h1>
+        <p class="hero-subtitle">A live pulse of your GEDCOM archive, mapped to the iSN.BiZ system.</p>
       </div>
-    </div>
-  {:else}
-    <!-- Row 1: Key Stats Cards -->
-    <div class="dashboard-grid stagger-children" style="margin-bottom: 1.5rem;">
-      <!-- Total People -->
-      <div class="arch-card stat-card">
-        <div class="stat-icon" style="background: var(--card-male-bg); color: var(--card-male-border-hover);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        </div>
-        <div class="stat-label">Total People</div>
-        <div class="stat-value">{fmtNum(totalPeople)}</div>
-        <div class="stat-breakdown">
-          <span style="color: var(--card-male-border-hover);">{fmtNum(maleCount)} male</span>
-          <span style="color: var(--ink-faint); margin: 0 0.25rem;">|</span>
-          <span style="color: var(--card-female-border-hover);">{fmtNum(femaleCount)} female</span>
-        </div>
+      <div class="hero-actions">
+        <a class="btn-primary" href="/settings">Import</a>
+        <a class="btn-outline" href="/search">Search</a>
+        <a class="btn-outline" href="/cleanup">Cleanup</a>
+        <a class="btn-outline" href="/media">Media</a>
       </div>
+    </section>
 
-      <!-- Total Families -->
-      <div class="arch-card stat-card">
-        <div class="stat-icon" style="background: rgba(139, 105, 20, 0.1); color: var(--accent);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
-        </div>
-        <div class="stat-label">Total Families</div>
-        <div class="stat-value">{fmtNum(totalFamilies)}</div>
-        <div class="stat-breakdown">
-          <span style="color: var(--ink-muted);">{totalPeople > 0 ? (totalFamilies / totalPeople * 100).toFixed(1) : 0}% family ratio</span>
-        </div>
+    {#if loading}
+      <div class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading analytics...</p>
       </div>
+    {:else}
+      <section class="stats-grid">
+        <div class="spirit-surface stat-card">
+          <div class="stat-label">People</div>
+          <div class="stat-value">{fmtNum(totalPeople)}</div>
+          <div class="stat-meta">{fmtNum(maleCount)} male · {fmtNum(femaleCount)} female</div>
+        </div>
+        <div class="spirit-surface stat-card">
+          <div class="stat-label">Families</div>
+          <div class="stat-value">{fmtNum(totalFamilies)}</div>
+          <div class="stat-meta">{totalPeople > 0 ? (totalFamilies / totalPeople * 100).toFixed(1) : 0}% family ratio</div>
+        </div>
+        <div class="spirit-surface stat-card">
+          <div class="stat-label">Media</div>
+          <div class="stat-value">{fmtNum(totalMedia)}</div>
+          <div class="stat-meta">{withMedia}% of people with media</div>
+        </div>
+        <div class="spirit-surface stat-card">
+          <div class="stat-label">Sources</div>
+          <div class="stat-value">{fmtNum(totalSources)}</div>
+          <div class="stat-meta">{avgCitationsPerSource} avg citations/source</div>
+        </div>
+      </section>
 
-      <!-- Total Sources -->
-      <div class="arch-card stat-card">
-        <div class="stat-icon" style="background: rgba(74, 124, 63, 0.1); color: var(--color-validated);">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        </div>
-        <div class="stat-label">Total Sources</div>
-        <div class="stat-value">{fmtNum(totalSources)}</div>
-        <div class="stat-breakdown">
-          <span style="color: var(--ink-muted);">{avgCitationsPerSource} avg citations/source</span>
-        </div>
-      </div>
-
-      <!-- Total Events -->
-      <div class="arch-card stat-card">
-        <div class="stat-icon" style="background: rgba(61, 107, 138, 0.1); color: #3D6B8A;">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div class="stat-label">Total Events</div>
-        <div class="stat-value">{fmtNum(totalEvents)}</div>
-        <div class="stat-breakdown">
-          {#each eventBreakdown.slice(0, 3) as evt}
-            <span class="event-pill">{evt.type}: {fmtNum(evt.count)}</span>
-          {/each}
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 2: Tree Completeness -->
-    <div class="dashboard-grid-2 stagger-children" style="margin-bottom: 1.5rem;">
-      <!-- Completeness Score Donut -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Tree Completeness</div>
-        <div style="display: flex; align-items: center; gap: 1.5rem;">
-          <div style="width: 160px; height: 160px; flex-shrink: 0;">
-            <canvas bind:this={donutCanvas} style="width: 160px; height: 160px;"></canvas>
-          </div>
-          <div style="flex: 1;">
-            <div class="completeness-row">
-              <span class="completeness-dot" style="background: var(--accent);"></span>
-              <span class="completeness-label">Birth Date</span>
-              <span class="completeness-pct">{withBirthDate}%</span>
+      <section class="dashboard-grid-2">
+        <div class="spirit-surface panel">
+          <div class="panel-header">Tree Completeness</div>
+          <div class="panel-body">
+            <div class="donut-wrap">
+              <canvas bind:this={donutCanvas}></canvas>
             </div>
-            <div class="completeness-row">
-              <span class="completeness-dot" style="background: var(--aged-gold);"></span>
-              <span class="completeness-label">Death Date</span>
-              <span class="completeness-pct">{withDeathDate}%</span>
-            </div>
-            <div class="completeness-row">
-              <span class="completeness-dot" style="background: var(--color-validated);"></span>
-              <span class="completeness-label">Has Source</span>
-              <span class="completeness-pct">{withSource}%</span>
-            </div>
-            <div class="completeness-row">
-              <span class="completeness-dot" style="background: var(--card-male-border-hover);"></span>
-              <span class="completeness-label">Has Media</span>
-              <span class="completeness-pct">{withMedia}%</span>
+            <div class="legend">
+              <div class="legend-row">
+                <span class="legend-dot" style="background: var(--color-blue);"></span>
+                <span>Birth Date</span>
+                <span class="legend-value">{withBirthDate}%</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background: var(--spirit-electric);"></span>
+                <span>Death Date</span>
+                <span class="legend-value">{withDeathDate}%</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background: var(--color-cyan);"></span>
+                <span>Has Source</span>
+                <span class="legend-value">{withSource}%</span>
+              </div>
+              <div class="legend-row">
+                <span class="legend-dot" style="background: var(--color-blue-dark);"></span>
+                <span>Has Media</span>
+                <span class="legend-value">{withMedia}%</span>
+              </div>
             </div>
           </div>
         </div>
-      </div>
 
-      <!-- Generation Depth -->
-      <div class="arch-card" style="padding: 1.25rem; display: flex; flex-direction: column; justify-content: center;">
-        <div class="arch-section-header">Generation Depth</div>
-        <div style="text-align: center; padding: 1rem 0;">
-          <div style="font-family: var(--font-serif); font-size: 3.5rem; font-weight: 700; color: var(--accent); line-height: 1;">
-            {generationDepth}
-          </div>
-          <div style="color: var(--ink-muted); font-size: 0.85rem; margin-top: 0.5rem;">
-            generations traced
-          </div>
-          <div style="margin-top: 1rem;">
-            {#each Array(Math.min(generationDepth, 12)) as _, i}
-              <div style="
-                height: 4px;
-                background: var(--accent);
-                opacity: {1 - (i * 0.07)};
-                margin: 3px auto;
-                border-radius: 2px;
-                width: {100 - (i * 6)}%;
-              "></div>
-            {/each}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 3: Charts -->
-    <div class="dashboard-grid-2 stagger-children" style="margin-bottom: 1.5rem;">
-      <!-- Event Timeline -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Event Timeline by Decade</div>
-        <div style="height: 240px;">
-          <canvas bind:this={timelineCanvas} style="width: 100%; height: 100%;"></canvas>
-        </div>
-      </div>
-
-      <!-- Place Distribution -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Top Places by Event Count</div>
-        <div style="height: 240px;">
-          <canvas bind:this={placesCanvas} style="width: 100%; height: 100%;"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Row 4: Data Quality -->
-    <div class="dashboard-grid-3 stagger-children">
-      <!-- Missing Data -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Missing Data</div>
-        <div class="quality-list">
-          <div class="quality-item">
-            <div class="quality-bar-wrap">
-              <div class="quality-bar" style="width: {totalPeople > 0 ? (missingBirth / totalPeople * 100) : 0}%; background: var(--color-warning);"></div>
-            </div>
-            <div class="quality-detail">
-              <span class="quality-count">{fmtNum(missingBirth)}</span>
-              <span class="quality-desc">without birth date</span>
-            </div>
-          </div>
-          <div class="quality-item">
-            <div class="quality-bar-wrap">
-              <div class="quality-bar" style="width: {totalPeople > 0 ? (missingDeath / totalPeople * 100) : 0}%; background: var(--color-error);"></div>
-            </div>
-            <div class="quality-detail">
-              <span class="quality-count">{fmtNum(missingDeath)}</span>
-              <span class="quality-desc">deceased without death date</span>
-            </div>
-          </div>
-          <div class="quality-item">
-            <div class="quality-bar-wrap">
-              <div class="quality-bar" style="width: {totalPeople > 0 ? (missingSources / totalPeople * 100) : 0}%; background: var(--ink-faint);"></div>
-            </div>
-            <div class="quality-detail">
-              <span class="quality-count">{fmtNum(missingSources)}</span>
-              <span class="quality-desc">without any source</span>
+        <div class="spirit-surface panel">
+          <div class="panel-header">Generation Depth</div>
+          <div class="depth-wrap">
+            <div class="depth-value display-gradient">{generationDepth}</div>
+            <div class="depth-sub">generations traced</div>
+            <div class="depth-bars">
+              {#each Array(Math.min(generationDepth, 12)) as _, i}
+                <div style="width: {100 - (i * 6)}%; opacity: {1 - (i * 0.07)};"></div>
+              {/each}
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Orphaned Records -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Orphaned Records</div>
-        <div style="text-align: center; padding: 1rem 0;">
-          <div style="font-family: var(--font-serif); font-size: 2.5rem; font-weight: 700; color: {orphanedPeople > 0 ? 'var(--color-error)' : 'var(--color-validated)'}; line-height: 1;">
-            {fmtNum(orphanedPeople)}
+      <section class="dashboard-grid-2">
+        <div class="spirit-surface panel">
+          <div class="panel-header">Event Timeline by Decade</div>
+          <div class="chart-wrap">
+            <canvas bind:this={timelineCanvas}></canvas>
           </div>
-          <div style="color: var(--ink-muted); font-size: 0.8rem; margin-top: 0.5rem;">
-            people not linked to any family
+        </div>
+        <div class="spirit-surface panel">
+          <div class="panel-header">Top Places by Event Count</div>
+          <div class="chart-wrap">
+            <canvas bind:this={placesCanvas}></canvas>
           </div>
-          {#if orphanedPeople > 0}
-            <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--color-warning); background: rgba(184, 134, 11, 0.08); padding: 0.4rem 0.75rem; border-radius: 0.5rem; display: inline-block;">
-              Review recommended
+        </div>
+      </section>
+
+      <section class="dashboard-grid-3">
+        <div class="spirit-surface panel">
+          <div class="panel-header">Missing Data</div>
+          <div class="quality-list">
+            <div>
+              <div class="quality-bar"><span style="width: {totalPeople > 0 ? (missingBirth / totalPeople * 100) : 0}%; background: var(--color-warning);"></span></div>
+              <div class="quality-meta">{fmtNum(missingBirth)} without birth date</div>
+            </div>
+            <div>
+              <div class="quality-bar"><span style="width: {totalPeople > 0 ? (missingDeath / totalPeople * 100) : 0}%; background: var(--color-accent);"></span></div>
+              <div class="quality-meta">{fmtNum(missingDeath)} deceased without death date</div>
+            </div>
+            <div>
+              <div class="quality-bar"><span style="width: {totalPeople > 0 ? (missingSources / totalPeople * 100) : 0}%; background: rgba(240, 244, 248, 0.4);"></span></div>
+              <div class="quality-meta">{fmtNum(missingSources)} without any source</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="spirit-surface panel">
+          <div class="panel-header">Orphaned Records</div>
+          <div class="spotlight">
+            <div class="spotlight-value" style="color: {orphanedPeople > 0 ? 'var(--color-accent)' : 'var(--color-cyan)'};">
+              {fmtNum(orphanedPeople)}
+            </div>
+            <div class="spotlight-meta">people not linked to any family</div>
+            <div class="spotlight-pill">{orphanedPeople > 0 ? 'Review recommended' : 'All records connected'}</div>
+          </div>
+        </div>
+
+        <div class="spirit-surface panel">
+          <div class="panel-header">Most Documented</div>
+          {#if mostDocumented}
+            <div class="spotlight">
+              <div class="spotlight-name">{mostDocumented.name}</div>
+              <div class="spotlight-meta">{mostDocumented.xref}</div>
+              <div class="spotlight-value display-gradient">{fmtNum(mostDocumented.score)}</div>
+              <div class="spotlight-meta">events + sources + media</div>
             </div>
           {:else}
-            <div style="margin-top: 0.75rem; font-size: 0.75rem; color: var(--color-validated); background: rgba(74, 124, 63, 0.08); padding: 0.4rem 0.75rem; border-radius: 0.5rem; display: inline-block;">
-              All records connected
-            </div>
+            <div class="empty-state">No data available</div>
           {/if}
         </div>
-      </div>
-
-      <!-- Most Documented -->
-      <div class="arch-card" style="padding: 1.25rem;">
-        <div class="arch-section-header">Most Documented Person</div>
-        {#if mostDocumented}
-          <div style="text-align: center; padding: 1rem 0;">
-            <div style="width: 48px; height: 48px; border-radius: 50%; background: var(--accent-subtle); border: 2px solid var(--accent); display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem;">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M12 15l-2 5l9-11h-5l2-5l-9 11z"/></svg>
-            </div>
-            <div style="font-family: var(--font-serif); font-size: 1.1rem; font-weight: 600; color: var(--ink);">
-              {mostDocumented.name}
-            </div>
-            <div style="color: var(--ink-muted); font-size: 0.75rem; margin-top: 0.25rem; font-family: var(--font-mono);">
-              {mostDocumented.xref}
-            </div>
-            <div style="margin-top: 0.75rem; font-size: 0.85rem; color: var(--accent); font-weight: 600;">
-              {fmtNum(mostDocumented.score)} total records
-            </div>
-            <div style="font-size: 0.7rem; color: var(--ink-faint); margin-top: 0.25rem;">
-              events + sources + media
-            </div>
-          </div>
-        {:else}
-          <div style="text-align: center; padding: 2rem 0; color: var(--ink-faint); font-size: 0.85rem;">
-            No data available
-          </div>
-        {/if}
-      </div>
-    </div>
-  {/if}
+      </section>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -665,170 +580,299 @@
     to { transform: rotate(360deg); }
   }
 
-  /* ── Dashboard grid layouts ── */
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1rem;
+  .dashboard-shell {
+    min-height: 100vh;
+    overflow-y: auto;
   }
 
-  .dashboard-grid-2 {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 1rem;
-  }
-
-  .dashboard-grid-3 {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1rem;
-  }
-
-  /* ── Stat cards ── */
-  .stat-card {
-    padding: 1.25rem;
+  .dashboard-inner {
+    max-width: 88rem;
+    margin: 0 auto;
+    padding: 2.5rem 2.5rem 4rem;
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: 2rem;
   }
 
-  .stat-icon {
-    width: 36px;
-    height: 36px;
-    border-radius: 0.5rem;
+  .hero {
     display: flex;
     align-items: center;
+    justify-content: space-between;
+    gap: 2rem;
+  }
+
+  .hero-kicker {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin: 0 0 0.5rem;
+  }
+
+  .hero-title {
+    font-size: 2.8rem;
+    margin: 0 0 0.6rem;
+  }
+
+  .hero-subtitle {
+    color: var(--color-muted);
+    max-width: 32rem;
+  }
+
+  .hero-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 140px));
+    gap: 0.75rem;
+  }
+
+  .loading-state {
+    min-height: 320px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     justify-content: center;
+    gap: 0.75rem;
+    color: var(--color-muted);
+  }
+
+  .spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid rgba(240, 244, 248, 0.2);
+    border-top-color: var(--color-blue);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+  }
+
+  .stat-card {
+    padding: 1.5rem;
+    border-radius: 1rem;
   }
 
   .stat-label {
-    font-size: 0.7rem;
-    font-weight: 600;
+    font-family: var(--font-mono);
     text-transform: uppercase;
-    letter-spacing: 0.08em;
-    color: var(--ink-muted);
+    letter-spacing: 0.18em;
+    font-size: 0.65rem;
+    color: var(--color-muted);
   }
 
   .stat-value {
     font-family: var(--font-serif);
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--ink);
-    line-height: 1;
+    font-size: 2.2rem;
+    margin: 0.6rem 0 0.4rem;
   }
 
-  .stat-breakdown {
-    font-size: 0.75rem;
-    color: var(--ink-muted);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem;
+  .stat-meta {
+    font-size: 0.85rem;
+    color: var(--color-muted);
+  }
+
+  .dashboard-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .dashboard-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1.5rem;
+  }
+
+  .panel {
+    padding: 1.5rem;
+    border-radius: 1rem;
+  }
+
+  .panel-header {
+    font-family: var(--font-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    font-size: 0.7rem;
+    color: var(--color-muted);
+    margin-bottom: 1rem;
+  }
+
+  .panel-body {
+    display: grid;
+    grid-template-columns: 160px minmax(0, 1fr);
+    gap: 1.5rem;
     align-items: center;
   }
 
-  .event-pill {
-    background: var(--parchment);
-    padding: 0.15rem 0.5rem;
-    border-radius: 9999px;
-    font-size: 0.65rem;
-    color: var(--ink-light);
-    white-space: nowrap;
+  .donut-wrap {
+    width: 160px;
+    height: 160px;
   }
 
-  /* ── Completeness legend ── */
-  .completeness-row {
-    display: flex;
-    align-items: center;
+  .donut-wrap canvas {
+    width: 160px;
+    height: 160px;
+  }
+
+  .legend {
+    display: grid;
+    gap: 0.6rem;
+  }
+
+  .legend-row {
+    display: grid;
+    grid-template-columns: 12px 1fr auto;
     gap: 0.5rem;
-    padding: 0.4rem 0;
-    border-bottom: 1px solid var(--border-subtle);
+    align-items: center;
+    font-size: 0.9rem;
+    color: var(--color-white);
   }
 
-  .completeness-row:last-child {
-    border-bottom: none;
-  }
-
-  .completeness-dot {
+  .legend-dot {
     width: 10px;
     height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
+    border-radius: 999px;
   }
 
-  .completeness-label {
-    flex: 1;
-    font-size: 0.8rem;
-    color: var(--ink-light);
-  }
-
-  .completeness-pct {
+  .legend-value {
     font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--ink);
+    color: var(--color-muted);
   }
 
-  /* ── Data quality bars ── */
+  .depth-wrap {
+    text-align: center;
+  }
+
+  .depth-value {
+    font-size: 3.2rem;
+  }
+
+  .depth-sub {
+    color: var(--color-muted);
+    font-size: 0.85rem;
+    margin-top: 0.4rem;
+  }
+
+  .depth-bars {
+    margin-top: 1rem;
+  }
+
+  .depth-bars div {
+    height: 4px;
+    background: var(--color-blue);
+    margin: 4px auto;
+    border-radius: 999px;
+  }
+
+  .chart-wrap {
+    height: 240px;
+  }
+
+  .chart-wrap canvas {
+    width: 100%;
+    height: 100%;
+  }
+
   .quality-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .quality-item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.35rem;
-  }
-
-  .quality-bar-wrap {
-    height: 6px;
-    background: var(--parchment);
-    border-radius: 3px;
-    overflow: hidden;
+    display: grid;
+    gap: 0.9rem;
   }
 
   .quality-bar {
+    height: 6px;
+    background: rgba(240, 244, 248, 0.12);
+    border-radius: 999px;
+    overflow: hidden;
+  }
+
+  .quality-bar span {
+    display: block;
     height: 100%;
-    border-radius: 3px;
-    transition: width 0.6s var(--ease-out);
+    border-radius: 999px;
   }
 
-  .quality-detail {
-    display: flex;
-    align-items: baseline;
-    gap: 0.35rem;
-  }
-
-  .quality-count {
-    font-family: var(--font-mono);
+  .quality-meta {
     font-size: 0.85rem;
-    font-weight: 600;
-    color: var(--ink);
+    color: var(--color-muted);
+    margin-top: 0.4rem;
   }
 
-  .quality-desc {
-    font-size: 0.75rem;
-    color: var(--ink-muted);
+  .spotlight {
+    text-align: center;
+    padding: 1rem 0;
   }
 
-  /* ── Responsive ── */
-  @media (max-width: 1024px) {
-    .dashboard-grid {
-      grid-template-columns: repeat(2, 1fr);
+  .spotlight-value {
+    font-family: var(--font-serif);
+    font-size: 2.6rem;
+  }
+
+  .spotlight-meta {
+    color: var(--color-muted);
+    font-size: 0.8rem;
+    margin-top: 0.4rem;
+  }
+
+  .spotlight-name {
+    font-family: var(--font-serif);
+    font-size: 1.1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .spotlight-pill {
+    margin-top: 0.7rem;
+    display: inline-block;
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    background: rgba(30, 159, 242, 0.15);
+    color: var(--color-blue);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    font-family: var(--font-mono);
+  }
+
+  .empty-state {
+    text-align: center;
+    color: var(--color-muted);
+    padding: 1.5rem 0;
+  }
+
+  @media (max-width: 1100px) {
+    .stats-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
     .dashboard-grid-3 {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
+  @media (max-width: 820px) {
+    .hero {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    .hero-actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .panel-body {
+      grid-template-columns: 1fr;
+      justify-items: center;
     }
   }
 
   @media (max-width: 640px) {
-    .dashboard-grid,
+    .dashboard-inner {
+      padding: 2rem 1.25rem 3rem;
+    }
+    .stats-grid,
     .dashboard-grid-2,
     .dashboard-grid-3 {
       grid-template-columns: 1fr;
     }
   }
 </style>
-    const palette = getChartPalette();
-    const palette = getChartPalette();

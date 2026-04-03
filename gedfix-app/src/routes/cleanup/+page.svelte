@@ -1,6 +1,6 @@
 <script lang="ts">
   import { appStats } from '$lib/stores';
-  import { getDb, findSameNameGenerations, findCollateralRelatives, updatePerson } from '$lib/db';
+  import { getDb, findSameNameGenerations, findCollateralRelatives, updatePerson, deduplicateMediaByNormalizedPath, autoCategorizeMediaAfterDedup } from '$lib/db';
   import type { Person } from '$lib/types';
   import type { DuplicateCandidate, MergeLogEntry } from '$lib/media-matcher';
   import { exportGedcom } from '$lib/gedcom-exporter';
@@ -15,6 +15,25 @@
   let totalSources = $state(0);
   let statsLoaded = $state(false);
 
+  // --- Media Stats ---
+  let mediaStatsLoaded = $state(false);
+  let mediaStatsError = $state('');
+  let mediaTotal = $state(0);
+  let mediaUniquePaths = $state(0);
+  let mediaLinkRows = $state(0);
+  let topLinkedMedia = $state<{ id: number; title: string; filePath: string; personCount: number }[]>([]);
+  let duplicateFilePaths = $state<{ filePath: string; cnt: number }[]>([]);
+  let dedupChecksRunning = $state(false);
+  let dedupChecksError = $state('');
+  let dedupChecks = $state<{
+    totalMedia: number;
+    duplicatePaths: { filePath: string; cnt: number }[];
+    duplicateLinks: { mediaId: number; personXref: string; cnt: number }[];
+    emmaLinks: { givenName: string; surname: string; linked_media: number }[];
+    suspiciousPeople: { givenName: string; surname: string; link_count: number }[];
+    sharedMedia: { id: number; filePath: string; title: string; person_count: number }[];
+  } | null>(null);
+
   // --- Media Matching ---
   let mediaScanning = $state(false);
   let mediaScanProgress = $state(0);
@@ -25,7 +44,7 @@
   let deduping = $state(false);
   let dedupeProgress = $state(0);
   let dedupeMsg = $state('');
-  let dedupeResult = $state<{ duplicateGroups: number; entriesRemoved: number; linksTransferred: number } | null>(null);
+  let dedupeResult = $state<{ duplicateGroups: number; entriesRemoved: number; linksTransferred: number; categorizedUpdated: number } | null>(null);
 
   // --- Duplicate People ---
   let dupScanning = $state(false);
@@ -69,6 +88,105 @@
     }
   }
 
+  async function loadMediaStats() {
+    mediaStatsLoaded = false;
+    mediaStatsError = '';
+    try {
+      const db = await getDb();
+      const total = await db.select<{ cnt: number }[]>('SELECT COUNT(*) as cnt FROM media');
+      const unique = await db.select<{ cnt: number }[]>(
+        `SELECT COUNT(DISTINCT filePath) as cnt FROM media WHERE filePath != ''`
+      );
+      const linkRows = await db.select<{ cnt: number }[]>('SELECT COUNT(*) as cnt FROM media_person_link');
+      const top = await db.select<{ id: number; filePath: string; title: string; personCount: number }[]>(`
+        SELECT m.id, m.filePath, m.title, COUNT(mpl.personXref) as personCount
+        FROM media m
+        JOIN media_person_link mpl ON mpl.mediaId = m.id
+        GROUP BY m.id
+        ORDER BY personCount DESC
+        LIMIT 5
+      `);
+      const duplicates = await db.select<{ filePath: string; cnt: number }[]>(`
+        SELECT LOWER(REPLACE(TRIM(filePath), '\\', '/')) as filePath, COUNT(*) as cnt
+        FROM media
+        WHERE filePath != ''
+        GROUP BY LOWER(REPLACE(TRIM(filePath), '\\', '/'))
+        HAVING COUNT(*) > 1
+        ORDER BY cnt DESC
+      `);
+
+      mediaTotal = total[0]?.cnt ?? 0;
+      mediaUniquePaths = unique[0]?.cnt ?? 0;
+      mediaLinkRows = linkRows[0]?.cnt ?? 0;
+      topLinkedMedia = top;
+      duplicateFilePaths = duplicates;
+      mediaStatsLoaded = true;
+    } catch (e) {
+      mediaStatsError = String(e);
+      mediaStatsLoaded = true;
+    }
+  }
+
+  async function runDedupChecks() {
+    dedupChecksRunning = true;
+    dedupChecksError = '';
+    try {
+      const db = await getDb();
+      const total = await db.select<{ total_media: number }[]>(`SELECT COUNT(*) as total_media FROM media`);
+      const dups = await db.select<{ filePath: string; cnt: number }[]>(
+        `SELECT LOWER(REPLACE(TRIM(filePath), '\\', '/')) as filePath, COUNT(*) as cnt
+         FROM media
+         WHERE filePath != ''
+         GROUP BY LOWER(REPLACE(TRIM(filePath), '\\', '/'))
+         HAVING COUNT(*) > 1`
+      );
+      const dupLinks = await db.select<{ mediaId: number; personXref: string; cnt: number }[]>(
+        `SELECT mediaId, personXref, COUNT(*) as cnt
+         FROM media_person_link
+         GROUP BY mediaId, personXref
+         HAVING COUNT(*) > 1
+         ORDER BY cnt DESC
+         LIMIT 50`
+      );
+      const emma = await db.select<{ givenName: string; surname: string; linked_media: number }[]>(`
+        SELECT p.givenName, p.surname, COUNT(DISTINCT mpl.mediaId) as linked_media
+        FROM person p
+        JOIN media_person_link mpl ON mpl.personXref = p.xref
+        WHERE p.surname LIKE '%Skorbisz%' OR p.surname LIKE '%Haas%'
+        GROUP BY p.xref
+      `);
+      const suspicious = await db.select<{ givenName: string; surname: string; link_count: number }[]>(`
+        SELECT p.givenName, p.surname, COUNT(*) as link_count
+        FROM person p
+        JOIN media_person_link mpl ON mpl.personXref = p.xref
+        GROUP BY p.xref
+        HAVING COUNT(*) > 50
+        ORDER BY link_count DESC
+      `);
+      const shared = await db.select<{ id: number; filePath: string; title: string; person_count: number }[]>(`
+        SELECT m.id, m.filePath, m.title, COUNT(mpl.personXref) as person_count
+        FROM media m
+        JOIN media_person_link mpl ON mpl.mediaId = m.id
+        GROUP BY m.id
+        HAVING COUNT(mpl.personXref) > 10
+        ORDER BY person_count DESC
+        LIMIT 20
+      `);
+
+      dedupChecks = {
+        totalMedia: total[0]?.total_media ?? 0,
+        duplicatePaths: dups,
+        duplicateLinks: dupLinks,
+        emmaLinks: emma,
+        suspiciousPeople: suspicious,
+        sharedMedia: shared,
+      };
+    } catch (e) {
+      dedupChecksError = String(e);
+    }
+    dedupChecksRunning = false;
+  }
+
   async function scanAndMatch() {
     mediaScanning = true;
     mediaScanProgress = 0;
@@ -105,14 +223,18 @@
     dedupeResult = null;
 
     try {
-      const { deduplicateMedia: dedupe } = await import('$lib/media-matcher');
-      const result = await dedupe((pct: number, msg: string) => {
-        dedupeProgress = pct;
-        dedupeMsg = msg;
-      });
-      dedupeResult = result;
+      dedupeProgress = 30;
+      dedupeMsg = 'Merging duplicate media by normalized path...';
+      const result = await deduplicateMediaByNormalizedPath();
+      dedupeProgress = 75;
+      dedupeMsg = 'Auto-categorizing media...';
+      const categorized = await autoCategorizeMediaAfterDedup();
+      dedupeResult = { ...result, categorizedUpdated: categorized.updated };
+      dedupeProgress = 100;
       dedupeMsg = 'Deduplication complete';
       await loadStats();
+      await loadMediaStats();
+      await runDedupChecks();
     } catch (e) {
       dedupeMsg = `Error: ${e}`;
     }
@@ -308,6 +430,7 @@
 
   $effect(() => {
     loadStats();
+    loadMediaStats();
   });
 </script>
 
@@ -362,6 +485,204 @@
         <div class="flex items-center gap-2 text-sm text-ink-muted py-4">
           <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
           Loading stats...
+        </div>
+      {/if}
+    </div>
+
+    <!-- Section 1b: Media Stats -->
+    <div class="arch-card rounded-xl p-6">
+      <div class="flex items-center gap-3 mb-5">
+        <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background: var(--accent-subtle);">
+          <svg class="w-4 h-4" fill="none" stroke="var(--accent)" stroke-width="1.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 3.75h9A2.25 2.25 0 0118.75 6v12A2.25 2.25 0 0116.5 20.25h-9A2.25 2.25 0 015.25 18V6A2.25 2.25 0 017.5 3.75zM8.25 8.25h7.5M8.25 12h7.5M8.25 15.75h4.5" />
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold text-ink">Media Stats</h2>
+          <p class="text-xs text-ink-muted">Verify dedup and linking without raw SQL</p>
+        </div>
+      </div>
+
+      {#if !mediaStatsLoaded}
+        <div class="flex items-center gap-2 text-sm text-ink-muted py-4">
+          <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path></svg>
+          Loading media stats...
+        </div>
+      {:else if mediaStatsError}
+        <div class="rounded-lg p-3 mt-2 flex items-center gap-2" style="background: rgba(166,61,47,0.06); border: 1px solid rgba(166,61,47,0.15);">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="var(--color-error)" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+          </svg>
+          <div class="text-xs" style="color: var(--color-error);">{mediaStatsError}</div>
+        </div>
+      {:else}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
+            <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{mediaTotal.toLocaleString()}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">Media Rows</div>
+          </div>
+          <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
+            <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{mediaUniquePaths.toLocaleString()}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">Unique File Paths</div>
+          </div>
+          <div class="rounded-lg p-4 text-center" style="background: var(--parchment);">
+            <div class="text-2xl font-bold text-ink" style="font-family: var(--font-mono);">{mediaLinkRows.toLocaleString()}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted mt-1" style="font-family: var(--font-sans);">Media Links</div>
+          </div>
+        </div>
+
+        <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Top 5 Most-Linked Media</div>
+            {#if topLinkedMedia.length === 0}
+              <div class="text-xs text-ink-muted">No linked media found.</div>
+            {:else}
+              <div class="space-y-2">
+                {#each topLinkedMedia as m}
+                  <div class="flex items-start justify-between gap-3 text-xs">
+                    <div class="truncate">
+                      <div class="text-ink">{m.title || 'Untitled'}</div>
+                      <div class="text-ink-faint" style="font-family: var(--font-mono);">{m.filePath}</div>
+                    </div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">{m.personCount} linked</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Duplicate File Paths</div>
+            {#if duplicateFilePaths.length === 0}
+              <div class="text-xs" style="color: var(--color-validated);">No duplicates found.</div>
+            {:else}
+              <div class="space-y-2 max-h-[200px] overflow-y-auto">
+                {#each duplicateFilePaths as dup}
+                  <div class="flex items-start justify-between gap-3 text-xs">
+                    <div class="text-ink-faint" style="font-family: var(--font-mono);">{dup.filePath}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">x{dup.cnt}</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+        </div>
+      {/if}
+    </div>
+
+    <!-- Section 1c: Dedup Verification -->
+    <div class="arch-card rounded-xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h2 class="text-sm font-semibold text-ink">Dedup Verification</h2>
+          <p class="text-xs text-ink-muted">Runs the SQL checks and shows results inline</p>
+        </div>
+        <button onclick={runDedupChecks} disabled={dedupChecksRunning} class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors">
+          {dedupChecksRunning ? 'Running...' : 'Run Dedup Checks'}
+        </button>
+      </div>
+
+      {#if dedupChecksError}
+        <div class="text-xs text-ink-muted">{dedupChecksError}</div>
+      {/if}
+
+      {#if dedupChecks}
+        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+          <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
+            <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupChecks.totalMedia.toLocaleString()}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Total Media</div>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
+            <div class="text-lg font-bold" style="font-family: var(--font-mono); color: {dedupChecks.duplicatePaths.length > 0 ? 'var(--color-warning)' : 'var(--color-validated)'};">{dedupChecks.duplicatePaths.length}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Duplicate Paths</div>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
+            <div class="text-lg font-bold" style="font-family: var(--font-mono); color: {dedupChecks.duplicateLinks.length > 0 ? 'var(--color-warning)' : 'var(--color-validated)'};">{dedupChecks.duplicateLinks.length}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Duplicate Links</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Duplicate File Paths</div>
+            {#if dedupChecks.duplicatePaths.length === 0}
+              <div class="text-xs" style="color: var(--color-validated);">No duplicates found.</div>
+            {:else}
+              <div class="space-y-2 max-h-[180px] overflow-y-auto">
+                {#each dedupChecks.duplicatePaths as dup}
+                  <div class="flex items-start justify-between gap-3 text-xs">
+                    <div class="text-ink-faint" style="font-family: var(--font-mono);">{dup.filePath}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">x{dup.cnt}</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Emma Skorbisz Haas</div>
+            {#if dedupChecks.emmaLinks.length === 0}
+              <div class="text-xs text-ink-muted">No matches found.</div>
+            {:else}
+              <div class="space-y-2">
+                {#each dedupChecks.emmaLinks as row}
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="text-ink">{row.givenName} {row.surname}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">{row.linked_media} linked</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">People with 50+ Links</div>
+            {#if dedupChecks.suspiciousPeople.length === 0}
+              <div class="text-xs" style="color: var(--color-validated);">None</div>
+            {:else}
+              <div class="space-y-2 max-h-[180px] overflow-y-auto">
+                {#each dedupChecks.suspiciousPeople as row}
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="text-ink">{row.givenName} {row.surname}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">{row.link_count}</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Duplicate Media Links</div>
+            {#if dedupChecks.duplicateLinks.length === 0}
+              <div class="text-xs" style="color: var(--color-validated);">None</div>
+            {:else}
+              <div class="space-y-2 max-h-[180px] overflow-y-auto">
+                {#each dedupChecks.duplicateLinks as row}
+                  <div class="flex items-center justify-between text-xs">
+                    <div class="text-ink-faint" style="font-family: var(--font-mono);">{row.personXref} / {row.mediaId}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">x{row.cnt}</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
+
+          <div class="rounded-lg p-4" style="background: var(--vellum);">
+            <div class="text-xs font-semibold text-ink mb-2">Shared Media (10+ People)</div>
+            {#if dedupChecks.sharedMedia.length === 0}
+              <div class="text-xs text-ink-muted">None</div>
+            {:else}
+              <div class="space-y-2 max-h-[180px] overflow-y-auto">
+                {#each dedupChecks.sharedMedia as row}
+                  <div class="text-xs">
+                    <div class="text-ink">{row.title || 'Untitled'}</div>
+                    <div class="text-ink-faint" style="font-family: var(--font-mono);">{row.filePath}</div>
+                    <div class="text-ink-muted" style="font-family: var(--font-mono);">{row.person_count} people</div>
+                  </div>
+                {/each}
+              </div>
+            {/if}
+          </div>
         </div>
       {/if}
     </div>
@@ -430,8 +751,8 @@
             </svg>
           </div>
           <div>
-            <h2 class="text-sm font-semibold text-ink">Deduplicate Images</h2>
-            <p class="text-xs text-ink-muted">Find duplicate media entries and merge them, transferring all links</p>
+            <h2 class="text-sm font-semibold text-ink">Deduplicate Media</h2>
+            <p class="text-xs text-ink-muted">Merge duplicates by normalized path, transfer links, then auto-categorize</p>
           </div>
         </div>
         <button
@@ -439,7 +760,7 @@
           disabled={deduping}
           class="px-4 py-2 btn-accent text-white text-sm font-medium rounded-lg disabled:opacity-50 transition-colors"
         >
-          {deduping ? 'Processing...' : 'Find & Merge Duplicates'}
+          {deduping ? 'Processing...' : 'Deduplicate Media'}
         </button>
       </div>
 
@@ -453,7 +774,7 @@
       {/if}
 
       {#if dedupeResult}
-        <div class="grid grid-cols-3 gap-3 mt-4">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.duplicateGroups}</div>
             <div class="text-[10px] uppercase tracking-wider text-ink-muted">Groups Found</div>
@@ -465,6 +786,10 @@
           <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
             <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.linksTransferred}</div>
             <div class="text-[10px] uppercase tracking-wider text-ink-muted">Links Transferred</div>
+          </div>
+          <div class="rounded-lg p-3 text-center" style="background: var(--parchment);">
+            <div class="text-lg font-bold text-ink" style="font-family: var(--font-mono);">{dedupeResult.categorizedUpdated}</div>
+            <div class="text-[10px] uppercase tracking-wider text-ink-muted">Categories Updated</div>
           </div>
         </div>
       {/if}

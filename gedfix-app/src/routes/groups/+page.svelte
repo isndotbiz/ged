@@ -1,11 +1,16 @@
 <script lang="ts">
-  import { getGroups, insertGroup, deleteGroup, getGroupMembers, getGroupMemberCount, getPerson } from '$lib/db';
+  import { getGroups, insertGroup, deleteGroup, getGroupMembers, getGroupMemberCount, getPerson, getAllPersons, addGroupMember, removeGroupMember } from '$lib/db';
   import type { PersonGroup, Person } from '$lib/types';
 
   let groups = $state<(PersonGroup & { memberCount: number })[]>([]);
   let showEditor = $state(false);
   let selectedGroup = $state<number | null>(null);
   let members = $state<(Person | null)[]>([]);
+  let allPeople = $state<Person[]>([]);
+  let showPicker = $state(false);
+  let pickerQuery = $state('');
+  let pickerSelectedXref = $state('');
+  let pickerInputEl = $state<HTMLInputElement | null>(null);
 
   let newName = $state('');
   let newDesc = $state('');
@@ -16,6 +21,9 @@
   async function load() {
     const raw = await getGroups();
     groups = await Promise.all(raw.map(async g => ({ ...g, memberCount: await getGroupMemberCount(g.id) })));
+    if (allPeople.length === 0) {
+      allPeople = await getAllPersons();
+    }
   }
 
   async function createGroup() {
@@ -39,7 +47,46 @@
     }
   }
 
+  function openPicker(groupId: number) {
+    selectedGroup = groupId;
+    pickerQuery = '';
+    pickerSelectedXref = '';
+    showPicker = true;
+  }
+
+  function handlePickerKeydown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      showPicker = false;
+    }
+  }
+
+  async function addSelectedPersonToGroup() {
+    if (!selectedGroup || !pickerSelectedXref) return;
+    await addGroupMember(selectedGroup, pickerSelectedXref);
+    await load();
+    await selectGroup(selectedGroup);
+    showPicker = false;
+  }
+
+  async function removeMember(personXref: string) {
+    if (!selectedGroup) return;
+    await removeGroupMember(selectedGroup, personXref);
+    await load();
+    await selectGroup(selectedGroup);
+  }
+
+  let pickerOptions = $derived(
+    allPeople.filter((p) => (`${p.givenName} ${p.surname} ${p.xref}`).toLowerCase().includes(pickerQuery.toLowerCase())).slice(0, 80)
+  );
+
   $effect(() => { load(); });
+  $effect(() => {
+    if (!showPicker) return;
+    const id = setTimeout(() => {
+      pickerInputEl?.focus();
+    }, 0);
+    return () => clearTimeout(id);
+  });
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
@@ -92,6 +139,7 @@
             </div>
             <div class="flex items-center gap-3">
               <span class="text-xs text-ink-faint">{group.memberCount} members</span>
+              <button onclick={(e) => { e.stopPropagation(); openPicker(group.id); }} class="text-xs" style="color: var(--accent);">Add Member</button>
               <button onclick={(e) => { e.stopPropagation(); removeGroup(group.id); }} class="text-xs text-red-500 hover:text-red-700">Delete</button>
             </div>
           </div>
@@ -101,12 +149,34 @@
           <div class="ml-4 rounded-lg p-3 space-y-1" style="background: var(--parchment);">
             {#each members as m}
               {#if m}
-                <div class="text-sm text-ink-light">{m.givenName} {m.surname}</div>
+                <div class="text-sm text-ink-light flex items-center justify-between">
+                  <span>{m.givenName} {m.surname}</span>
+                  <button class="text-xs text-red-400 hover:text-red-300" onclick={() => removeMember(m.xref)}>Remove</button>
+                </div>
               {/if}
             {/each}
           </div>
         {/if}
       {/each}
+    </div>
+  {/if}
+
+  {#if showPicker}
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <button class="absolute inset-0" style="background: rgba(0,0,0,0.55); border: 0;" onclick={() => showPicker = false} aria-label="Close person picker"></button>
+      <div class="arch-card w-full max-w-xl p-5 relative z-10" role="dialog" aria-modal="true" aria-label="Add person to group" tabindex="-1" onkeydown={handlePickerKeydown}>
+        <h2 class="text-base mb-3" style="color: var(--ink);">Add Person to Group</h2>
+        <input bind:this={pickerInputEl} bind:value={pickerQuery} placeholder="Search people..." class="w-full px-3 py-2 text-sm arch-input mb-3" />
+        <select bind:value={pickerSelectedXref} class="w-full px-3 py-2 text-sm arch-input mb-3" size="8">
+          {#each pickerOptions as p}
+            <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
+          {/each}
+        </select>
+        <div class="flex justify-end gap-2">
+          <button class="btn-outline" onclick={() => showPicker = false}>Cancel</button>
+          <button class="btn-primary" onclick={addSelectedPersonToGroup} disabled={!pickerSelectedXref}>Add</button>
+        </div>
+      </div>
     </div>
   {/if}
 </div>

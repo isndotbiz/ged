@@ -1,5 +1,5 @@
 import { getDb } from './db';
-import type { Person, GedcomMedia } from './types';
+import type { Person, GedcomMedia, FaceDetectionBox } from './types';
 import { isTauri } from './platform';
 
 async function tauriInvoke<T>(cmd: string, args: Record<string, unknown>): Promise<T> {
@@ -22,6 +22,97 @@ interface MatchReport {
   created: number;
   linked: number;
   results: MatchResult[];
+}
+
+interface FaceApiDetection {
+  detection: {
+    score?: number;
+    box: {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+  };
+  landmarks: unknown;
+}
+
+let faceModelsLoaded = false;
+
+async function getFaceApi() {
+  return await import('@vladmandic/face-api');
+}
+
+async function ensureFaceModelsLoaded() {
+  if (faceModelsLoaded) return;
+  try {
+    const faceapi = await getFaceApi();
+    await Promise.all([
+      faceapi.nets.tinyFaceDetector.loadFromUri('/models/face-api'),
+      faceapi.nets.faceLandmark68Net.loadFromUri('/models/face-api'),
+    ]);
+    faceModelsLoaded = true;
+  } catch (error) {
+    faceModelsLoaded = false;
+    throw error;
+  }
+}
+
+async function loadImageElement(path: string): Promise<HTMLImageElement> {
+  const src = isTauri()
+    ? (await import('@tauri-apps/api/core')).convertFileSrc(path)
+    : path;
+  return await new Promise<HTMLImageElement>((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error(`Unable to load image at ${path}`));
+    img.src = src;
+  });
+}
+
+export async function detectFaces(mediaPath: string): Promise<FaceDetectionBox[]> {
+  if (typeof window === 'undefined' || !mediaPath) return [];
+  await ensureFaceModelsLoaded();
+  const faceapi = await getFaceApi();
+  const image = await loadImageElement(mediaPath);
+  const detections = await faceapi
+    .detectAllFaces(image, new faceapi.TinyFaceDetectorOptions({ inputSize: 512, scoreThreshold: 0.35 }))
+    .withFaceLandmarks(true);
+
+  return (detections as FaceApiDetection[]).map((d) => ({
+    x: d.detection.box.x,
+    y: d.detection.box.y,
+    w: d.detection.box.width,
+    h: d.detection.box.height,
+    confidence: d.detection.score ?? 0,
+    imageWidth: image.naturalWidth || image.width,
+    imageHeight: image.naturalHeight || image.height,
+  }));
+}
+
+export async function tagFaceOnMedia(
+  mediaXref: string,
+  personXref: string,
+  faceBox: { x: number; y: number; w: number; h: number }
+): Promise<void> {
+  const db = await getDb();
+  let mediaId = Number.parseInt(mediaXref, 10);
+  if (!Number.isFinite(mediaId) || mediaId <= 0) {
+    const row = await db.select<{ id: number }[]>(`SELECT id FROM media WHERE xref = $1 LIMIT 1`, [mediaXref]);
+    mediaId = row[0]?.id ?? 0;
+  }
+  if (!mediaId) throw new Error(`Media not found: ${mediaXref}`);
+
+  await db.execute(
+    `INSERT INTO media_person_link (mediaId, personXref, role, isPrimary, faceX, faceY, faceW, faceH, addedBy, createdAt)
+     VALUES ($1, $2, 'face_tag', 0, $3, $4, $5, $6, 'face_detection', datetime('now'))
+     ON CONFLICT(mediaId, personXref) DO UPDATE SET
+       faceX = excluded.faceX,
+       faceY = excluded.faceY,
+       faceW = excluded.faceW,
+       faceH = excluded.faceH`,
+    [mediaId, personXref, faceBox.x, faceBox.y, faceBox.w, faceBox.h]
+  );
 }
 
 export async function scanAndMatchMedia(
@@ -162,6 +253,11 @@ function findBestNameMatch(filename: string, candidates: Person[]): Person | nul
   }
   return null;
 }
+
+export const __testables = {
+  matchFileToPersons,
+  findBestNameMatch,
+};
 
 // Dedup: find media with identical filePaths and merge
 export async function deduplicateMedia(

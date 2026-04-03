@@ -3,6 +3,14 @@ import type { Person, Family, GedcomEvent, Source, GedcomMedia, ChildLink, AppSt
 
 let db: PlatformDatabase | null = null;
 
+export function parseDateForSort(dateValue: string | null | undefined): number {
+  if (!dateValue) return 0;
+  const trimmed = dateValue.trim();
+  if (!trimmed) return 0;
+  const match = trimmed.match(/(\d{4})/);
+  return match ? parseInt(match[1], 10) : 0;
+}
+
 export async function getDb(): Promise<PlatformDatabase> {
   if (!db) {
     if (isTauri()) {
@@ -32,6 +40,18 @@ async function optimizeDb() {
 
 async function createTables() {
   const d = db!;
+
+  async function ensureColumn(table: string, column: string, definition: string): Promise<void> {
+    const cols = await d.select<{ name: string }[]>(`PRAGMA table_info(${table})`);
+    if (!cols.some(c => c.name === column)) {
+      try {
+        await d.execute(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition}`);
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        console.warn(`Failed to add column ${table}.${column}: ${message}`);
+      }
+    }
+  }
 
   await d.execute(`CREATE TABLE IF NOT EXISTS person (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -84,8 +104,10 @@ async function createTables() {
     ownerXref TEXT DEFAULT '',
     filePath TEXT DEFAULT '',
     format TEXT DEFAULT '',
-    title TEXT DEFAULT ''
+    title TEXT DEFAULT '',
+    category TEXT NOT NULL DEFAULT 'uncategorized'
   )`);
+  await ensureColumn('media', 'category', `TEXT NOT NULL DEFAULT 'uncategorized'`);
 
   await d.execute(`CREATE TABLE IF NOT EXISTS media_person_link (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -104,6 +126,19 @@ async function createTables() {
     createdAt TEXT NOT NULL DEFAULT '',
     UNIQUE(mediaId, personXref)
   )`);
+
+  // Upgrade older databases in place to match current media/person link shape.
+  await ensureColumn('media_person_link', 'role', `TEXT NOT NULL DEFAULT 'tagged'`);
+  await ensureColumn('media_person_link', 'isPrimary', `INTEGER NOT NULL DEFAULT 0`);
+  await ensureColumn('media_person_link', 'sortOrder', `INTEGER NOT NULL DEFAULT 0`);
+  await ensureColumn('media_person_link', 'faceX', `REAL`);
+  await ensureColumn('media_person_link', 'faceY', `REAL`);
+  await ensureColumn('media_person_link', 'faceW', `REAL`);
+  await ensureColumn('media_person_link', 'faceH', `REAL`);
+  await ensureColumn('media_person_link', 'caption', `TEXT DEFAULT ''`);
+  await ensureColumn('media_person_link', 'addedBy', `TEXT DEFAULT 'gedcom_import'`);
+  await ensureColumn('media_person_link', 'verified', `INTEGER NOT NULL DEFAULT 0`);
+  await ensureColumn('media_person_link', 'createdAt', `TEXT NOT NULL DEFAULT ''`);
 
   await d.execute(`CREATE TABLE IF NOT EXISTS child_link (
     familyXref TEXT NOT NULL,
@@ -205,8 +240,12 @@ async function createTables() {
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     personXref TEXT NOT NULL,
     label TEXT DEFAULT '',
+    category TEXT DEFAULT 'General',
+    sortOrder INTEGER DEFAULT 0,
     createdAt TEXT DEFAULT ''
   )`);
+  await ensureColumn('bookmark', 'category', `TEXT DEFAULT 'General'`);
+  await ensureColumn('bookmark', 'sortOrder', `INTEGER DEFAULT 0`);
 
   await d.execute(`CREATE TABLE IF NOT EXISTS ai_chat (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -241,9 +280,15 @@ async function createTables() {
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_person_surname ON person(surname)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_event_owner ON event(ownerXref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_media_owner ON media(ownerXref)`);
+  await d.execute(`CREATE INDEX IF NOT EXISTS idx_media_category ON media(category)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_mpl_person ON media_person_link(personXref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_mpl_media ON media_person_link(mediaId)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_mpl_primary ON media_person_link(personXref, isPrimary)`);
+  // Ensure one link per media/person pair
+  await d.execute(`DELETE FROM media_person_link WHERE rowid NOT IN (
+    SELECT MIN(rowid) FROM media_person_link GROUP BY mediaId, personXref
+  )`);
+  await d.execute(`CREATE UNIQUE INDEX IF NOT EXISTS idx_mpl_unique ON media_person_link(mediaId, personXref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_family_partner1 ON family(partner1Xref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_family_partner2 ON family(partner2Xref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_child_link_family ON child_link(familyXref)`);
@@ -259,11 +304,41 @@ async function createTables() {
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_altname_person ON alternate_name(personXref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_gm_group ON group_member(groupId)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_bookmark_person ON bookmark(personXref)`);
+  await d.execute(`CREATE INDEX IF NOT EXISTS idx_bookmark_category ON bookmark(category)`);
+  await d.execute(`CREATE INDEX IF NOT EXISTS idx_bookmark_sort ON bookmark(sortOrder)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_ai_chat_timestamp ON ai_chat(timestamp)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_stories_person ON stories(personXref)`);
   await d.execute(`CREATE INDEX IF NOT EXISTS idx_stories_family ON stories(familyXref)`);
 
   await d.execute(`CREATE TABLE IF NOT EXISTS settings (key TEXT PRIMARY KEY, value TEXT DEFAULT '')`);
+  await d.execute(`CREATE TABLE IF NOT EXISTS undo_log (
+    id TEXT PRIMARY KEY,
+    description TEXT NOT NULL,
+    tableName TEXT NOT NULL,
+    rowId TEXT NOT NULL,
+    oldData TEXT DEFAULT '',
+    newData TEXT DEFAULT '',
+    createdAt TEXT DEFAULT (datetime('now'))
+  )`);
+  await d.execute(`CREATE TABLE IF NOT EXISTS evidence (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    personXref TEXT NOT NULL,
+    factType TEXT NOT NULL,
+    factValue TEXT NOT NULL,
+    sourceXref TEXT DEFAULT '',
+    informationType TEXT NOT NULL DEFAULT 'undetermined',
+    evidenceType TEXT NOT NULL DEFAULT 'indirect',
+    quality TEXT NOT NULL DEFAULT 'undetermined',
+    analysisNotes TEXT DEFAULT '',
+    createdAt TEXT DEFAULT (datetime('now'))
+  )`);
+  await d.execute(`CREATE TABLE IF NOT EXISTS gps_checklist (
+    personXref TEXT NOT NULL,
+    item INTEGER NOT NULL,
+    completed INTEGER DEFAULT 0,
+    notes TEXT DEFAULT '',
+    PRIMARY KEY (personXref, item)
+  )`);
 
   // ===== Agentic Proposal System =====
   await d.execute(`CREATE TABLE IF NOT EXISTS proposal (
@@ -358,17 +433,40 @@ export async function getPersons(search?: string, limit = 500): Promise<Person[]
     // Try FTS5 first (sub-millisecond), fall back to LIKE
     try {
       const ftsQuery = term.split(/\s+/).map(w => `"${w}"*`).join(' ');
-      return await d.select<Person[]>(
+      const base = await d.select<Person[]>(
         `SELECT p.* FROM person p JOIN person_fts f ON p.id = f.rowid
          WHERE person_fts MATCH $1 ORDER BY rank LIMIT $2`,
         [ftsQuery, limit]
       );
+      const q = `%${term}%`;
+      const alt = await d.select<Person[]>(
+        `SELECT DISTINCT p.* FROM person p
+         JOIN alternate_name a ON a.personXref = p.xref
+         WHERE a.givenName LIKE $1 OR a.surname LIKE $1 OR a.nameType LIKE $1
+         LIMIT $2`,
+        [q, limit]
+      );
+      const map = new Map<string, Person>();
+      for (const p of base) map.set(p.xref, p);
+      for (const p of alt) map.set(p.xref, p);
+      return Array.from(map.values()).slice(0, limit);
     } catch {
       const q = `%${term}%`;
-      return await d.select<Person[]>(
+      const base = await d.select<Person[]>(
         `SELECT * FROM person WHERE givenName LIKE $1 OR surname LIKE $1 OR xref LIKE $1 ORDER BY surname, givenName LIMIT $2`,
         [q, limit]
       );
+      const alt = await d.select<Person[]>(
+        `SELECT DISTINCT p.* FROM person p
+         JOIN alternate_name a ON a.personXref = p.xref
+         WHERE a.givenName LIKE $1 OR a.surname LIKE $1 OR a.nameType LIKE $1
+         ORDER BY p.surname, p.givenName LIMIT $2`,
+        [q, limit]
+      );
+      const map = new Map<string, Person>();
+      for (const p of base) map.set(p.xref, p);
+      for (const p of alt) map.set(p.xref, p);
+      return Array.from(map.values()).slice(0, limit);
     }
   }
   return await d.select<Person[]>(
@@ -404,6 +502,29 @@ export async function updatePerson(xref: string, data: Partial<Person>): Promise
   if (sets.length === 0) return;
   vals.push(xref);
   await d.execute(`UPDATE person SET ${sets.join(', ')} WHERE xref = $${i}`, vals);
+}
+
+export async function updatePersonField(xref: string, field: string, value: string): Promise<void> {
+  const d = await getDb();
+  if (!SAFE_FIELDS.person.has(field)) throw new Error(`Invalid person field ${field}`);
+  const before = await getPerson(xref);
+  if (!before) return;
+  const oldValue = String((before as any)[field] ?? '');
+  await d.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [value, xref]);
+  const { undoManager } = await import('./undo-manager');
+  await undoManager.push({
+    id: crypto.randomUUID(),
+    description: `Changed ${field} for ${before.givenName} ${before.surname}`.trim(),
+    timestamp: new Date().toISOString(),
+    undo: async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [oldValue, xref]);
+    },
+    redo: async () => {
+      const db = await getDb();
+      await db.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [value, xref]);
+    },
+  }, { tableName: 'person', rowId: xref, oldData: { [field]: oldValue }, newData: { [field]: value } });
 }
 
 // ===== Event queries =====
@@ -588,6 +709,176 @@ export async function setMediaPrimary(mediaId: number, personXref: string): Prom
   await d.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
 }
 
+export type MediaCategory = 'headshots' | 'other' | 'delete-queue' | 'uncategorized';
+
+export function normalizeMediaPath(filePath: string): string {
+  return filePath.trim().replace(/\\/g, '/').toLowerCase();
+}
+
+export async function getMediaForManagement(): Promise<(GedcomMedia & {
+  category: MediaCategory;
+  linkCount: number;
+  peopleLabel: string;
+})[]> {
+  const d = await getDb();
+  return await d.select<(GedcomMedia & { category: MediaCategory; linkCount: number; peopleLabel: string })[]>(`
+    SELECT
+      m.*,
+      COALESCE(m.category, 'uncategorized') as category,
+      COUNT(DISTINCT mpl.personXref) as linkCount,
+      COALESCE(GROUP_CONCAT(DISTINCT TRIM(COALESCE(p.givenName, '') || ' ' || COALESCE(p.surname, ''))), '') as peopleLabel
+    FROM media m
+    LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id
+    LEFT JOIN person p ON p.xref = mpl.personXref
+    WHERE m.filePath != ''
+    GROUP BY m.id
+    ORDER BY m.id DESC
+  `);
+}
+
+export async function updateMediaCategory(mediaIds: number[], category: MediaCategory): Promise<number> {
+  if (mediaIds.length === 0) return 0;
+  const d = await getDb();
+  const placeholders = mediaIds.map((_, i) => `$${i + 2}`).join(', ');
+  const result = await d.execute(
+    `UPDATE media SET category = $1 WHERE id IN (${placeholders})`,
+    [category, ...mediaIds]
+  );
+  return result.rowsAffected;
+}
+
+export async function processDeleteQueue(): Promise<{ mediaRemoved: number; linksRemoved: number }> {
+  const d = await getDb();
+  await d.execute('BEGIN');
+  try {
+    const queued = await d.select<{ id: number }[]>(`SELECT id FROM media WHERE category = 'delete-queue'`);
+    if (queued.length === 0) {
+      await d.execute('COMMIT');
+      return { mediaRemoved: 0, linksRemoved: 0 };
+    }
+    const ids = queued.map(r => r.id);
+    const placeholders = ids.map((_, i) => `$${i + 1}`).join(', ');
+    const linkResult = await d.execute(`DELETE FROM media_person_link WHERE mediaId IN (${placeholders})`, ids);
+    const mediaResult = await d.execute(`DELETE FROM media WHERE id IN (${placeholders})`, ids);
+    await d.execute('COMMIT');
+    return { mediaRemoved: mediaResult.rowsAffected, linksRemoved: linkResult.rowsAffected };
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+}
+
+export async function deduplicateMediaByNormalizedPath(): Promise<{
+  duplicateGroups: number;
+  entriesRemoved: number;
+  linksTransferred: number;
+}> {
+  const d = await getDb();
+  const rows = await d.select<{ id: number; filePath: string }[]>(`SELECT id, filePath FROM media WHERE filePath != '' ORDER BY id ASC`);
+  const groups = new Map<string, { id: number; filePath: string }[]>();
+  for (const row of rows) {
+    const key = normalizeMediaPath(row.filePath);
+    if (!key) continue;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(row);
+  }
+
+  let duplicateGroups = 0;
+  let entriesRemoved = 0;
+  let linksTransferred = 0;
+
+  await d.execute('BEGIN');
+  try {
+    for (const [, groupRows] of groups) {
+      if (groupRows.length < 2) continue;
+      duplicateGroups++;
+
+      const keep = groupRows.reduce((lowest, row) => row.id < lowest.id ? row : lowest, groupRows[0]);
+      const removals = groupRows.filter(row => row.id !== keep.id);
+
+      for (const rm of removals) {
+        const links = await d.select<{
+          personXref: string;
+          role: string;
+          isPrimary: number;
+          sortOrder: number;
+          faceX: number | null;
+          faceY: number | null;
+          faceW: number | null;
+          faceH: number | null;
+          caption: string;
+          verified: number;
+        }[]>(
+          `SELECT personXref, role, isPrimary, sortOrder, faceX, faceY, faceW, faceH, caption, verified
+           FROM media_person_link WHERE mediaId = $1`,
+          [rm.id]
+        );
+        for (const link of links) {
+          const ins = await d.execute(
+            `INSERT OR IGNORE INTO media_person_link
+             (mediaId, personXref, role, isPrimary, sortOrder, faceX, faceY, faceW, faceH, caption, addedBy, verified, createdAt)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,'dedup_merge',$11,datetime('now'))`,
+            [keep.id, link.personXref, link.role || 'tagged', link.isPrimary ?? 0, link.sortOrder ?? 0, link.faceX, link.faceY, link.faceW, link.faceH, link.caption || '', link.verified ?? 0]
+          );
+          linksTransferred += ins.rowsAffected;
+        }
+        await d.execute(`DELETE FROM media_person_link WHERE mediaId = $1`, [rm.id]);
+        await d.execute(`DELETE FROM media WHERE id = $1`, [rm.id]);
+        entriesRemoved++;
+      }
+    }
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+
+  return { duplicateGroups, entriesRemoved, linksTransferred };
+}
+
+export async function autoCategorizeMediaAfterDedup(): Promise<{ updated: number }> {
+  const d = await getDb();
+  const rows = await d.select<{
+    id: number;
+    filePath: string;
+    linkCount: number;
+    category: string;
+  }[]>(
+    `SELECT m.id, m.filePath, COALESCE(m.category, 'uncategorized') as category, COUNT(DISTINCT mpl.personXref) as linkCount
+     FROM media m
+     LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id
+     GROUP BY m.id`
+  );
+  let updated = 0;
+  for (const row of rows) {
+    const normalized = normalizeMediaPath(row.filePath || '');
+    let next: MediaCategory = 'uncategorized';
+    if (normalized.includes('headshot') || normalized.includes('portrait')) next = 'headshots';
+    else if (row.linkCount === 0) next = 'other';
+    if (row.category !== next) {
+      const result = await d.execute(`UPDATE media SET category = $1 WHERE id = $2`, [next, row.id]);
+      updated += result.rowsAffected;
+    }
+  }
+  return { updated };
+}
+
+export async function moveNonPortraitHeadshotsToOther(): Promise<number> {
+  const d = await getDb();
+  const result = await d.execute(
+    `UPDATE media
+     SET category = 'other'
+     WHERE category = 'headshots'
+       AND id NOT IN (SELECT DISTINCT mediaId FROM media_person_link)`
+  );
+  return result.rowsAffected;
+}
+
+export async function updateMediaFilePath(mediaId: number, filePath: string): Promise<void> {
+  const d = await getDb();
+  await d.execute(`UPDATE media SET filePath = $1 WHERE id = $2`, [filePath, mediaId]);
+}
+
 // ===== Place queries =====
 
 export async function getPlaces(): Promise<Place[]> {
@@ -599,6 +890,47 @@ export async function getPlaceCount(): Promise<number> {
   const d = await getDb();
   const r = await d.select<[{ c: number }]>(`SELECT COUNT(*) as c FROM place`);
   return r[0]?.c ?? 0;
+}
+
+// ===== Alternate name queries =====
+
+export async function getAlternateNames(personXref: string): Promise<AlternateName[]> {
+  const d = await getDb();
+  return await d.select<AlternateName[]>(
+    `SELECT * FROM alternate_name WHERE personXref = $1 ORDER BY nameType, surname, givenName`,
+    [personXref]
+  );
+}
+
+export async function insertAlternateName(n: Omit<AlternateName, 'id'>): Promise<void> {
+  const d = await getDb();
+  await d.execute(
+    `INSERT INTO alternate_name (personXref, givenName, surname, suffix, nameType, source)
+     VALUES ($1,$2,$3,$4,$5,$6)`,
+    [n.personXref, n.givenName, n.surname, n.suffix, n.nameType, n.source]
+  );
+}
+
+export async function updateAlternateName(id: number, data: Partial<AlternateName>): Promise<void> {
+  const d = await getDb();
+  const sets: string[] = [];
+  const vals: any[] = [];
+  let i = 1;
+  for (const [k, v] of Object.entries(data)) {
+    if (k === 'id' || k === 'personXref') continue;
+    if (!['givenName','surname','suffix','nameType','source'].includes(k)) continue;
+    sets.push(`${k} = $${i}`);
+    vals.push(v);
+    i++;
+  }
+  if (sets.length === 0) return;
+  vals.push(id);
+  await d.execute(`UPDATE alternate_name SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+}
+
+export async function deleteAlternateName(id: number): Promise<void> {
+  const d = await getDb();
+  await d.execute(`DELETE FROM alternate_name WHERE id = $1`, [id]);
 }
 
 // ===== Group queries =====
@@ -677,6 +1009,18 @@ export async function getNotes(ownerXref?: string): Promise<ResearchNote[]> {
   return await d.select<ResearchNote[]>(`SELECT * FROM note ORDER BY updatedAt DESC`);
 }
 
+export async function searchNotes(query: string): Promise<ResearchNote[]> {
+  const d = await getDb();
+  const q = `%${query.trim()}%`;
+  if (!query.trim()) return getNotes();
+  return await d.select<ResearchNote[]>(
+    `SELECT * FROM note
+     WHERE title LIKE $1 OR content LIKE $1
+     ORDER BY updatedAt DESC`,
+    [q]
+  );
+}
+
 export async function insertNote(n: Omit<ResearchNote, 'id'>): Promise<void> {
   const d = await getDb();
   await d.execute(
@@ -722,12 +1066,20 @@ export async function deleteTask(id: number): Promise<void> {
 
 export async function getBookmarks(): Promise<Bookmark[]> {
   const d = await getDb();
-  return await d.select<Bookmark[]>(`SELECT * FROM bookmark ORDER BY createdAt DESC`);
+  return await d.select<Bookmark[]>(`SELECT * FROM bookmark ORDER BY sortOrder ASC, createdAt DESC, id DESC`);
 }
 
 export async function insertBookmark(b: Omit<Bookmark, 'id'>): Promise<void> {
   const d = await getDb();
-  await d.execute(`INSERT INTO bookmark (personXref, label, createdAt) VALUES ($1,$2,$3)`, [b.personXref, b.label, b.createdAt]);
+  let nextSortOrder = b.sortOrder ?? 0;
+  if (b.sortOrder === undefined) {
+    const row = await d.select<[{ maxSort: number | null }]>(`SELECT MAX(sortOrder) as maxSort FROM bookmark`);
+    nextSortOrder = (row[0]?.maxSort ?? -1) + 1;
+  }
+  await d.execute(
+    `INSERT INTO bookmark (personXref, label, category, sortOrder, createdAt) VALUES ($1,$2,$3,$4,$5)`,
+    [b.personXref, b.label, b.category || 'General', nextSortOrder, b.createdAt]
+  );
 }
 
 export async function deleteBookmark(id: number): Promise<void> {
@@ -739,6 +1091,88 @@ export async function isBookmarked(personXref: string): Promise<boolean> {
   const d = await getDb();
   const r = await d.select<[{ c: number }]>(`SELECT COUNT(*) as c FROM bookmark WHERE personXref = $1`, [personXref]);
   return (r[0]?.c ?? 0) > 0;
+}
+
+export async function updateBookmarkCategory(id: number, category: string): Promise<void> {
+  const d = await getDb();
+  await d.execute(`UPDATE bookmark SET category = $1 WHERE id = $2`, [category.trim() || 'General', id]);
+}
+
+export async function reorderBookmarks(orderedIds: number[]): Promise<void> {
+  if (orderedIds.length === 0) return;
+  const d = await getDb();
+  await d.execute('BEGIN');
+  try {
+    for (let i = 0; i < orderedIds.length; i++) {
+      await d.execute(`UPDATE bookmark SET sortOrder = $1 WHERE id = $2`, [i, orderedIds[i]]);
+    }
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+}
+
+export async function batchAddToGroup(xrefs: string[], groupId: number): Promise<void> {
+  if (xrefs.length === 0) return;
+  const d = await getDb();
+  await d.execute('BEGIN');
+  try {
+    for (const xref of xrefs) {
+      await d.execute(
+        `INSERT OR IGNORE INTO group_member (groupId, personXref, addedAt) VALUES ($1,$2,$3)`,
+        [groupId, xref, new Date().toISOString()]
+      );
+    }
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+}
+
+export async function batchBookmark(xrefs: string[], label = ''): Promise<void> {
+  if (xrefs.length === 0) return;
+  const d = await getDb();
+  await d.execute('BEGIN');
+  try {
+    for (const xref of xrefs) {
+      await d.execute(
+        `INSERT OR IGNORE INTO bookmark (personXref, label, category, sortOrder, createdAt)
+         VALUES ($1,$2,'General',0,$3)`,
+        [xref, label, new Date().toISOString()]
+      );
+    }
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+}
+
+export async function batchRemoveBookmarks(xrefs: string[]): Promise<void> {
+  if (xrefs.length === 0) return;
+  const d = await getDb();
+  const placeholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+  await d.execute(`DELETE FROM bookmark WHERE personXref IN (${placeholders})`, xrefs);
+}
+
+export async function batchDeletePersons(xrefs: string[]): Promise<void> {
+  if (xrefs.length === 0) return;
+  const d = await getDb();
+  const placeholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+  await d.execute('BEGIN');
+  try {
+    await d.execute(`DELETE FROM media_person_link WHERE personXref IN (${placeholders})`, xrefs);
+    await d.execute(`DELETE FROM child_link WHERE childXref IN (${placeholders})`, xrefs);
+    await d.execute(`DELETE FROM event WHERE ownerXref IN (${placeholders})`, xrefs);
+    await d.execute(`DELETE FROM bookmark WHERE personXref IN (${placeholders})`, xrefs);
+    await d.execute(`DELETE FROM person WHERE xref IN (${placeholders})`, xrefs);
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
 }
 
 // ===== AI Chat queries =====
@@ -860,6 +1294,58 @@ export async function insertEvent(e: Omit<GedcomEvent, 'id'>): Promise<void> {
   );
 }
 
+export async function addEventAction(e: Omit<GedcomEvent, 'id'>): Promise<number> {
+  const d = await getDb();
+  const result = await d.execute(
+    `INSERT INTO event (ownerXref, ownerType, eventType, dateValue, place, description) VALUES ($1,$2,$3,$4,$5,$6)`,
+    [e.ownerXref, e.ownerType, e.eventType, e.dateValue, e.place, e.description]
+  );
+  const id = result.lastInsertId ?? 0;
+  const { undoManager } = await import('./undo-manager');
+  await undoManager.push({
+    id: crypto.randomUUID(),
+    description: `Added ${e.eventType} event`,
+    timestamp: new Date().toISOString(),
+    undo: async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM event WHERE id = $1`, [id]);
+    },
+    redo: async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO event (id, ownerXref, ownerType, eventType, dateValue, place, description) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [id, e.ownerXref, e.ownerType, e.eventType, e.dateValue, e.place, e.description]
+      );
+    },
+  }, { tableName: 'event', rowId: String(id), newData: e });
+  return id;
+}
+
+export async function deleteEventById(id: number): Promise<void> {
+  const d = await getDb();
+  const rows = await d.select<GedcomEvent[]>(`SELECT * FROM event WHERE id = $1`, [id]);
+  if (rows.length === 0) return;
+  const old = rows[0];
+  await d.execute(`DELETE FROM event WHERE id = $1`, [id]);
+  const { undoManager } = await import('./undo-manager');
+  await undoManager.push({
+    id: crypto.randomUUID(),
+    description: `Deleted ${old.eventType} event`,
+    timestamp: new Date().toISOString(),
+    undo: async () => {
+      const db = await getDb();
+      await db.execute(
+        `INSERT INTO event (id, ownerXref, ownerType, eventType, dateValue, place, description) VALUES ($1,$2,$3,$4,$5,$6,$7)`,
+        [old.id, old.ownerXref, old.ownerType, old.eventType, old.dateValue, old.place, old.description]
+      );
+    },
+    redo: async () => {
+      const db = await getDb();
+      await db.execute(`DELETE FROM event WHERE id = $1`, [id]);
+    },
+  }, { tableName: 'event', rowId: String(id), oldData: old });
+}
+
 export async function insertSource(s: Omit<Source, 'id'>): Promise<void> {
   const d = await getDb();
   await d.execute(
@@ -871,8 +1357,8 @@ export async function insertSource(s: Omit<Source, 'id'>): Promise<void> {
 export async function insertMedia(m: Omit<GedcomMedia, 'id'>): Promise<void> {
   const d = await getDb();
   await d.execute(
-    `INSERT INTO media (xref, ownerXref, filePath, format, title) VALUES ($1,$2,$3,$4,$5)`,
-    [m.xref, m.ownerXref, m.filePath, m.format, m.title]
+    `INSERT INTO media (xref, ownerXref, filePath, format, title, category) VALUES ($1,$2,$3,$4,$5,$6)`,
+    [m.xref, m.ownerXref, m.filePath, m.format, m.title, m.category || 'uncategorized']
   );
 }
 
@@ -985,7 +1471,7 @@ export async function getPendingProposalCount(): Promise<number> {
   return r[0]?.c ?? 0;
 }
 
-const SAFE_FIELDS: Record<string, Set<string>> = {
+export const SAFE_FIELDS: Record<string, Set<string>> = {
   person: new Set(['givenName','surname','suffix','sex','birthDate','birthPlace','deathDate','deathPlace','personColor','proofStatus']),
   family: new Set(['partner1Xref','partner2Xref','marriageDate','marriagePlace']),
   event: new Set(['eventType','dateValue','place','description']),
@@ -1343,4 +1829,186 @@ export async function rebuildFTS(): Promise<void> {
     INSERT INTO person_fts(rowid, givenName, surname, birthPlace, deathPlace)
     VALUES (new.id, new.givenName, new.surname, new.birthPlace, new.deathPlace);
   END`);
+}
+
+// ===== JSON Backup/Restore =====
+
+const BACKUP_TABLES = [
+  'person',
+  'family',
+  'event',
+  'source',
+  'media',
+  'media_person_link',
+  'child_link',
+  'place',
+  'custom_group',
+  'group_member',
+  'association',
+  'alternate_name',
+  'research_log',
+  'citation',
+  'note',
+  'research_task',
+  'bookmark',
+  'ai_chat',
+  'dismissed_issue',
+  'stories',
+  'settings',
+  'undo_log',
+  'evidence',
+  'gps_checklist',
+  'proposal',
+  'change_log',
+  'quality_rule',
+  'agent_run',
+  'merge_log',
+];
+
+export type DbBackup = {
+  version: 1;
+  exportedAt: string;
+  tables: Record<string, any[]>;
+};
+
+export async function exportDbAsJson(): Promise<DbBackup> {
+  const d = await getDb();
+  const tables: Record<string, any[]> = {};
+  for (const table of BACKUP_TABLES) {
+    tables[table] = await d.select<any[]>(`SELECT * FROM ${table}`);
+  }
+  return {
+    version: 1,
+    exportedAt: new Date().toISOString(),
+    tables,
+  };
+}
+
+export async function importDbFromJson(backup: DbBackup): Promise<void> {
+  const d = await getDb();
+  await d.execute('BEGIN');
+  try {
+    await d.execute('PRAGMA foreign_keys = OFF');
+    for (const table of BACKUP_TABLES) {
+      await d.execute(`DELETE FROM ${table}`);
+    }
+    for (const table of BACKUP_TABLES) {
+      const rows = backup.tables?.[table] ?? [];
+      if (rows.length === 0) continue;
+      const cols = Object.keys(rows[0]);
+      const placeholders = cols.map((_, i) => `$${i + 1}`).join(', ');
+      const sql = `INSERT INTO ${table} (${cols.join(', ')}) VALUES (${placeholders})`;
+      for (const row of rows) {
+        const vals = cols.map((c) => row[c]);
+        await d.execute(sql, vals);
+      }
+    }
+    await d.execute('PRAGMA foreign_keys = ON');
+    await d.execute('COMMIT');
+  } catch (e) {
+    await d.execute('ROLLBACK');
+    throw e;
+  }
+}
+
+export async function getBackupJson(): Promise<string> {
+  const backup = await exportDbAsJson();
+  return JSON.stringify({
+    version: 1,
+    appVersion: '0.1.0',
+    exportedAt: backup.exportedAt,
+    tables: backup.tables,
+  });
+}
+
+export async function exportDatabase(): Promise<Uint8Array> {
+  const json = await getBackupJson();
+  return new TextEncoder().encode(json);
+}
+
+export async function importDatabase(data: Uint8Array): Promise<void> {
+  const json = new TextDecoder().decode(data);
+  const parsed = JSON.parse(json) as DbBackup;
+  await importDbFromJson(parsed);
+}
+
+export type EvidenceRecord = {
+  id: number;
+  personXref: string;
+  factType: string;
+  factValue: string;
+  sourceXref: string;
+  informationType: string;
+  evidenceType: string;
+  quality: string;
+  analysisNotes: string;
+  createdAt: string;
+};
+
+export async function getEvidence(personXref: string, factType?: string): Promise<EvidenceRecord[]> {
+  const d = await getDb();
+  if (factType) {
+    return d.select<EvidenceRecord[]>(
+      `SELECT * FROM evidence WHERE personXref = $1 AND factType = $2 ORDER BY createdAt DESC`,
+      [personXref, factType]
+    );
+  }
+  return d.select<EvidenceRecord[]>(`SELECT * FROM evidence WHERE personXref = $1 ORDER BY createdAt DESC`, [personXref]);
+}
+
+export async function addEvidence(e: Omit<EvidenceRecord, 'id' | 'createdAt'>): Promise<number> {
+  const d = await getDb();
+  const result = await d.execute(
+    `INSERT INTO evidence (personXref, factType, factValue, sourceXref, informationType, evidenceType, quality, analysisNotes)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+    [e.personXref, e.factType, e.factValue, e.sourceXref, e.informationType, e.evidenceType, e.quality, e.analysisNotes]
+  );
+  return result.lastInsertId ?? 0;
+}
+
+export async function updateEvidence(id: number, updates: Partial<EvidenceRecord>): Promise<void> {
+  const d = await getDb();
+  const sets: string[] = [];
+  const vals: any[] = [];
+  let i = 1;
+  for (const [k, v] of Object.entries(updates)) {
+    if (k === 'id' || k === 'createdAt') continue;
+    sets.push(`${k} = $${i++}`);
+    vals.push(v);
+  }
+  if (sets.length === 0) return;
+  vals.push(id);
+  await d.execute(`UPDATE evidence SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+}
+
+export async function deleteEvidence(id: number): Promise<void> {
+  const d = await getDb();
+  await d.execute(`DELETE FROM evidence WHERE id = $1`, [id]);
+}
+
+export async function getFactSummary(personXref: string): Promise<{ factType: string; valueCount: number; evidenceCount: number }[]> {
+  const d = await getDb();
+  return d.select<{ factType: string; valueCount: number; evidenceCount: number }[]>(
+    `SELECT factType, COUNT(DISTINCT factValue) as valueCount, COUNT(*) as evidenceCount
+     FROM evidence WHERE personXref = $1 GROUP BY factType ORDER BY factType`,
+    [personXref]
+  );
+}
+
+export async function getGpsChecklist(personXref: string): Promise<{ item: number; completed: number; notes: string }[]> {
+  const d = await getDb();
+  return d.select<{ item: number; completed: number; notes: string }[]>(
+    `SELECT item, completed, notes FROM gps_checklist WHERE personXref = $1 ORDER BY item`,
+    [personXref]
+  );
+}
+
+export async function setGpsChecklist(personXref: string, item: number, completed: number, notes: string): Promise<void> {
+  const d = await getDb();
+  await d.execute(
+    `INSERT INTO gps_checklist (personXref, item, completed, notes)
+     VALUES ($1,$2,$3,$4)
+     ON CONFLICT(personXref, item) DO UPDATE SET completed = $3, notes = $4`,
+    [personXref, item, completed, notes]
+  );
 }

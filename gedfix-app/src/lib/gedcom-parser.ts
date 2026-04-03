@@ -138,6 +138,14 @@ function countSubTags(rec: Record, tag: string): number {
   return rec.lines.filter(l => l.tag === tag).length;
 }
 
+export const __testables = {
+  detectGedcomVersion,
+  parseLine,
+  groupRecords,
+  parseName,
+  isLiving,
+};
+
 export async function importGedcom(text: string, onProgress?: (pct: number, msg: string) => void): Promise<void> {
   onProgress?.(0, 'Clearing database...');
   await clearAll();
@@ -148,29 +156,33 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
 
   async function findMediaByFile(filePath: string): Promise<{ id: number; xref: string } | null> {
     const rows = await db.select<{ id: number; xref: string }[]>(
-      `SELECT id, xref FROM media WHERE filePath = $1 LIMIT 1`,
+      `SELECT id, xref FROM media WHERE LOWER(filePath) = LOWER($1) LIMIT 1`,
       [filePath]
     );
     return rows.length > 0 ? rows[0] : null;
   }
 
   async function ensureMediaForFile(filePath: string, format: string, title: string, xref?: string): Promise<number> {
-    const normalized = filePath.trim();
+    const normalized = filePath.trim().replace(/\\/g, '/');
+    const normalizedKey = normalized.toLowerCase();
     if (!normalized) return 0;
-    if (mediaFileCache.has(normalized)) return mediaFileCache.get(normalized)!;
+    if (mediaFileCache.has(normalizedKey)) return mediaFileCache.get(normalizedKey)!;
     const existing = await findMediaByFile(normalized);
     if (existing) {
       if (!existing.xref && xref) {
         await db.execute(`UPDATE media SET xref = $1 WHERE id = $2`, [xref, existing.id]);
       }
-      mediaFileCache.set(normalized, existing.id);
+      mediaFileCache.set(normalizedKey, existing.id);
       return existing.id;
     }
     await insertMedia({ xref: xref || '', ownerXref: '', filePath: normalized, format, title });
-    const newRows = await db.select<{ id: number }[]>(`SELECT id FROM media WHERE filePath = $1 ORDER BY id DESC LIMIT 1`, [normalized]);
+    const newRows = await db.select<{ id: number }[]>(
+      `SELECT id FROM media WHERE LOWER(filePath) = LOWER($1) ORDER BY id DESC LIMIT 1`,
+      [normalized]
+    );
     const newId = newRows.length > 0 ? newRows[0].id : 0;
     if (newId) {
-      mediaFileCache.set(normalized, newId);
+      mediaFileCache.set(normalizedKey, newId);
     }
     return newId;
   }
@@ -371,19 +383,11 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
       }
 
       if (filePath) {
-        const normalized = filePath.trim();
-        let mediaId = 0;
-        const existing = await findMediaByFile(normalized);
-        if (existing) {
-          mediaId = existing.id;
-          if (!existing.xref && rec.xref) {
-            await db.execute(`UPDATE media SET xref = $1 WHERE id = $2`, [rec.xref, mediaId]);
-          }
-        } else {
-          mediaId = await ensureMediaForFile(filePath, format, title, rec.xref);
-        }
-        if (mediaId && normalized) {
-          mediaFileCache.set(normalized, mediaId);
+        const mediaId = await ensureMediaForFile(filePath, format, title, rec.xref);
+        // ensureMediaForFile already updates the cache with normalized key
+        // but if xref wasn't set on existing row, update it
+        if (mediaId && rec.xref) {
+          await db.execute(`UPDATE media SET xref = $1 WHERE id = $2 AND (xref = '' OR xref IS NULL)`, [rec.xref, mediaId]);
         }
       }
     }

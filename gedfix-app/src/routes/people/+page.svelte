@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { getPersons, getEvents, getSpouseFamilies, getChildren, getParents, getMediaWithPaths, getPrimaryPhoto } from '$lib/db';
+  import { getPersons, getEvents, getSpouseFamilies, getChildren, getParents, getMediaWithPaths, getPrimaryPhoto, getGroups, batchAddToGroup, batchBookmark, batchRemoveBookmarks, batchDeletePersons } from '$lib/db';
   import { runResearchAgent } from '$lib/research-agent';
   import { findSources } from '$lib/source-finder';
+  import { exportSubsetGedcom } from '$lib/gedcom-exporter';
   import type { Person, GedcomEvent, Family, GedcomMedia } from '$lib/types';
   import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
@@ -34,6 +35,10 @@
   let selectedMedia = $state.raw<GedcomMedia[]>([]);
   let selectedPrimaryPhoto = $state<GedcomMedia | null>(null);
   let expandedMedia = $state<GedcomMedia | null>(null);
+  let selectedXrefs = $state.raw<Set<string>>(new Set());
+  let lastCheckedIndex = $state<number | null>(null);
+  let selectedGroupId = $state<number>(0);
+  let groups = $state.raw<{ id: number; name: string }[]>([]);
 
   // Photo cache for list avatars
   let photoCache = $state.raw<Map<string, string>>(new Map());
@@ -42,7 +47,67 @@
 
   async function load() {
     persons = await getPersons(search, 2000);
+    groups = await getGroups();
     loadPhotos(persons.slice(0, 50));
+  }
+
+  function togglePersonSelection(xref: string, index: number, shiftKey: boolean) {
+    const next = new Set(selectedXrefs);
+    if (shiftKey && lastCheckedIndex !== null) {
+      const [a, b] = [lastCheckedIndex, index].sort((x, y) => x - y);
+      for (let i = a; i <= b; i++) next.add(persons[i].xref);
+    } else if (next.has(xref)) {
+      next.delete(xref);
+    } else {
+      next.add(xref);
+    }
+    lastCheckedIndex = index;
+    selectedXrefs = next;
+  }
+
+  function toggleSelectAll() {
+    if (selectedXrefs.size === persons.length) {
+      selectedXrefs = new Set();
+      return;
+    }
+    selectedXrefs = new Set(persons.map((p) => p.xref));
+  }
+
+  async function applyBatchBookmark(remove = false) {
+    const xrefs = Array.from(selectedXrefs);
+    if (xrefs.length === 0) return;
+    if (remove) await batchRemoveBookmarks(xrefs);
+    else await batchBookmark(xrefs);
+    selectedXrefs = new Set();
+  }
+
+  async function applyBatchGroup() {
+    const xrefs = Array.from(selectedXrefs);
+    if (!selectedGroupId || xrefs.length === 0) return;
+    await batchAddToGroup(xrefs, selectedGroupId);
+    selectedXrefs = new Set();
+  }
+
+  async function applyBatchDelete() {
+    const xrefs = Array.from(selectedXrefs);
+    if (xrefs.length === 0) return;
+    if (!confirm(`Delete ${xrefs.length} selected people?`)) return;
+    await batchDeletePersons(xrefs);
+    selectedXrefs = new Set();
+    await load();
+  }
+
+  async function exportSelected() {
+    const xrefs = Array.from(selectedXrefs);
+    if (xrefs.length === 0) return;
+    const gedcom = await exportSubsetGedcom(xrefs);
+    const blob = new Blob([gedcom], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gedfix_subset_${new Date().toISOString().slice(0, 10)}.ged`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   async function loadPhotos(people: Person[]) {
@@ -171,6 +236,12 @@
   <!-- Person List with Virtual Scrolling -->
   <div class="w-[340px] flex flex-col shrink-0" style="border-right: 1px solid var(--border-rule); background: color-mix(in srgb, var(--vellum) 50%, transparent);">
     <div class="p-3" style="border-bottom: 1px solid var(--border-rule);">
+      <div class="mb-2">
+        <label class="text-xs text-ink-muted inline-flex items-center gap-2">
+          <input type="checkbox" checked={selectedXrefs.size === persons.length && persons.length > 0} onchange={toggleSelectAll} />
+          Select all
+        </label>
+      </div>
       <input
         type="text"
         placeholder="Search {persons.length} people..."
@@ -189,6 +260,15 @@
             class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03] transition-colors contain-content
                    {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''}"
           >
+            <input
+              type="checkbox"
+              checked={selectedXrefs.has(person.xref)}
+              onclick={(e) => {
+                e.stopPropagation();
+                togglePersonSelection(person.xref, index, (e as MouseEvent).shiftKey);
+              }}
+              aria-label={`Select ${person.givenName} ${person.surname}`}
+            />
             {#if photoCache.get(person.xref)}
               <img
                 use:lazyImage={photoCache.get(person.xref)!}
@@ -445,3 +525,44 @@
     {/if}
   </div>
 </div>
+
+{#if selectedXrefs.size > 0}
+  <div class="batch-bar no-print">
+    <span>{selectedXrefs.size} selected</span>
+    <select bind:value={selectedGroupId} class="arch-input">
+      <option value={0}>Add to group...</option>
+      {#each groups as group}
+        <option value={group.id}>{group.name}</option>
+      {/each}
+    </select>
+    <button class="btn-secondary px-3 py-2" onclick={applyBatchGroup}>Add Group</button>
+    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(false)}>Bookmark</button>
+    <button class="btn-secondary px-3 py-2" onclick={() => applyBatchBookmark(true)}>Unbookmark</button>
+    <button class="btn-secondary px-3 py-2" onclick={exportSelected}>Export</button>
+    <button class="btn-danger px-3 py-2" onclick={applyBatchDelete}>Delete</button>
+  </div>
+{/if}
+
+<style>
+  .batch-bar {
+    position: fixed;
+    left: calc(var(--sidebar-width) + 1rem);
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 40;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem;
+    border: 1px solid var(--border-rule);
+    border-radius: 0.6rem;
+    background: var(--vellum);
+  }
+  @media (max-width: 767px) {
+    .batch-bar {
+      left: 0.5rem;
+      right: 0.5rem;
+      flex-wrap: wrap;
+    }
+  }
+</style>

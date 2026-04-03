@@ -1,12 +1,27 @@
 <script lang="ts">
-  import { clearAll, getStats, isDbEmpty, getSetting, setSetting } from '$lib/db';
+  import { clearAll, getStats, isDbEmpty, getSetting, setSetting, exportDbAsJson, importDbFromJson, getDb } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
+  import { exportGedcom } from '$lib/gedcom-exporter';
   import { appStats, isImporting, importProgress, importMessage } from '$lib/stores';
   import { pickAndReadTextFile } from '$lib/platform-fs';
+  import { isTauri } from '$lib/platform';
+  import { loadLocale, setLocale, getLocale, t, type Locale } from '$lib/i18n';
 
   let livingThreshold = $state(110);
   let confirmClear = $state(false);
   let saveStatus = $state('');
+  let exportFormat = $state<'5.5.1' | '7.0'>('5.5.1');
+  let exportPreview = $state({ personCount: 0, familyCount: 0, eventCount: 0, sourceCount: 0, mediaCount: 0, placeCount: 0 });
+  let exportBusy = $state(false);
+  let exportMessage = $state('');
+  let jsonBusy = $state(false);
+  let jsonMessage = $state('');
+  let language = $state<Locale>('en');
+  let autoBackups = $state.raw<{ key: string; exportedAt: string }[]>([]);
+  let dbSize = $state('0 KB');
+  let deferredInstallPrompt = $state<any>(null);
+  let hideInstallPrompt = $state(false);
+  let undoHistory = $state.raw<{ id: string; description: string; createdAt: string }[]>([]);
 
   interface ApiKeyConfig {
     name: string;
@@ -33,6 +48,12 @@
       const val = await getSetting(apiKeys[i].dbKey);
       if (val) apiKeys[i].key = val;
     }
+    await loadLocale();
+    language = getLocale();
+    hideInstallPrompt = localStorage.getItem('install-prompt-dismissed') === '1';
+    await refreshBackups();
+    await refreshDbStats();
+    await loadUndoHistory();
   }
 
   async function saveApiKey(config: ApiKeyConfig) {
@@ -73,15 +94,171 @@
     await clearAll();
     const stats = await getStats();
     appStats.set(stats);
+    await refreshExportPreview();
     confirmClear = false;
   }
 
+  async function refreshExportPreview() {
+    const stats = await getStats();
+    exportPreview = {
+      personCount: stats.personCount,
+      familyCount: stats.familyCount,
+      eventCount: stats.eventCount,
+      sourceCount: stats.sourceCount,
+      mediaCount: stats.mediaCount,
+      placeCount: stats.placeCount,
+    };
+  }
+
+  async function exportGedcomFile() {
+    exportBusy = true;
+    exportMessage = '';
+    try {
+      const gedcom = await exportGedcom(exportFormat);
+      const date = new Date().toISOString().slice(0, 10);
+      const filename = `gedfix_export_${date}_${exportFormat.replace(/\./g, '')}.ged`;
+
+      if (await isDbEmpty()) {
+        exportMessage = 'Database is empty. Import data before exporting.';
+        exportBusy = false;
+        return;
+      }
+
+      if (!isTauri()) {
+        const blob = new Blob([gedcom], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        exportMessage = `Saved ${filename}`;
+      } else {
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        const { downloadDir, join } = await import('@tauri-apps/api/path');
+        const downloads = await downloadDir();
+        const path = await join(downloads, filename);
+        await writeTextFile(path, gedcom);
+        exportMessage = `Saved ${path}`;
+      }
+    } catch (e) {
+      exportMessage = `Export error: ${e}`;
+    }
+    exportBusy = false;
+  }
+
+  async function exportJson() {
+    jsonBusy = true;
+    jsonMessage = '';
+    try {
+      const backup = await exportDbAsJson();
+      const json = JSON.stringify(backup, null, 2);
+      const date = new Date().toISOString().slice(0, 10);
+      const filename = `gedfix_backup_${date}.json`;
+
+      if (!isTauri()) {
+        const blob = new Blob([json], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        jsonMessage = `Saved ${filename}`;
+      } else {
+        const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+        const { downloadDir, join } = await import('@tauri-apps/api/path');
+        const downloads = await downloadDir();
+        const path = await join(downloads, filename);
+        await writeTextFile(path, json);
+        jsonMessage = `Saved ${path}`;
+      }
+    } catch (e) {
+      jsonMessage = `Export error: ${e}`;
+    }
+    jsonBusy = false;
+  }
+
+  async function importJson() {
+    jsonBusy = true;
+    jsonMessage = '';
+    try {
+      const result = await pickAndReadTextFile([{ name: 'JSON', extensions: ['json'] }]);
+      if (!result) { jsonBusy = false; return; }
+      const backup = JSON.parse(result.text);
+      await importDbFromJson(backup);
+      const stats = await getStats();
+      appStats.set(stats);
+      await refreshExportPreview();
+      jsonMessage = 'Import complete';
+    } catch (e) {
+      jsonMessage = `Import error: ${e}`;
+    }
+    jsonBusy = false;
+  }
+
+  async function refreshBackups() {
+    if (isTauri()) return;
+    const keys = Object.keys(localStorage).filter((k) => k.startsWith('backup-')).sort().reverse();
+    autoBackups = keys.map((key) => {
+      const raw = localStorage.getItem(key);
+      const exportedAt = raw ? (JSON.parse(raw).exportedAt as string) : key;
+      return { key, exportedAt };
+    }).slice(0, 5);
+  }
+
+  async function restoreAutoBackup(key: string) {
+    const raw = localStorage.getItem(key);
+    if (!raw) return;
+    if (!confirm('This will replace all data. Continue?')) return;
+    await importDbFromJson(JSON.parse(raw));
+    const stats = await getStats();
+    appStats.set(stats);
+    await refreshExportPreview();
+  }
+
+  async function deleteAutoBackup(key: string) {
+    localStorage.removeItem(key);
+    await refreshBackups();
+  }
+
+  async function refreshDbStats() {
+    const backup = await exportDbAsJson();
+    const bytes = new Blob([JSON.stringify(backup)]).size;
+    dbSize = bytes > 1024 * 1024 ? `${(bytes / (1024 * 1024)).toFixed(2)} MB` : `${Math.round(bytes / 1024)} KB`;
+  }
+
+  async function onLanguageChange() {
+    await setLocale(language);
+  }
+
+  function dismissInstallPrompt() {
+    localStorage.setItem('install-prompt-dismissed', '1');
+    hideInstallPrompt = true;
+  }
+
+  async function loadUndoHistory() {
+    const d = await getDb();
+    undoHistory = await d.select<{ id: string; description: string; createdAt: string }[]>(
+      `SELECT id, description, createdAt FROM undo_log ORDER BY createdAt DESC LIMIT 20`
+    );
+  }
+
+  $effect(() => {
+    const handler = (e: Event) => {
+      e.preventDefault();
+      deferredInstallPrompt = e as any;
+    };
+    window.addEventListener('beforeinstallprompt', handler as EventListener);
+    return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
+  });
   $effect(() => { loadSettings(); });
+  $effect(() => { refreshExportPreview(); });
 </script>
 
 <div class="p-8 max-w-2xl animate-fade-in">
   <div class="mb-8">
-    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">Settings</h1>
+    <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('settings.title')}</h1>
     <p class="text-sm text-ink-muted mt-1">Configure your GedFix application</p>
     {#if saveStatus}
       <div class="mt-2 text-xs font-medium px-3 py-1 rounded-lg inline-block" style="background: var(--parchment); color: var(--sepia);">{saveStatus}</div>
@@ -143,6 +320,80 @@
     </div>
   </section>
 
+  <!-- Export / Backup -->
+  <section class="mb-8">
+    <h2 class="arch-section-header">Export & Backup</h2>
+    <div class="arch-card divide-y arch-card-divide">
+      <div class="px-5 py-4">
+        <div class="text-sm font-medium text-ink">Export Preview</div>
+        <div class="text-xs text-ink-muted mt-1">
+          {exportPreview.personCount} people, {exportPreview.familyCount} families, {exportPreview.eventCount} events, {exportPreview.sourceCount} sources, {exportPreview.mediaCount} media, {exportPreview.placeCount} places
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">Export GEDCOM</div>
+          <div class="text-xs text-ink-muted">Download a GEDCOM file (5.5.1 or 7.0)</div>
+        </div>
+        <div class="flex items-center gap-2">
+          <select bind:value={exportFormat} class="px-2 py-1.5 text-xs rounded-lg arch-input">
+            <option value="5.5.1">5.5.1</option>
+            <option value="7.0">7.0</option>
+          </select>
+          <button onclick={exportGedcomFile} disabled={exportBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+            {exportBusy ? 'Exporting...' : `Export ${exportFormat}`}
+          </button>
+        </div>
+      </div>
+      {#if exportMessage}
+        <div class="px-5 pb-4 text-xs text-ink-muted">{exportMessage}</div>
+      {/if}
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">Export JSON Backup</div>
+          <div class="text-xs text-ink-muted">Full database snapshot for restore</div>
+        </div>
+        <button onclick={exportJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+          {jsonBusy ? 'Exporting...' : 'Export JSON'}
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">Import JSON Backup</div>
+          <div class="text-xs text-ink-muted">Restore database from a JSON export</div>
+        </div>
+        <button onclick={importJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+          {jsonBusy ? 'Importing...' : 'Import JSON'}
+        </button>
+      </div>
+      {#if jsonMessage}
+        <div class="px-5 pb-4 text-xs text-ink-muted">{jsonMessage}</div>
+      {/if}
+
+      <div class="px-5 py-4">
+        <div class="text-sm font-medium text-ink">Auto-Backups</div>
+        <div class="text-xs text-ink-muted mb-2">Last 5 auto backups before import</div>
+        {#if autoBackups.length === 0}
+          <div class="text-xs text-ink-faint">No web auto-backups found.</div>
+        {:else}
+          {#each autoBackups as backup}
+            <div class="flex items-center justify-between py-1">
+              <span class="text-xs text-ink-muted">{backup.exportedAt}</span>
+              <div class="flex items-center gap-2">
+                <button class="btn-secondary px-2 py-1 text-xs" onclick={() => restoreAutoBackup(backup.key)}>Restore</button>
+                <button class="btn-secondary px-2 py-1 text-xs" onclick={() => deleteAutoBackup(backup.key)}>Delete</button>
+              </div>
+            </div>
+          {/each}
+        {/if}
+      </div>
+      <div class="px-5 pb-4 text-xs text-ink-muted">Storage used: {dbSize}</div>
+    </div>
+  </section>
+
   <!-- Display Preferences -->
   <section class="mb-8">
     <h2 class="arch-section-header">Display Preferences</h2>
@@ -164,6 +415,37 @@
           <span class="text-xs text-ink-faint">years</span>
         </div>
       </div>
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">Language</div>
+          <div class="text-xs text-ink-muted">Change application locale</div>
+        </div>
+        <select bind:value={language} onchange={onLanguageChange} class="arch-input px-2 py-1.5 text-sm">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+          <option value="de">Deutsch</option>
+          <option value="fr">Français</option>
+          <option value="pt">Português</option>
+        </select>
+      </div>
+      {#if deferredInstallPrompt && !hideInstallPrompt}
+        <div class="flex items-center justify-between px-5 py-4">
+          <div>
+            <div class="text-sm font-medium text-ink">Install App</div>
+            <div class="text-xs text-ink-muted">Install GedFix as a web app</div>
+          </div>
+          <div class="flex gap-2">
+            <button
+              class="btn-accent px-3 py-2 text-sm"
+              onclick={async () => {
+                await deferredInstallPrompt.prompt();
+                deferredInstallPrompt = null;
+              }}
+            >Install</button>
+            <button class="btn-secondary px-3 py-2 text-sm" onclick={dismissInstallPrompt}>Not now</button>
+          </div>
+        </div>
+      {/if}
     </div>
   </section>
 
@@ -199,6 +481,22 @@
       <div class="text-sm font-medium text-ink">GedFix</div>
       <div class="text-xs text-ink-muted mt-0.5">Version 1.0.0</div>
       <div class="text-xs text-ink-faint mt-2">A premium genealogy application for managing and analyzing GEDCOM family tree data.</div>
+    </div>
+  </section>
+
+  <section class="mt-8">
+    <h2 class="arch-section-header">Edit History</h2>
+    <div class="arch-card px-5 py-4">
+      {#if undoHistory.length === 0}
+        <div class="text-xs text-ink-faint">No recent edits logged.</div>
+      {:else}
+        {#each undoHistory as row}
+          <div class="flex items-center justify-between py-1 text-xs">
+            <span class="text-ink-muted">{row.description}</span>
+            <span class="text-ink-faint">{row.createdAt}</span>
+          </div>
+        {/each}
+      {/if}
     </div>
   </section>
 </div>

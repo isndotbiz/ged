@@ -140,6 +140,59 @@ export async function exportGedcom(format: '5.5.1' | '7.0' = '5.5.1'): Promise<s
   return lines.join('\n') + '\n';
 }
 
+export async function exportSubsetGedcom(xrefs: string[], format: '5.5.1' | '7.0' = '5.5.1'): Promise<string> {
+  if (xrefs.length === 0) return '';
+  const db = await getDb();
+  const placeholders = xrefs.map((_, i) => `$${i + 1}`).join(', ');
+  const persons = await db.select<Person[]>(`SELECT * FROM person WHERE xref IN (${placeholders}) ORDER BY xref`, xrefs);
+  const families = await db.select<Family[]>(
+    `SELECT * FROM family WHERE partner1Xref IN (${placeholders}) OR partner2Xref IN (${placeholders}) ORDER BY xref`,
+    xrefs
+  );
+  const events = await db.select<GedcomEvent[]>(`SELECT * FROM event WHERE ownerXref IN (${placeholders})`, xrefs);
+  const sources = await db.select<Source[]>(`SELECT * FROM source ORDER BY xref`);
+  const media = await db.select<GedcomMedia[]>(`SELECT * FROM media WHERE ownerXref IN (${placeholders})`, xrefs);
+
+  const lines: string[] = [];
+  lines.push('0 HEAD');
+  lines.push('1 SOUR GedFix');
+  lines.push(`1 GEDC\n2 VERS ${format}\n2 FORM LINEAGE-LINKED`);
+  lines.push('1 CHAR UTF-8');
+
+  for (const p of persons) {
+    lines.push(`0 @${p.xref}@ INDI`);
+    lines.push(`1 NAME ${p.givenName} /${p.surname}/`);
+    if (p.sex && p.sex !== 'U') lines.push(`1 SEX ${p.sex}`);
+  }
+
+  const xrefSet = new Set(xrefs);
+  for (const f of families) {
+    lines.push(`0 @${f.xref}@ FAM`);
+    if (f.partner1Xref) lines.push(`1 HUSB @${f.partner1Xref}@`);
+    if (f.partner2Xref) lines.push(`1 WIFE @${f.partner2Xref}@`);
+    const children = await db.select<{ childXref: string }[]>(`SELECT childXref FROM child_link WHERE familyXref = $1`, [f.xref]);
+    for (const child of children) {
+      if (xrefSet.has(child.childXref)) lines.push(`1 CHIL @${child.childXref}@`);
+    }
+  }
+
+  for (const e of events) {
+    lines.push(`0 NOTE ${e.ownerXref}:${e.eventType}:${e.dateValue}`);
+  }
+  for (const s of sources) {
+    if (!s.xref) continue;
+    lines.push(`0 @${s.xref}@ SOUR`);
+    if (s.title) lines.push(`1 TITL ${s.title}`);
+  }
+  for (const m of media) {
+    if (!m.filePath) continue;
+    lines.push(`0 @${m.xref || `M${m.id}`}@ OBJE`);
+    lines.push(`1 FILE ${m.filePath}`);
+  }
+  lines.push('0 TRLR');
+  return lines.join('\n') + '\n';
+}
+
 function formatGedDate(d: Date): string {
   const months = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;

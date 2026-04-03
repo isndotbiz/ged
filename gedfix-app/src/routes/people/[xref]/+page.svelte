@@ -1,11 +1,11 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { getPerson, getEvents, getSpouseFamilies, getChildren, getParents, getMediaForPerson, getPrimaryPhoto, getDb, getNotes } from '$lib/db';
+  import { getPerson, getEvents, getSpouseFamilies, getChildren, getParents, getMediaForPerson, getPrimaryPhoto, getDb, getNotes, getAlternateNames, insertAlternateName, updateAlternateName, deleteAlternateName, getPersons, isBookmarked, insertBookmark, getBookmarks, deleteBookmark } from '$lib/db';
   import { getThumbUrl } from '$lib/photo';
   import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
-  import type { Person, GedcomEvent, Family, GedcomMedia, ResearchNote } from '$lib/types';
+  import type { Person, GedcomEvent, Family, GedcomMedia, ResearchNote, AlternateName } from '$lib/types';
 
   // --- State ---
   let person = $state<Person | null>(null);
@@ -19,6 +19,18 @@
   let citations = $state.raw<{ sourceXref: string; sourceTitle: string; page: string; quality: string }[]>([]);
   let lightboxMedia = $state<GedcomMedia | null>(null);
   let loading = $state(true);
+  let activeTab = $state<'overview' | 'names'>('overview');
+  let currentPeople = $state.raw<Person[]>([]);
+  let bookmarked = $state(false);
+
+  // Alternate names
+  let alternateNames = $state.raw<AlternateName[]>([]);
+  let altLoading = $state(false);
+  let altError = $state('');
+  let altDraft = $state({ givenName: '', surname: '', suffix: '', nameType: 'Hebrew', source: '' });
+  let editingAltId = $state<number | null>(null);
+  let editDraft = $state({ givenName: '', surname: '', suffix: '', nameType: 'Hebrew', source: '' });
+  const nameTypes = ['Hebrew','Yiddish','Polish','German','Married','Maiden','Nickname','Religious','Legal'];
 
   // Tauri file src converter
   let _convertFileSrc: ((path: string) => string) | null = null;
@@ -127,15 +139,18 @@
       return;
     }
     person = p;
+    currentPeople = await getPersons('', 5000);
+    bookmarked = await isBookmarked(xref);
 
     // Parallel data fetching
-    const [evts, par, med, photo, fams, personNotes] = await Promise.all([
+    const [evts, par, med, photo, fams, personNotes, altNames] = await Promise.all([
       getEvents(xref),
       getParents(xref),
       getMediaForPerson(xref),
       getPrimaryPhoto(xref),
       getSpouseFamilies(xref),
       getNotes(xref),
+      getAlternateNames(xref),
     ]);
 
     events = evts;
@@ -143,6 +158,7 @@
     media = med;
     primaryPhoto = photo;
     notes = personNotes;
+    alternateNames = altNames;
 
     // Load photo URL
     if (photo?.filePath) {
@@ -179,6 +195,119 @@
     loading = false;
   }
 
+  async function toggleBookmark(): Promise<void> {
+    const current = person;
+    if (!current) return;
+    if (!bookmarked) {
+      await insertBookmark({
+        personXref: current.xref,
+        label: fullName(current),
+        category: 'General',
+        sortOrder: undefined,
+        createdAt: new Date().toISOString(),
+      });
+      bookmarked = true;
+      return;
+    }
+    const all = await getBookmarks();
+    const existing = all.find((b) => b.personXref === current.xref);
+    if (existing) await deleteBookmark(existing.id);
+    bookmarked = false;
+  }
+
+  function navigateRelative(step: -1 | 1): void {
+    if (!person || currentPeople.length === 0) return;
+    const idx = currentPeople.findIndex((p) => p.xref === person!.xref);
+    if (idx < 0) return;
+    const nextIdx = (idx + step + currentPeople.length) % currentPeople.length;
+    const next = currentPeople[nextIdx];
+    if (next) goto(`/people/${next.xref}`);
+  }
+
+  function handleShortcut(e: KeyboardEvent): void {
+    const target = e.target as HTMLElement | null;
+    if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+    const key = e.key.toLowerCase();
+    if (key === 'e') {
+      activeTab = 'names';
+      e.preventDefault();
+      return;
+    }
+    if (key === 'b') {
+      toggleBookmark();
+      e.preventDefault();
+      return;
+    }
+    if (e.key === '[') {
+      navigateRelative(-1);
+      e.preventDefault();
+      return;
+    }
+    if (e.key === ']') {
+      navigateRelative(1);
+      e.preventDefault();
+    }
+  }
+
+  async function refreshAlternateNames() {
+    if (!person) return;
+    altLoading = true;
+    altError = '';
+    try {
+      alternateNames = await getAlternateNames(person.xref);
+    } catch (e) {
+      altError = String(e);
+    }
+    altLoading = false;
+  }
+
+  async function addAlternateName() {
+    if (!person) return;
+    if (!altDraft.givenName.trim() && !altDraft.surname.trim()) return;
+    await insertAlternateName({
+      personXref: person.xref,
+      givenName: altDraft.givenName.trim(),
+      surname: altDraft.surname.trim(),
+      suffix: altDraft.suffix.trim(),
+      nameType: altDraft.nameType,
+      source: altDraft.source.trim(),
+    });
+    altDraft = { givenName: '', surname: '', suffix: '', nameType: 'Hebrew', source: '' };
+    await refreshAlternateNames();
+  }
+
+  function startEditAlt(a: AlternateName) {
+    editingAltId = a.id;
+    editDraft = {
+      givenName: a.givenName || '',
+      surname: a.surname || '',
+      suffix: a.suffix || '',
+      nameType: a.nameType || 'Hebrew',
+      source: a.source || '',
+    };
+  }
+
+  function cancelEditAlt() {
+    editingAltId = null;
+  }
+
+  async function saveEditAlt(id: number) {
+    await updateAlternateName(id, {
+      givenName: editDraft.givenName.trim(),
+      surname: editDraft.surname.trim(),
+      suffix: editDraft.suffix.trim(),
+      nameType: editDraft.nameType,
+      source: editDraft.source.trim(),
+    });
+    editingAltId = null;
+    await refreshAlternateNames();
+  }
+
+  async function removeAlt(id: number) {
+    await deleteAlternateName(id);
+    await refreshAlternateNames();
+  }
+
   // Mini card photo cache
   let miniPhotoCache = $state.raw<Map<string, string>>(new Map());
 
@@ -198,6 +327,11 @@
   $effect(() => {
     const xref = $page.params.xref;
     if (xref) loadPerson(xref);
+  });
+
+  $effect(() => {
+    window.addEventListener('keydown', handleShortcut);
+    return () => window.removeEventListener('keydown', handleShortcut);
   });
 </script>
 
@@ -261,11 +395,20 @@
               </div>
             {/if}
             <div class="header-actions">
-              <button class="arch-btn arch-btn-sm" disabled title="Coming soon">Edit</button>
+              <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title="Edit details">Edit</button>
+              <button class="arch-btn arch-btn-sm" onclick={toggleBookmark} aria-label={bookmarked ? 'Remove bookmark' : 'Add bookmark'}>
+                {bookmarked ? 'Bookmarked' : 'Bookmark'}
+              </button>
             </div>
           </div>
         </section>
 
+        <div class="arch-card tab-bar mb-6">
+          <button class="tab-btn {activeTab === 'overview' ? 'active' : ''}" onclick={() => activeTab = 'overview'}>Overview</button>
+          <button class="tab-btn {activeTab === 'names' ? 'active' : ''}" onclick={() => activeTab = 'names'}>Names</button>
+        </div>
+
+        {#if activeTab === 'overview'}
         <!-- ===== SECTION 1: LIFE TIMELINE ===== -->
         {#if events.length > 0}
           <section class="detail-section">
@@ -472,6 +615,68 @@
                 <div class="note-date">{note.updatedAt || note.createdAt}</div>
               </div>
             {/each}
+          </section>
+        {/if}
+        {:else}
+          <section class="detail-section">
+            <h2 class="section-heading">Alternate Names</h2>
+            <p class="text-xs text-ink-muted mb-4">Store multilingual, married/maiden, or alias names for search and display.</p>
+
+            <div class="arch-card rounded-xl p-4 mb-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Given name" bind:value={altDraft.givenName} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Surname" bind:value={altDraft.surname} />
+                <input class="arch-input px-3 py-2 text-sm rounded-lg" placeholder="Suffix (optional)" bind:value={altDraft.suffix} />
+                <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={altDraft.nameType}>
+                  {#each nameTypes as t}<option value={t}>{t}</option>{/each}
+                </select>
+                <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" placeholder="Source / notes (optional)" bind:value={altDraft.source} />
+              </div>
+              <div class="mt-3">
+                <button class="btn-accent px-4 py-2 text-sm" onclick={addAlternateName}>Add Alternate Name</button>
+              </div>
+            </div>
+
+            {#if altLoading}
+              <div class="text-sm text-ink-faint py-4 text-center">Loading alternate names...</div>
+            {:else if altError}
+              <div class="text-xs text-ink-muted">{altError}</div>
+            {:else if alternateNames.length === 0}
+              <div class="text-sm text-ink-faint py-8 text-center">No alternate names yet.</div>
+            {:else}
+              <div class="arch-card rounded-xl divide-y arch-card-divide">
+                {#each alternateNames as a}
+                  <div class="px-4 py-3">
+                    {#if editingAltId === a.id}
+                      <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.givenName} />
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.surname} />
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.suffix} />
+                        <select class="arch-input px-3 py-2 text-sm rounded-lg" bind:value={editDraft.nameType}>
+                          {#each nameTypes as t}<option value={t}>{t}</option>{/each}
+                        </select>
+                        <input class="arch-input px-3 py-2 text-sm rounded-lg md:col-span-2" bind:value={editDraft.source} />
+                      </div>
+                      <div class="mt-2 flex gap-2">
+                        <button class="btn-accent px-3 py-1.5 text-xs" onclick={() => saveEditAlt(a.id)}>Save</button>
+                        <button class="btn-secondary px-3 py-1.5 text-xs" onclick={cancelEditAlt}>Cancel</button>
+                      </div>
+                    {:else}
+                      <div class="flex items-start justify-between gap-3">
+                        <div>
+                          <div class="text-sm font-medium text-ink">{a.givenName} {a.surname} {a.suffix}</div>
+                          <div class="text-xs text-ink-muted">{a.nameType}{a.source ? ` • ${a.source}` : ''}</div>
+                        </div>
+                        <div class="flex gap-2">
+                          <button class="btn-secondary px-3 py-1.5 text-xs" onclick={() => startEditAlt(a)}>Edit</button>
+                          <button class="px-3 py-1.5 text-xs rounded-lg" style="background: var(--parchment); color: var(--color-error);" onclick={() => removeAlt(a.id)}>Delete</button>
+                        </div>
+                      </div>
+                    {/if}
+                  </div>
+                {/each}
+              </div>
+            {/if}
           </section>
         {/if}
 
@@ -953,6 +1158,30 @@
     justify-content: center;
     aspect-ratio: 1;
     cursor: default;
+  }
+
+  /* ===== TABS ===== */
+  .tab-bar {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.5rem;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--border-subtle);
+    background: var(--vellum);
+    color: var(--ink-muted);
+    transition: background 150ms, color 150ms, border-color 150ms;
+  }
+
+  .tab-btn.active {
+    background: var(--parchment);
+    color: var(--ink);
+    border-color: var(--accent);
   }
 
   .media-file-icon {
