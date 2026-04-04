@@ -2425,7 +2425,15 @@ export async function getQualityRules(): Promise<QualityRule[]> {
 
 export async function toggleQualityRule(id: number, isActive: number): Promise<void> {
   const d = await getDb();
+  const old = await d.select<{ isActive: number }[]>(`SELECT isActive FROM quality_rule WHERE id = $1`, [id]);
+  const oldActive = old.length ? old[0].isActive : isActive;
   await d.execute(`UPDATE quality_rule SET isActive = $1 WHERE id = $2`, [isActive, id]);
+  await pushUndoAction(
+    `Toggled quality rule #${id} ${isActive ? 'on' : 'off'}`,
+    async () => { const db = await getDb(); await db.execute(`UPDATE quality_rule SET isActive = $1 WHERE id = $2`, [oldActive, id]); },
+    async () => { const db = await getDb(); await db.execute(`UPDATE quality_rule SET isActive = $1 WHERE id = $2`, [isActive, id]); },
+    { tableName: 'quality_rule', rowId: String(id), oldData: { isActive: oldActive }, newData: { isActive } }
+  );
 }
 
 export async function getChangeLog(entityId?: string): Promise<ChangeLogEntry[]> {
