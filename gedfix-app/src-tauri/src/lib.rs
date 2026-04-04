@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use tauri::{Manager, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
+use tauri::{Emitter, Manager, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
 
