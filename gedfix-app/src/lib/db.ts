@@ -2156,10 +2156,19 @@ export async function applyIssueFix(issue: TreeIssue): Promise<{ success: boolea
 
 export async function dismissIssue(issueKey: string): Promise<void> {
   const d = await getDb();
+  const existed = await d.select<{ issueKey: string }[]>(`SELECT issueKey FROM dismissed_issue WHERE issueKey = $1`, [issueKey]);
   await d.execute(
     `INSERT OR REPLACE INTO dismissed_issue (issueKey, dismissedAt) VALUES ($1, $2)`,
     [issueKey, new Date().toISOString()]
   );
+  if (!existed.length) {
+    await pushUndoAction(
+      `Dismissed issue: ${issueKey}`,
+      async () => { const db = await getDb(); await db.execute(`DELETE FROM dismissed_issue WHERE issueKey = $1`, [issueKey]); },
+      async () => { const db = await getDb(); await db.execute(`INSERT OR REPLACE INTO dismissed_issue (issueKey, dismissedAt) VALUES ($1, $2)`, [issueKey, new Date().toISOString()]); },
+      { tableName: 'dismissed_issue', rowId: issueKey }
+    );
+  }
 }
 
 export async function getDismissedIssueKeys(): Promise<Set<string>> {

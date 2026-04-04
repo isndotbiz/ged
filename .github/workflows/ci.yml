@@ -2,7 +2,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-  test:
+  python:
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -15,3 +15,19 @@ jobs:
       - run: pip install -e .
       - run: pip install pytest
       - run: pytest tests/ -v
+
+  frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm -C packages/core check
+      - run: pnpm -C gedfix-app check
+      - run: pnpm -C gedfix-app test
