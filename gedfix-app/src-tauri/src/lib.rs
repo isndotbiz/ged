@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use tauri::Manager;
+use tauri::{Manager, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
 
@@ -440,6 +440,65 @@ async fn list_image_files(dir: String) -> Result<Vec<String>, String> {
 }
 
 // ============================================================
+// macOS dock badge
+// ============================================================
+
+#[tauri::command]
+async fn set_badge_count(app: tauri::AppHandle, count: u32) -> Result<(), String> {
+    #[cfg(target_os = "macos")]
+    {
+        let _ = app.set_badge_count(if count > 0 { Some(count as i64) } else { None });
+    }
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = (app, count);
+    }
+    Ok(())
+}
+
+// ============================================================
+// Menu bar (desktop only)
+// ============================================================
+
+#[cfg(desktop)]
+fn build_menu(app: &tauri::AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> {
+    let file_menu = Submenu::with_items(app, "File", true, &[
+        &MenuItem::with_id(app, "import", "Import GEDCOM…", true, Some("CmdOrCtrl+O"))?,
+        &MenuItem::with_id(app, "export", "Export GEDCOM…", true, Some("CmdOrCtrl+Shift+E"))?,
+        &MenuItem::with_id(app, "backup", "Backup Database…", true, Some("CmdOrCtrl+Shift+B"))?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::quit(app, Some("Quit GedFix"))?,
+    ])?;
+
+    let edit_menu = Submenu::with_items(app, "Edit", true, &[
+        &PredefinedMenuItem::undo(app, None)?,
+        &PredefinedMenuItem::redo(app, None)?,
+        &PredefinedMenuItem::separator(app)?,
+        &PredefinedMenuItem::cut(app, None)?,
+        &PredefinedMenuItem::copy(app, None)?,
+        &PredefinedMenuItem::paste(app, None)?,
+        &PredefinedMenuItem::select_all(app, None)?,
+        &PredefinedMenuItem::separator(app)?,
+        &MenuItem::with_id(app, "find", "Find Person…", true, Some("CmdOrCtrl+K"))?,
+    ])?;
+
+    let view_menu = Submenu::with_items(app, "View", true, &[
+        &MenuItem::with_id(app, "people", "People", true, Some("CmdOrCtrl+1"))?,
+        &MenuItem::with_id(app, "families", "Families", true, Some("CmdOrCtrl+2"))?,
+        &MenuItem::with_id(app, "dashboard", "Dashboard", true, Some("CmdOrCtrl+3"))?,
+        &MenuItem::with_id(app, "pedigree", "Pedigree", true, Some("CmdOrCtrl+4"))?,
+        &MenuItem::with_id(app, "map", "Map", true, Some("CmdOrCtrl+5"))?,
+    ])?;
+
+    let research_menu = Submenu::with_items(app, "Research", true, &[
+        &MenuItem::with_id(app, "ai-research", "Run AI Research", true, Some("CmdOrCtrl+R"))?,
+        &MenuItem::with_id(app, "sources", "Find Sources", true, Some("CmdOrCtrl+Shift+F"))?,
+    ])?;
+
+    Menu::with_items(app, &[&file_menu, &edit_menu, &view_menu, &research_menu])
+}
+
+// ============================================================
 // App entry
 // ============================================================
 
@@ -451,6 +510,18 @@ pub fn run() {
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
         .plugin(tauri_plugin_opener::init())
+        .plugin(tauri_plugin_notification::init())
+        .setup(|app| {
+            #[cfg(desktop)]
+            {
+                let menu = build_menu(app.handle())?;
+                app.set_menu(menu)?;
+                app.on_menu_event(|app, event| {
+                    let _ = app.emit("menu-action", event.id().0.clone());
+                });
+            }
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![
             generate_thumbnail,
             crop_face,
@@ -461,6 +532,7 @@ pub fn run() {
             list_image_files,
             write_exif_metadata,
             organize_media_folders,
+            set_badge_count,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
