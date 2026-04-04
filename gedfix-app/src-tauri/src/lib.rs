@@ -444,14 +444,20 @@ async fn list_image_files(dir: String) -> Result<Vec<String>, String> {
 // ============================================================
 
 #[tauri::command]
-async fn set_badge_count(app: tauri::AppHandle, count: u32) -> Result<(), String> {
+async fn set_badge_count(_app: tauri::AppHandle, count: u32) -> Result<(), String> {
     #[cfg(target_os = "macos")]
     {
-        let _ = app.set_badge_count(if count > 0 { Some(count as i64) } else { None });
+        use std::process::Command;
+        // Use osascript to set dock badge on macOS
+        if count > 0 {
+            let _ = Command::new("osascript")
+                .args(["-e", &format!("tell application \"System Events\" to set badge of (first application process whose frontmost is true) to \"{}\"", count)])
+                .output();
+        }
     }
     #[cfg(not(target_os = "macos"))]
     {
-        let _ = (app, count);
+        let _ = count;
     }
     Ok(())
 }
