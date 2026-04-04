@@ -14,6 +14,7 @@ dependencies = [
   "click>=8.1",
   "ged4py>=0.5.2",
   "python-dateutil>=2.9",
+  "pyyaml>=6.0",
   "rapidfuzz>=3.9",
 ]
 
