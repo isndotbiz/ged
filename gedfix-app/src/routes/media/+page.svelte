@@ -45,6 +45,8 @@
   let faceDetections = $state<Record<number, FaceDetectionBox[]>>({});
   let selectedFace = $state<{ mediaId: number; index: number } | null>(null);
   let selectedPersonXref = $state('');
+  let linkedOnly = $state(true);
+  let imagesOnly = $state(true);
 
   let _convertFileSrc: ((path: string) => string) | null = null;
 
@@ -145,7 +147,7 @@
   }
 
   async function load(): Promise<void> {
-    media = await getMediaForManagement();
+    media = await getMediaForManagement({ linkedOnly, imagesOnly });
     selectedIds = new Set();
   }
 
@@ -341,6 +343,16 @@
       <div class="mt-4 flex flex-wrap gap-3">
         <button class="btn-primary" onclick={runDedupPipeline} disabled={busy}>{t('cleanup.deduplicateMedia')}</button>
         <button class="btn-outline" onclick={runHeadshotCleanup} disabled={busy}>Move Non-Portrait Headshots</button>
+      </div>
+      <div class="mt-3 flex flex-wrap gap-4 items-center">
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" bind:checked={linkedOnly} onchange={load} />
+          Show linked to people only
+        </label>
+        <label class="flex items-center gap-2 text-sm cursor-pointer">
+          <input type="checkbox" bind:checked={imagesOnly} onchange={load} />
+          Images only
+        </label>
       </div>
       {#if dedupResult}
         <div class="mt-4 grid grid-cols-2 md:grid-cols-4 gap-3">

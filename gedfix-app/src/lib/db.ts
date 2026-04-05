@@ -930,12 +930,20 @@ export function normalizeMediaPath(filePath: string): string {
   return filePath.trim().replace(/\\/g, '/').toLowerCase();
 }
 
-export async function getMediaForManagement(): Promise<(GedcomMedia & {
+export async function getMediaForManagement(options?: { linkedOnly?: boolean; imagesOnly?: boolean }): Promise<(GedcomMedia & {
   category: MediaCategory;
   linkCount: number;
   peopleLabel: string;
 })[]> {
   const d = await getDb();
+  const linkedOnly = options?.linkedOnly ?? true;
+  const imagesOnly = options?.imagesOnly ?? true;
+  const join = linkedOnly
+    ? 'INNER JOIN media_person_link mpl ON mpl.mediaId = m.id'
+    : 'LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id';
+  const imageFilter = imagesOnly
+    ? `AND (LOWER(m.filePath) LIKE '%.jpg' OR LOWER(m.filePath) LIKE '%.jpeg' OR LOWER(m.filePath) LIKE '%.png' OR LOWER(m.filePath) LIKE '%.gif' OR LOWER(m.filePath) LIKE '%.bmp' OR LOWER(m.filePath) LIKE '%.webp' OR LOWER(m.filePath) LIKE '%.tiff' OR LOWER(m.filePath) LIKE '%.tif')`
+    : '';
   return await d.select<(GedcomMedia & { category: MediaCategory; linkCount: number; peopleLabel: string })[]>(`
     SELECT
       m.*,
@@ -943,9 +951,9 @@ export async function getMediaForManagement(): Promise<(GedcomMedia & {
       COUNT(DISTINCT mpl.personXref) as linkCount,
       COALESCE(GROUP_CONCAT(DISTINCT TRIM(COALESCE(p.givenName, '') || ' ' || COALESCE(p.surname, ''))), '') as peopleLabel
     FROM media m
-    LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id
+    ${join}
     LEFT JOIN person p ON p.xref = mpl.personXref
-    WHERE m.filePath != ''
+    WHERE m.filePath != '' ${imageFilter}
     GROUP BY m.id
     ORDER BY m.id DESC
   `);
