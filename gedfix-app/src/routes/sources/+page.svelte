@@ -157,8 +157,7 @@
                 <div class="font-medium text-sm" style="color: var(--ink);">
                   {source.title || '(Untitled)'}
                 </div>
-                {@const typeInfo = sourceTypeLabels[source.sourceType || 'unknown']}
-                <span class="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style="background: {typeInfo.color}22; color: {typeInfo.color};">{typeInfo.label}</span>
+                <span class="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style="background: {sourceTypeLabels[source.sourceType || 'unknown'].color}22; color: {sourceTypeLabels[source.sourceType || 'unknown'].color};">{sourceTypeLabels[source.sourceType || 'unknown'].label}</span>
               </div>
               {#if source.author}
                 <div class="text-xs text-ink-muted mt-0.5">By {source.author}</div>
