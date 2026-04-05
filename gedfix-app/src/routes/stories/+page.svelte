@@ -427,9 +427,9 @@ Write the family narrative now.`;
               oninput={onSearch}
               onfocus={() => { if (personResults.length > 0) showDropdown = true; }}
               onblur={() => setTimeout(() => showDropdown = false, 200)}
-              placeholder="Search for a person to add..."
+              placeholder={t('stories.searchPersonToAdd')}
               class="w-full arch-input px-3 py-2 text-sm"
-              aria-label="Search for a person to add..."
+              aria-label={t('stories.searchPersonToAdd')}
             />
             {#if showDropdown && personResults.length > 0}
               <div class="absolute top-full left-0 right-0 mt-1 arch-card rounded-lg z-50 max-h-48 overflow-y-auto" style="box-shadow: var(--shadow-lg);">

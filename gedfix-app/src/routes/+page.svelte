@@ -319,7 +319,7 @@
       onclick={() => loadTree('I2')}
       class="px-2 py-1 rounded-md transition-all"
       style="background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border-subtle);"
-      title="Go to home person"
+      title={t('nav.goToHomePerson')}
     >
       <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l9-9 9 9M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
@@ -375,7 +375,7 @@
               {#if node.person}
                 {@const p = node.person}
                 <div class="flex items-center gap-2 px-2 py-1 mx-0.5 my-0.5 rounded-lg transition-all {p.sex==='F'?'f-card':p.sex==='M'?'m-card':'u-card'}" style="transition-duration: var(--duration-fast);">
-                  <button onclick={() => openPicker(p)} class="shrink-0 group" title="Pick face photo">
+                  <button onclick={() => openPicker(p)} class="shrink-0 group" title={t('media.pickFacePhoto')}>
                     <img
                       src={getImg(node)}
                       alt=""
@@ -384,7 +384,7 @@
                       onerror={(e) => { (e.target as HTMLImageElement).src = personSvg(p); }}
                     />
                   </button>
-                  <button onclick={() => nav(p)} class="text-left min-w-0 flex-1 hover:opacity-80" title="Navigate to {p.givenName}">
+                  <button onclick={() => nav(p)} class="text-left min-w-0 flex-1 hover:opacity-80" title={`${t('common.goTo')} ${p.givenName}`}>
                     <div class="text-[11px] font-bold truncate leading-tight" style="color: var(--ink); font-family: var(--font-sans);">{p.givenName}</div>
                     <div class="text-[10px] truncate leading-tight" style="color: var(--ink-light); font-family: var(--font-serif); font-weight: 600;">{p.surname}</div>
                     <div class="text-[9px] truncate" style="color: var(--ink-muted); font-family: var(--font-mono);">{p.birthDate?`b.${p.birthDate}`:''}{p.deathDate?` d.${p.deathDate}`:''}</div>
@@ -514,7 +514,7 @@
                 bind:value={cropZoom}
                 oninput={onZoomChange}
                 class="flex-1"
-                aria-label="Zoom"
+                aria-label={t('common.zoom')}
               />
               <span class="text-xs w-10 text-right" style="color: var(--ink-light); font-family: var(--font-mono);">{cropZoom.toFixed(1)}x</span>
             </div>

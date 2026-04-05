@@ -70,7 +70,7 @@
       <button class="btn-accent px-4 py-2 w-full" onclick={run} disabled={loading} aria-label={t('common.actions')}>
         {loading ? 'Finding...' : 'Find Relationship'}
       </button>
-      <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label="Print relationship">Print</button>
+      <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label={t('relationship.printRelationship')}>{t('common.print')}</button>
     </div>
   </div>
 

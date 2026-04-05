@@ -71,7 +71,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
       <input class="arch-input" placeholder={t('evidence.factType')} bind:value={draft.factType}  aria-label={t('evidence.factType')} />
       <input class="arch-input" placeholder={t('evidence.factValue')} bind:value={draft.factValue}  aria-label={t('evidence.factValue')} />
-      <input class="arch-input" placeholder="Source XREF" bind:value={draft.sourceXref}  aria-label="Source XREF" />
+      <input class="arch-input" placeholder={t('evidence.sourceXref')} bind:value={draft.sourceXref}  aria-label={t('evidence.sourceXref')} />
       <select class="arch-input" bind:value={draft.informationType} aria-label={t('common.filter')}>
         <option value="primary">{t('evidence.primary')}</option>
         <option value="secondary">{t('evidence.secondary')}</option>
@@ -88,7 +88,7 @@
         <option value="possible">Possible</option>
         <option value="undetermined">Undetermined</option>
       </select>
-      <input class="arch-input md:col-span-3" placeholder="Analysis notes" bind:value={draft.analysisNotes}  aria-label="Analysis notes" />
+      <input class="arch-input md:col-span-3" placeholder={t('evidence.analysisNotes')} bind:value={draft.analysisNotes}  aria-label={t('evidence.analysisNotes')} />
     </div>
     <button class="btn-accent px-4 py-2 mt-3" onclick={add} aria-label={t('common.actions')}>{t('evidence.addEvidence')}</button>
   </section>

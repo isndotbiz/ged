@@ -343,7 +343,7 @@
             {#if selectedPerson.birthDate}
               <span style="color: var(--ink-faint);">b. {selectedPerson.birthDate}</span>
             {/if}
-            <button onclick={clearPersonContext} class="ml-auto text-ink-faint hover:text-red-500" title="Remove person context" aria-label={t('common.actions')}>&times;</button>
+            <button onclick={clearPersonContext} class="ml-auto text-ink-faint hover:text-red-500" title={t('ai.removePersonContext')} aria-label={t('ai.removePersonContext')}>&times;</button>
           </div>
         {:else}
           <input

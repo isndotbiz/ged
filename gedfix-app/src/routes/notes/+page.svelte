@@ -79,7 +79,7 @@
   </div>
 
   <div class="mb-4">
-    <input bind:value={search} oninput={onSearchInput} placeholder="Search notes..." class="w-full px-3 py-2 text-sm arch-input"  aria-label="Search notes..." />
+    <input bind:value={search} oninput={onSearchInput} placeholder={t('notes.searchNotes')} class="w-full px-3 py-2 text-sm arch-input"  aria-label={t('notes.searchNotes')} />
   </div>
 
   {#if showEditor}
@@ -91,7 +91,7 @@
           <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
         {/each}
       </select>
-      <textarea bind:value={content} placeholder="Content" class="w-full px-3 py-2 text-sm arch-input mb-4 h-32"></textarea>
+      <textarea bind:value={content} placeholder={t('common.content')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-32"></textarea>
       <button onclick={create} disabled={!title.trim()} class="px-4 py-2 text-sm font-medium btn-accent" aria-label={t('common.actions')}>{t('common.save')}</button>
     </div>
   {/if}

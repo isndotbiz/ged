@@ -68,7 +68,7 @@
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={title} placeholder="Task title" class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label="Task title" />
+      <input bind:value={title} placeholder={t('tasks.taskTitle')} class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label={t('tasks.taskTitle')} />
       <textarea bind:value={description} placeholder={t('common.description')} class="w-full px-3 py-2 text-sm arch-input mb-3 h-20"></textarea>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-2 mb-3">
         <input type="date" bind:value={dueDate} class="w-full px-3 py-2 text-sm arch-input"  aria-label={t('common.date')} />
