@@ -330,10 +330,10 @@
       <div class="stats-actions">
         <!-- Legend -->
         <div class="legend">
-          <span class="legend-dot" style="background: #16a34a;" title="Birth"></span>
-          <span class="legend-dot" style="background: #dc2626;" title="Death"></span>
+          <span class="legend-dot" style="background: #16a34a;" title={t('map.birth')}></span>
+          <span class="legend-dot" style="background: #dc2626;" title={t('map.death')}></span>
           <span class="legend-dot" style="background: #2563eb;" title={t('families.marriage')}></span>
-          <span class="legend-dot" style="background: #D97706;" title="Other"></span>
+          <span class="legend-dot" style="background: #D97706;" title={t('common.other')}></span>
         </div>
 
         <button

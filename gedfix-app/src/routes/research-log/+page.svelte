@@ -66,7 +66,7 @@
     <div class="arch-card rounded-xl p-6 mb-6">
       <div class="grid grid-cols-2 gap-4 mb-4">
         <input bind:value={repository} placeholder={t('research.repositorySource')} class="px-3 py-2 text-sm arch-input"  aria-label={t('research.repositorySource')} />
-        <input bind:value={searchDate} placeholder="Search Date (YYYY-MM-DD)" class="px-3 py-2 text-sm arch-input"  aria-label="Search Date (YYYY-MM-DD)" />
+        <input bind:value={searchDate} placeholder={t('research.searchDate')} class="px-3 py-2 text-sm arch-input"  aria-label={t('research.searchDate')} />
       </div>
       <input bind:value={searchTerms} placeholder={t('research.searchTerms')} class="w-full px-3 py-2 text-sm arch-input mb-4"  aria-label={t('research.searchTerms')} />
       <textarea bind:value={recordsViewed} placeholder={t('research.recordsViewed')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>

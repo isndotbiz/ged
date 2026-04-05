@@ -104,13 +104,13 @@
 
   {#if showEditor}
     <div class="arch-card rounded-xl p-6 mb-6">
-      <input bind:value={newName} placeholder="Group Name" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label="Group Name" />
-      <input bind:value={newDesc} placeholder="Description (optional)" class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label="Description (optional)" />
+      <input bind:value={newName} placeholder={t('groups.groupName')} class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label={t('groups.groupName')} />
+      <input bind:value={newDesc} placeholder={t('groups.descriptionOptional')} class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-amber-500/20"  aria-label={t('groups.descriptionOptional')} />
       <div class="flex gap-2 mb-4">
         {#each presetColors as c}
           <button
             onclick={() => newColor = c}
-            aria-label="Select color {c}"
+            aria-label={t('groups.selectColor').replace('{color}', c)}
             class="w-7 h-7 rounded-md border-2 transition-all {newColor === c ? 'border-gray-900 scale-110' : 'border-transparent'}"
             style="background: {c}"
           ></button>
@@ -165,9 +165,9 @@
 
   {#if showPicker}
     <div class="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <button class="absolute inset-0" style="background: rgba(0,0,0,0.55); border: 0;" onclick={() => showPicker = false} aria-label="Close person picker"></button>
+      <button class="absolute inset-0" style="background: rgba(0,0,0,0.55); border: 0;" onclick={() => showPicker = false} aria-label={t('groups.closePersonPicker')}></button>
       <div class="arch-card w-full max-w-xl p-5 relative z-10" role="dialog" aria-modal="true" aria-labelledby="group-picker-title" tabindex="-1" onkeydown={handlePickerKeydown} use:focusTrap>
-        <h2 id="group-picker-title" class="text-base mb-3" style="color: var(--ink);">Add Person to Group</h2>
+        <h2 id="group-picker-title" class="text-base mb-3" style="color: var(--ink);">{t('groups.addPersonToGroup')}</h2>
         <input bind:this={pickerInputEl} bind:value={pickerQuery} placeholder={t('people.searchPlaceholder')} class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label={t('people.searchPlaceholder')} />
         <select bind:value={pickerSelectedXref} class="w-full px-3 py-2 text-sm arch-input mb-3" size="8" aria-label={t('common.filter')}>
           {#each pickerOptions as p}

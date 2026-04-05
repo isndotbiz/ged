@@ -98,10 +98,10 @@
   <div class="mb-4 flex flex-wrap items-center gap-3">
     <input
       type="text"
-      placeholder="Search by name, place, or xref..."
+      placeholder={t('families.searchPlaceholder')}
       bind:value={search}
       class="w-full max-w-sm px-3 py-2 text-sm rounded-lg border-none outline-none transition-colors arch-input"
-     aria-label="Search by name, place, or xref..." />
+     aria-label={t('families.searchPlaceholder')} />
     <button class="btn-outline text-xs" onclick={() => sortDir = sortDir === 'desc' ? 'asc' : 'desc'}>
       Sort {sortDir === 'desc' ? 'Newest' : 'Oldest'}
     </button>

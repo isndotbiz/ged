@@ -327,7 +327,7 @@
                 onclick={() => dismissOne(issue)}
                 class="px-2 py-1 text-xs rounded-md transition-colors"
                 style="color: var(--ink-faint);"
-                title="Dismiss this issue"
+                title={t('issues.dismissThisIssue')}
               >&times;</button>
             </div>
           </div>

@@ -299,10 +299,10 @@
           type="text"
           bind:value={researchQuery}
           oninput={onSearchInput}
-          placeholder="Type a name..."
+          placeholder={t('proposals.typeAName')}
           class="w-full px-3 py-2 rounded-lg text-sm border"
           style="border-color: var(--ink-faint); font-family: var(--font-sans); color: var(--ink); background: var(--paper);"
-         aria-label="Type a name..." />
+         aria-label={t('proposals.typeAName')} />
         {#if researchResults.length > 0}
           <div class="mt-2 max-h-60 overflow-y-auto space-y-1">
             {#each researchResults as person}

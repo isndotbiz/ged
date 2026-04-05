@@ -50,7 +50,7 @@
     {#each categories as c}
       <button class="px-3 py-1 text-xs rounded-full {activeCategory === c ? 'btn-filter-active' : 'btn-filter'}" onclick={() => activeCategory = c}>{c}</button>
     {/each}
-    <input class="arch-input px-3 py-1 text-xs" placeholder="New category..." bind:value={newCategory}  aria-label="New category..." />
+    <input class="arch-input px-3 py-1 text-xs" placeholder={t('bookmarks.newCategory')} bind:value={newCategory}  aria-label={t('bookmarks.newCategory')} />
   </div>
 
   {#if bookmarks.length === 0}

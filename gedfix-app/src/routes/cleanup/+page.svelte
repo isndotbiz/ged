@@ -1093,10 +1093,10 @@
         <input
           type="text"
           bind:value={collateralRootXref}
-          placeholder="Root person XREF (e.g., @I1@)"
+          placeholder={t('cleanup.rootPersonXref')}
           class="flex-1 px-3 py-2 text-sm rounded-lg text-ink"
           style="background: var(--parchment); border: 1px solid var(--ink-faint); font-family: var(--font-mono);"
-         aria-label="Root person XREF (e.g., @I1@)" />
+         aria-label={t('cleanup.rootPersonXref')} />
         <button
           onclick={scanCollaterals}
           disabled={collateralScanning}

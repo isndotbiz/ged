@@ -722,7 +722,7 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-2 mb-4">
         <input class="arch-input" placeholder={t('people.givenName')} bind:value={fsSearchGiven}  aria-label={t('people.givenName')} />
         <input class="arch-input" placeholder={t('people.surname')} bind:value={fsSearchSurname}  aria-label={t('people.surname')} />
-        <input class="arch-input" placeholder="Birth Year" bind:value={fsSearchYear}  aria-label="Birth Year" />
+        <input class="arch-input" placeholder={t('services.birthYear')} bind:value={fsSearchYear}  aria-label={t('services.birthYear')} />
         <button class="btn-accent" onclick={searchFamilySearch} disabled={fsSearchLoading} aria-label={t('common.actions')}>
           {fsSearchLoading ? 'Searching...' : 'Search Records'}
         </button>
@@ -763,9 +763,9 @@
             id="familysearch-client-id"
             type="text"
             bind:value={fsClientId}
-            placeholder="Register at developers.familysearch.org"
+            placeholder={t('services.registerFamilySearch')}
             class="arch-input flex-1"
-           aria-label="Register at developers.familysearch.org" />
+           aria-label={t('services.registerFamilySearch')} />
           <button class="btn-secondary text-xs" onclick={saveFsClientId} aria-label={t('common.actions')}>{t('common.save')}</button>
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://api.familysearch.org &middot; Register: https://developers.familysearch.org/</p>
@@ -851,9 +851,9 @@
             id="geni-client-id"
             type="text"
             bind:value={geniClientId}
-            placeholder="Register at geni.com/platform/developer/apps"
+            placeholder={t('services.registerGeni')}
             class="arch-input flex-1"
-           aria-label="Register at geni.com/platform/developer/apps" />
+           aria-label={t('services.registerGeni')} />
           <button class="btn-secondary text-xs" onclick={saveGeniClientId} aria-label={t('common.actions')}>{t('common.save')}</button>
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://www.geni.com/api/ &middot; Rate limit: 40 req/10s</p>
@@ -936,9 +936,9 @@
             id="wikitree-api-key"
             type="text"
             bind:value={wikitreeApiKey}
-            placeholder="Join WikiTree Apps Project for access"
+            placeholder={t('services.registerWikiTree')}
             class="arch-input flex-1"
-           aria-label="Join WikiTree Apps Project for access" />
+           aria-label={t('services.registerWikiTree')} />
         </div>
         <p class="text-[10px] mt-1" style="color: var(--ink-faint); font-family: var(--font-mono);">API: https://api.wikitree.com/api.php &middot; Read-only access</p>
       </div>
