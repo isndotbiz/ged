@@ -412,7 +412,7 @@
                       class="face-box {selectedFace?.mediaId === item.id && selectedFace?.index === idx ? 'is-active' : ''}"
                       style="left: {(face.x / face.imageWidth) * 100}%; top: {(face.y / face.imageHeight) * 100}%; width: {(face.w / face.imageWidth) * 100}%; height: {(face.h / face.imageHeight) * 100}%;"
                       onclick={(e) => { e.stopPropagation(); selectedFace = { mediaId: item.id, index: idx }; }}
-                      aria-label="Select detected face"
+                      aria-label={t('media.selectFace')}
                     ></button>
                   {/each}
                 </div>

@@ -98,7 +98,7 @@
       <p class="text-sm text-ink-muted mt-1">Organize people into custom groups for research</p>
     </div>
     <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg">
-      {showEditor ? 'Cancel' : 'New Group'}
+      {showEditor ? t('common.cancel') : t('groups.addGroup')}
     </button>
   </div>
 
@@ -141,8 +141,8 @@
             </div>
             <div class="flex items-center gap-3">
               <span class="text-xs text-ink-faint">{group.memberCount} members</span>
-              <button onclick={(e) => { e.stopPropagation(); openPicker(group.id); }} class="text-xs" style="color: var(--accent);">Add Member</button>
-              <button onclick={(e) => { e.stopPropagation(); removeGroup(group.id); }} class="text-xs text-red-500 hover:text-red-700">Delete</button>
+              <button onclick={(e) => { e.stopPropagation(); openPicker(group.id); }} class="text-xs" style="color: var(--accent);">{t('groups.addMember')}</button>
+              <button onclick={(e) => { e.stopPropagation(); removeGroup(group.id); }} class="text-xs text-red-500 hover:text-red-700">{t('common.delete')}</button>
             </div>
           </div>
         </div>
@@ -175,7 +175,7 @@
           {/each}
         </select>
         <div class="flex justify-end gap-2">
-          <button class="btn-outline" onclick={() => showPicker = false}>Cancel</button>
+          <button class="btn-outline" onclick={() => showPicker = false}>{t('common.cancel')}</button>
           <button class="btn-primary" onclick={addSelectedPersonToGroup} disabled={!pickerSelectedXref} aria-label={t('common.actions')}>{t('common.add')}</button>
         </div>
       </div>

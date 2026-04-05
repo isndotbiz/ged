@@ -279,7 +279,7 @@
           disabled={$isImporting}
           class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors"
          aria-label={t('common.actions')}>
-          {$isImporting ? 'Importing...' : 'Choose File'}
+          {$isImporting ? t('common.importing') : 'Choose File'}
         </button>
       </div>
 
@@ -300,10 +300,10 @@
         {#if confirmClear}
           <div class="flex gap-2">
             <button onclick={clearDatabase} class="px-3 py-1.5 bg-red-500 text-white text-xs font-medium rounded-lg hover:bg-red-600 transition-colors" aria-label={t('common.actions')}>{t('common.confirm')}</button>
-            <button onclick={() => { confirmClear = false; }} class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors">Cancel</button>
+            <button onclick={() => { confirmClear = false; }} class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors">{t('common.cancel')}</button>
           </div>
         {:else}
-          <button onclick={() => { confirmClear = true; }} class="px-4 py-2 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors" style="background: var(--parchment);">Clear</button>
+          <button onclick={() => { confirmClear = true; }} class="px-4 py-2 text-red-600 text-sm font-medium rounded-lg hover:bg-red-50 transition-colors" style="background: var(--parchment);">{t('common.clear')}</button>
         {/if}
       </div>
 
@@ -342,7 +342,7 @@
             <option value="7.0">7.0</option>
           </select>
           <button onclick={exportGedcomFile} disabled={exportBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
-            {exportBusy ? 'Exporting...' : `Export ${exportFormat}`}
+            {exportBusy ? t('common.exporting') : `Export ${exportFormat}`}
           </button>
         </div>
       </div>
@@ -356,7 +356,7 @@
           <div class="text-xs text-ink-muted">Full database snapshot for restore</div>
         </div>
         <button onclick={exportJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
-          {jsonBusy ? 'Exporting...' : 'Export JSON'}
+          {jsonBusy ? t('common.exporting') : 'Export JSON'}
         </button>
       </div>
 
@@ -366,7 +366,7 @@
           <div class="text-xs text-ink-muted">Restore database from a JSON export</div>
         </div>
         <button onclick={importJson} disabled={jsonBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
-          {jsonBusy ? 'Importing...' : 'Import JSON'}
+          {jsonBusy ? t('common.importing') : 'Import JSON'}
         </button>
       </div>
       {#if jsonMessage}

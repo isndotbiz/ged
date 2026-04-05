@@ -101,7 +101,7 @@
       <div class="arch-card rounded-xl p-4">
         <div class="flex items-center justify-between mb-2">
           <span class="font-medium text-sm text-ink">{note.title}</span>
-          <button onclick={() => remove(note.id)} class="text-xs text-red-500 hover:text-red-700">Delete</button>
+          <button onclick={() => remove(note.id)} class="text-xs text-red-500 hover:text-red-700">{t('common.delete')}</button>
         </div>
         {#if note.ownerXref}
           <a href="/people/{encodeURIComponent(note.ownerXref)}" class="inline-flex mb-2 px-2 py-0.5 rounded-full text-[11px] no-underline hover:underline" style="background: var(--parchment); color: var(--accent);">

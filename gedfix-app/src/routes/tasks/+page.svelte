@@ -63,7 +63,7 @@
       <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('research.tasks')}</h1>
       <p class="text-sm text-ink-muted mt-1">{todoCount} pending tasks</p>
     </div>
-    <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent">{showEditor ? 'Cancel' : 'Add Task'}</button>
+    <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent">{showEditor ? t('common.cancel') : t('tasks.addTask')}</button>
   </div>
 
   {#if showEditor}
@@ -117,7 +117,7 @@
             </div>
           {/if}
         </div>
-        <button onclick={() => remove(task.id)} class="text-xs text-red-500 hover:text-red-700 shrink-0">Delete</button>
+        <button onclick={() => remove(task.id)} class="text-xs text-red-500 hover:text-red-700 shrink-0">{t('common.delete')}</button>
       </div>
     {/each}
   </div>

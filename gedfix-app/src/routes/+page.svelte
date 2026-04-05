@@ -551,7 +551,7 @@
               class="btn-accent w-full px-4 py-2.5 text-sm font-medium rounded-lg disabled:opacity-50 mt-4 transition-all"
               style="background: var(--accent); color: white; font-family: var(--font-sans);"
              aria-label={t('common.actions')}>
-              {isSaving ? 'Saving...' : 'Save as Icon'}
+              {isSaving ? t('common.saving') : t('common.saveAsIcon')}
             </button>
 
             <p class="text-[10px] text-center" style="color: var(--ink-faint); font-family: var(--font-sans);">Original photo is never modified. A cropped copy is saved.</p>

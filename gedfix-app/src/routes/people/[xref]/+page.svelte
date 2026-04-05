@@ -403,7 +403,7 @@
           <div class="header-info">
             <div class="flex items-center gap-2 flex-wrap">
               <h1 class="header-name">{fullName(person)}</h1>
-              <span class="gender-icon" title={person.sex === 'M' ? 'Male' : person.sex === 'F' ? 'Female' : 'Unknown'}>{genderIcon(person.sex)}</span>
+              <span class="gender-icon" title={person.sex === 'M' ? t('people.male') : person.sex === 'F' ? t('people.female') : t('people.unknown')}>{genderIcon(person.sex)}</span>
             </div>
             <div class="header-dates">
               {#if person.birthDate}
@@ -419,7 +419,7 @@
               </div>
             {/if}
             <div class="header-actions">
-              <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title={t('people.editDetails')}>Edit</button>
+              <button class="arch-btn arch-btn-sm" onclick={() => { activeTab = 'names'; }} title={t('people.editDetails')}>{t('common.edit')}</button>
               <button class="arch-btn arch-btn-sm" onclick={toggleBookmark} aria-label={bookmarked ? t('people.removeBookmark') : t('common.bookmark')}>
                 {bookmarked ? t('people.bookmarked') : t('common.bookmark')}
               </button>

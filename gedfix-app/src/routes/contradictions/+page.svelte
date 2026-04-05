@@ -240,7 +240,7 @@
       <p class="text-sm text-ink-muted mt-1">{t('contradictions.subtitle')}</p>
     </div>
     <button onclick={runAnalysis} disabled={isRunning} class="px-4 py-2 text-sm font-medium btn-accent text-white rounded-lg disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
-      {isRunning ? 'Analyzing...' : 'Run Analysis'}
+      {isRunning ? t('common.analyzing') : t('contradictions.runAnalysis')}
     </button>
   </div>
 
@@ -281,7 +281,7 @@
     {/if}
   {:else}
     <div class="arch-card rounded-xl p-8 text-center">
-      <p class="text-ink-muted text-sm">Click "Run Analysis" to scan your tree for contradictions</p>
+      <p class="text-ink-muted text-sm">{t('contradictions.clickRunAnalysis')}</p>
       <p class="text-ink-faint text-xs mt-1">Checks: impossible dates, age anomalies, parent-child conflicts, event timeline issues</p>
     </div>
   {/if}

@@ -42,7 +42,7 @@
       <p class="text-sm text-ink-muted mt-1">Track searches and conclusions per the Genealogical Proof Standard</p>
     </div>
     <button onclick={() => showEditor = !showEditor} class="px-4 py-2 text-sm font-medium btn-accent">
-      {showEditor ? 'Cancel' : 'Add Entry'}
+      {showEditor ? t('common.cancel') : t('research.addEntry')}
     </button>
   </div>
 
@@ -94,7 +94,7 @@
               <span class="px-2 py-0.5 text-[10px] font-semibold rounded-full {entry.resultType === 'POSITIVE' ? 'bg-green-100 text-green-700' : entry.resultType === 'NEGATIVE' ? 'bg-orange-100 text-orange-700' : 'btn-filter'}">{entry.resultType}</span>
               {#if entry.searchDate}<span class="text-[10px] text-ink-faint">{entry.searchDate}</span>{/if}
             </div>
-            <button onclick={() => remove(entry.id)} class="text-[10px] text-red-500 hover:text-red-700">Delete</button>
+            <button onclick={() => remove(entry.id)} class="text-[10px] text-red-500 hover:text-red-700">{t('common.delete')}</button>
           </div>
           {#if entry.repository}<div class="text-sm font-medium text-ink">{entry.repository}</div>{/if}
           {#if entry.searchTerms}<div class="text-xs text-ink-light mt-1">Search: {entry.searchTerms}</div>{/if}
