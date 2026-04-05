@@ -361,6 +361,17 @@
     );
     orphanedPeople = orphans.cnt;
 
+    // Source validation status
+    const validationData = await db.select<{validationStatus: string; c: number}[]>(
+      `SELECT COALESCE(validationStatus, 'unvalidated') as validationStatus, COUNT(*) as c FROM person GROUP BY validationStatus`
+    );
+    for (const row of validationData) {
+      if (row.validationStatus === 'validated') validatedCount = row.c;
+      else if (row.validationStatus === 'tree_only') treeOnlyCount = row.c;
+      else unvalidatedCount += row.c;
+    }
+    validationPct = totalPeople > 0 ? Math.round((validatedCount / totalPeople) * 100) : 0;
+
     // Most documented person
     const topPeople = await db.select<{xref: string; givenName: string; surname: string; score: number}[]>(
       `SELECT p.xref, p.givenName, p.surname,
