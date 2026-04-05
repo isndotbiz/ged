@@ -33,6 +33,12 @@
   let orphanedPeople = $state(0);
   let mostDocumented = $state<{name: string; xref: string; score: number} | null>(null);
 
+  // Source validation
+  let validatedCount = $state(0);
+  let treeOnlyCount = $state(0);
+  let unvalidatedCount = $state(0);
+  let validationPct = $state(0);
+
   let loading = $state(true);
 
   // Canvas refs
