@@ -113,9 +113,16 @@ export async function analyzeTree(onProgress?: (pct: number, msg: string) => voi
 
     // 6. No sources
     if (p.sourceCount === 0) {
-      addIssue('quality', 'info', p.xref, '', 'No source citations',
-        `${p.givenName} ${p.surname} has no sources`,
-        'Add source citations for verification');
+      addIssue('quality', 'warning', p.xref, '', 'No source citations',
+        `${p.givenName} ${p.surname} has no sources — this person is unvalidated`,
+        'Add source citations from vital records, census, or church records');
+    }
+
+    // 6b. Tree-only sources (has citations but all from online trees)
+    if (p.sourceCount > 0 && (p as any).validationStatus === 'tree_only') {
+      addIssue('quality', 'warning', p.xref, '', 'Online tree sources only',
+        `${p.givenName} ${p.surname} has ${p.sourceCount} source(s) but all are from online trees. No primary or secondary records found.`,
+        'Search for vital records, census entries, church records, or newspapers to validate this person');
     }
 
     // 7. Birth before 1000 AD

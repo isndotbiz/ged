@@ -583,6 +583,32 @@
           {/if}
         </div>
       </section>
+
+      <section class="stats-grid" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+        <div class="spirit-surface stat-card">
+          <div class="stat-label" style="color: var(--color-cyan);">Validated</div>
+          <div class="stat-value" style="color: var(--color-cyan);">{fmtNum(validatedCount)}</div>
+          <div class="stat-meta">People with non-tree source records</div>
+        </div>
+        <div class="spirit-surface stat-card">
+          <div class="stat-label" style="color: var(--color-warning, #F59E0B);">Tree Only</div>
+          <div class="stat-value" style="color: var(--color-warning, #F59E0B);">{fmtNum(treeOnlyCount)}</div>
+          <div class="stat-meta">Sourced only from online trees</div>
+        </div>
+        <div class="spirit-surface stat-card">
+          <div class="stat-label" style="color: var(--color-accent);">Unvalidated</div>
+          <div class="stat-value" style="color: var(--color-accent);">{fmtNum(unvalidatedCount)}</div>
+          <div class="stat-meta">No source citations at all</div>
+        </div>
+      </section>
+
+      <section class="spirit-surface panel">
+        <div class="panel-header">Source Validation Progress</div>
+        <div class="quality-bar" style="height: 12px; margin-bottom: 0.5rem;">
+          <span style="width: {validationPct}%; background: var(--color-cyan);"></span>
+        </div>
+        <div class="stat-meta">{validationPct}% of people validated with primary/secondary records</div>
+      </section>
     {/if}
   </div>
 </div>
