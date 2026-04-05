@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { getSources, getCitationsForSource, getDb } from '$lib/db';
-  import type { Source } from '$lib/types';
+  import { getSources, getCitationsForSource, getDb, updateSourceType, classifySources } from '$lib/db';
+  import type { Source, SourceType } from '$lib/types';
 
   let sources = $state<Source[]>([]);
   let search = $state('');
@@ -9,6 +9,34 @@
   let expandedXref = $state<string | null>(null);
   let expandedCitations = $state<{ personXref: string; personName: string; page: string; quality: string }[]>([]);
   let loadingCitations = $state(false);
+  let typeFilter = $state<SourceType | 'all'>('all');
+  let reclassifying = $state(false);
+
+  const sourceTypeLabels: Record<SourceType, { label: string; color: string }> = {
+    online_tree: { label: 'Tree', color: '#F59E0B' },
+    vital_record: { label: 'Vital', color: '#10B981' },
+    census: { label: 'Census', color: '#3B82F6' },
+    newspaper: { label: 'News', color: '#8B5CF6' },
+    church_record: { label: 'Church', color: '#14B8A6' },
+    military: { label: 'Military', color: '#F97316' },
+    immigration: { label: 'Immig', color: '#06B6D4' },
+    other: { label: 'Other', color: '#6B7280' },
+    unknown: { label: 'Unclassified', color: '#9CA3AF' },
+  };
+
+  const sourceTypes: SourceType[] = ['online_tree', 'vital_record', 'census', 'newspaper', 'church_record', 'military', 'immigration', 'other', 'unknown'];
+
+  async function handleTypeChange(xref: string, newType: SourceType) {
+    await updateSourceType(xref, newType);
+    await load();
+  }
+
+  async function reclassifyAll() {
+    reclassifying = true;
+    await classifySources();
+    await load();
+    reclassifying = false;
+  }
 
   async function load() {
     const [srcs, db] = await Promise.all([getSources(), getDb()]);
@@ -22,12 +50,12 @@
   }
 
   let filtered = $derived(
-    search.trim()
-      ? sources.filter(s =>
-          s.title.toLowerCase().includes(search.toLowerCase()) ||
-          s.author.toLowerCase().includes(search.toLowerCase())
-        )
-      : sources
+    sources.filter(s => {
+      if (typeFilter !== 'all' && s.sourceType !== typeFilter) return false;
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return s.title.toLowerCase().includes(q) || s.author.toLowerCase().includes(q);
+    })
   );
 
   let sortedFiltered = $derived(
