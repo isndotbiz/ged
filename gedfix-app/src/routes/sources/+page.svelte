@@ -108,6 +108,18 @@
     {sources.length} sources &middot; {totalCitations} citations
   </p>
 
+  <div class="flex flex-wrap gap-2 mb-4">
+    <button class="px-3 py-1 text-xs rounded-full" style="background: {typeFilter === 'all' ? 'var(--accent)' : 'var(--parchment)'}; color: {typeFilter === 'all' ? '#fff' : 'var(--ink-muted)'};" onclick={() => { typeFilter = 'all'; }}>All</button>
+    {#each sourceTypes as st}
+      {@const info = sourceTypeLabels[st]}
+      {@const count = sources.filter(s => s.sourceType === st).length}
+      {#if count > 0}
+        <button class="px-3 py-1 text-xs rounded-full" style="background: {typeFilter === st ? info.color : 'var(--parchment)'}; color: {typeFilter === st ? '#fff' : 'var(--ink-muted)'};" onclick={() => { typeFilter = st; }}>{info.label} ({count})</button>
+      {/if}
+    {/each}
+    <button class="px-3 py-1 text-xs rounded-full" style="background: var(--parchment); color: var(--ink-muted);" onclick={reclassifyAll} disabled={reclassifying}>{reclassifying ? 'Classifying...' : 'Reclassify All'}</button>
+  </div>
+
   <input
     bind:value={search}
     placeholder={t('sources.searchPlaceholder')}
@@ -141,8 +153,12 @@
             </svg>
 
             <div class="flex-1 min-w-0">
-              <div class="font-medium text-sm" style="color: var(--ink);">
-                {source.title || '(Untitled)'}
+              <div class="flex items-center gap-2">
+                <div class="font-medium text-sm" style="color: var(--ink);">
+                  {source.title || '(Untitled)'}
+                </div>
+                {@const typeInfo = sourceTypeLabels[source.sourceType || 'unknown']}
+                <span class="shrink-0 text-[10px] px-1.5 py-0.5 rounded-full font-semibold" style="background: {typeInfo.color}22; color: {typeInfo.color};">{typeInfo.label}</span>
               </div>
               {#if source.author}
                 <div class="text-xs text-ink-muted mt-0.5">By {source.author}</div>
@@ -171,8 +187,18 @@
           <!-- Expanded citation details -->
           {#if isExpanded}
             <div class="px-4 pb-4 pt-1" style="border-top: 1px solid var(--border-rule, #e5e5e5);">
-              <div class="text-[10px] text-ink-faint mb-2 uppercase tracking-wider font-medium">
-                {source.xref}
+              <div class="flex items-center gap-3 mb-2">
+                <div class="text-[10px] text-ink-faint uppercase tracking-wider font-medium">{source.xref}</div>
+                <select
+                  class="text-xs px-2 py-1 rounded arch-input"
+                  aria-label="Source type"
+                  value={source.sourceType || 'unknown'}
+                  onchange={(e) => handleTypeChange(source.xref, (e.target as HTMLSelectElement).value as SourceType)}
+                >
+                  {#each sourceTypes as st}
+                    <option value={st}>{sourceTypeLabels[st].label}</option>
+                  {/each}
+                </select>
               </div>
 
               {#if loadingCitations}
