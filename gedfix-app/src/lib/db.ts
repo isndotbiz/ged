@@ -447,7 +447,90 @@ async function createTables() {
     ('No duplicate proposals', 'Reject if an identical pending proposal already exists', 'reject', 'no_duplicates')
   `);
 
+  // Source type classification + person validation status
+  await ensureColumn('source', 'sourceType', `TEXT DEFAULT 'unknown'`);
+  await ensureColumn('person', 'validationStatus', `TEXT DEFAULT 'unvalidated'`);
+  await classifySources();
+  await computeValidationStatus();
+
   // FTS5 is created after import via rebuildFTS()
+}
+
+// ===== Source classification =====
+
+export async function classifySources(): Promise<number> {
+  const d = await getDb();
+  // Online trees
+  const treePatterns = [
+    '%ancestry%tree%', '%ancestry%member%', '%familysearch%family%tree%',
+    '%myheritage%tree%', '%findmypast%tree%', '%geni.com%',
+    '%wikitree%', '%family tree maker%'
+  ];
+  for (const pattern of treePatterns) {
+    await d.execute(
+      `UPDATE source SET sourceType = 'online_tree' WHERE sourceType = 'unknown' AND (LOWER(title) LIKE $1 OR LOWER(publisher) LIKE $1)`,
+      [pattern]
+    );
+  }
+  // Vital records
+  const vitalPatterns = ['%birth%record%', '%death%record%', '%marriage%record%',
+    '%divorce%', '%certificate%', '%vital%record%', '%civil%registration%'];
+  for (const pattern of vitalPatterns) {
+    await d.execute(
+      `UPDATE source SET sourceType = 'vital_record' WHERE sourceType = 'unknown' AND LOWER(title) LIKE $1`,
+      [pattern]
+    );
+  }
+  // Census
+  await d.execute(`UPDATE source SET sourceType = 'census' WHERE sourceType = 'unknown' AND LOWER(title) LIKE '%census%'`);
+  // Newspaper
+  await d.execute(
+    `UPDATE source SET sourceType = 'newspaper' WHERE sourceType = 'unknown' AND (LOWER(title) LIKE '%newspaper%' OR LOWER(publisher) LIKE '%newspaper%' OR LOWER(title) LIKE '%chronicle%' OR LOWER(title) LIKE '%gazette%' OR LOWER(title) LIKE '%herald%')`
+  );
+  // Church records
+  await d.execute(
+    `UPDATE source SET sourceType = 'church_record' WHERE sourceType = 'unknown' AND (LOWER(title) LIKE '%church%' OR LOWER(title) LIKE '%parish%' OR LOWER(title) LIKE '%baptis%' OR LOWER(title) LIKE '%christening%')`
+  );
+  // Military
+  await d.execute(
+    `UPDATE source SET sourceType = 'military' WHERE sourceType = 'unknown' AND (LOWER(title) LIKE '%military%' OR LOWER(title) LIKE '%draft%' OR LOWER(title) LIKE '%enlistment%' OR LOWER(title) LIKE '%pension%' OR LOWER(title) LIKE '%service record%')`
+  );
+  // Immigration
+  await d.execute(
+    `UPDATE source SET sourceType = 'immigration' WHERE sourceType = 'unknown' AND (LOWER(title) LIKE '%immigration%' OR LOWER(title) LIKE '%passenger%' OR LOWER(title) LIKE '%naturalization%' OR LOWER(title) LIKE '%ship%manifest%')`
+  );
+  const result = await d.select<{ c: number }[]>(`SELECT COUNT(*) as c FROM source WHERE sourceType != 'unknown'`);
+  return result[0]?.c ?? 0;
+}
+
+export async function computeValidationStatus(): Promise<void> {
+  const d = await getDb();
+  // Reset all to unvalidated first
+  await d.execute(`UPDATE person SET validationStatus = 'unvalidated' WHERE validationStatus IS NULL OR validationStatus = ''`);
+  // Persons with at least one non-tree source citation → validated
+  await d.execute(`
+    UPDATE person SET validationStatus = 'validated'
+    WHERE xref IN (
+      SELECT DISTINCT c.personXref FROM citation c
+      JOIN source s ON s.xref = c.sourceXref
+      WHERE s.sourceType NOT IN ('online_tree', 'unknown')
+    )
+  `);
+  // Persons with only tree sources → tree_only
+  await d.execute(`
+    UPDATE person SET validationStatus = 'tree_only'
+    WHERE validationStatus = 'unvalidated'
+    AND xref IN (
+      SELECT DISTINCT c.personXref FROM citation c
+      JOIN source s ON s.xref = c.sourceXref
+      WHERE s.sourceType = 'online_tree'
+    )
+  `);
+}
+
+export async function updateSourceType(xref: string, sourceType: string): Promise<void> {
+  const d = await getDb();
+  await d.execute(`UPDATE source SET sourceType = $1 WHERE xref = $2`, [sourceType, xref]);
 }
 
 // ===== Person queries =====

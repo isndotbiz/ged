@@ -230,7 +230,7 @@
                     class="px-2 py-0.5 text-[10px] font-medium rounded transition-all"
                     style="border: 1px solid var(--border-subtle); color: var(--ink); opacity: {geocodingId === place.id ? 0.4 : 0.7};"
                   >
-                    {geocodingId === place.id ? 'Looking up...' : 'Geocode'}
+                    {geocodingId === place.id ? t('common.lookingUp') : t('places.geocode')}
                   </button>
                 {:else}
                   <span class="text-[10px] text-ink-faint">{t('common.resolved')}</span>

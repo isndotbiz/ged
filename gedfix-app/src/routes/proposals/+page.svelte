@@ -564,13 +564,13 @@
                         class="px-3 py-1.5 text-xs font-medium rounded-lg text-white transition-colors"
                         style="background: var(--color-validated, #16a34a);"
                         title={t('proposals.approve')}
-                      >Approve</button>
+                      >{t('proposals.approve')}</button>
                       <button
                         onclick={() => handleReject(proposal)}
                         class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
                         style="background: rgba(220,38,38,0.1); color: #dc2626;"
                         title={t('proposals.reject')}
-                      >Reject</button>
+                      >{t('proposals.reject')}</button>
                     </div>
                   </div>
                 </div>
@@ -622,7 +622,7 @@
                   class="px-3 py-1.5 text-xs font-medium rounded-lg transition-colors"
                   style="background: var(--parchment); color: var(--ink-light);"
                   title={t('proposals.undo')}
-                >Undo</button>
+                >{t('common.undo')}</button>
               {/if}
             </div>
           </div>

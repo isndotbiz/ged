@@ -849,10 +849,10 @@
                 <div class="flex gap-1.5">
                   <button onclick={() => mergePair(pair)} disabled={isMerging}
                     class="px-3 py-1.5 text-xs font-medium rounded-md text-white transition-colors disabled:opacity-50"
-                    style="background: var(--color-validated);">{isMerging ? 'Merging...' : 'Merge'}</button>
+                    style="background: var(--color-validated);">{isMerging ? t('common.merging') : t('common.merge')}</button>
                   <button onclick={() => skipPair(pair)}
                     class="px-3 py-1.5 text-xs font-medium rounded-md transition-colors"
-                    style="background: var(--parchment); color: var(--ink-light);">Skip</button>
+                    style="background: var(--parchment); color: var(--ink-light);">{t('common.skip')}</button>
                 </div>
               </div>
               <div class="grid grid-cols-2 gap-4">
@@ -1057,7 +1057,7 @@
                         class="px-3 py-1 text-xs font-medium rounded-md text-ink-muted transition-colors"
                         style="background: var(--parchment); border: 1px solid var(--ink-faint);"
                       >
-                        Skip
+                        {t('common.skip')}
                       </button>
                     </div>
                   </td>

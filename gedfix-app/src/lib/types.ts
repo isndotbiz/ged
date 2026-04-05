@@ -14,7 +14,10 @@ export interface Person {
   mediaCount: number;
   personColor: string;
   proofStatus: ProofStatus;
+  validationStatus: ValidationStatus;
 }
+
+export type ValidationStatus = 'validated' | 'tree_only' | 'unvalidated';
 
 export type ProofStatus = 'PROVEN' | 'DISPROVEN' | 'DISPUTED' | 'PROPOSED' | 'UNKNOWN';
 
@@ -37,12 +40,15 @@ export interface GedcomEvent {
   description: string;
 }
 
+export type SourceType = 'online_tree' | 'vital_record' | 'census' | 'newspaper' | 'church_record' | 'military' | 'immigration' | 'other' | 'unknown';
+
 export interface Source {
   id: number;
   xref: string;
   title: string;
   author: string;
   publisher: string;
+  sourceType: SourceType;
 }
 
 export interface GedcomMedia {
