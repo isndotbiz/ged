@@ -245,6 +245,7 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
         mediaCount,
         personColor: '',
         proofStatus: 'UNKNOWN',
+        validationStatus: 'unvalidated',
       });
 
       // Extract events
