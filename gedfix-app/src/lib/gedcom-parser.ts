@@ -366,6 +366,7 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
         title,
         author,
         publisher,
+        sourceType: 'unknown',
       });
 
     } else if (rec.tag === 'OBJE') {
