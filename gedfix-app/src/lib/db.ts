@@ -447,11 +447,9 @@ async function createTables() {
     ('No duplicate proposals', 'Reject if an identical pending proposal already exists', 'reject', 'no_duplicates')
   `);
 
-  // Source type classification + person validation status
+  // Source type classification columns (classification runs after import, not on every init)
   await ensureColumn('source', 'sourceType', `TEXT DEFAULT 'unknown'`);
   await ensureColumn('person', 'validationStatus', `TEXT DEFAULT 'unvalidated'`);
-  await classifySources();
-  await computeValidationStatus();
 
   // FTS5 is created after import via rebuildFTS()
 }

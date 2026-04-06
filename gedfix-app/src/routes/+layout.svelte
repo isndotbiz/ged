@@ -423,21 +423,21 @@
 
   async function loadThemePreference() {
     try {
-      themeMode = 'dark';
-      applyTheme('dark');
-      await setSetting('theme_mode', 'dark');
+      const saved = await getSetting('theme_mode');
+      themeMode = (saved === 'dark') ? 'dark' : 'light';
+      applyTheme(themeMode);
     } catch (e) {
       console.error('Failed to load theme preference:', e);
-      themeMode = 'dark';
-      applyTheme('dark');
+      themeMode = 'light';
+      applyTheme('light');
     }
   }
 
   async function toggleTheme() {
-    themeMode = 'dark';
-    applyTheme('dark');
+    themeMode = themeMode === 'dark' ? 'light' : 'dark';
+    applyTheme(themeMode);
     try {
-      await setSetting('theme_mode', 'dark');
+      await setSetting('theme_mode', themeMode);
     } catch (e) {
       console.error('Failed to save theme preference:', e);
     }
@@ -540,7 +540,7 @@
     aria-label={t('nav.mainNavigation')}
     class="sidebar flex flex-col pt-5 pb-3 px-2.5 shrink-0 overflow-y-auto animate-slide-in {sidebarOpen ? 'sidebar-mobile-overlay' : ''}"
     class:sidebar-mobile-hidden={!sidebarOpen}
-    style="width: var(--sidebar-width); background: var(--color-charcoal);"
+    style="width: var(--sidebar-width); background: var(--sidebar-bg);"
   >
     <!-- Masthead — click to go home -->
     <a href="/" class="block px-3 mb-5 no-underline transition-opacity hover:opacity-80" title={t('nav.goToOverview')}>
@@ -598,8 +598,8 @@
         onclick={toggleTheme}
         aria-label={t('nav.theme')}
       >
-        <span class="text-[11px] tracking-[0.08em] uppercase">{t('nav.theme')}</span>
-        <span class="text-[10px] px-1.5 py-0.5 rounded nav-count">{t('nav.dark')}</span>
+        <span class="text-[11px]">{t('nav.theme')}</span>
+        <span class="text-[10px] px-1.5 py-0.5 rounded nav-count">{themeMode === 'dark' ? 'Dark' : 'Light'}</span>
       </button>
       <div
         class="text-[10px]"

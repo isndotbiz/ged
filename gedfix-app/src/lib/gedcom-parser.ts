@@ -1,6 +1,7 @@
 import {
   insertPerson, insertFamily, insertEvent,
-  insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS, linkMediaToPerson
+  insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS, linkMediaToPerson,
+  classifySources, computeValidationStatus, autoCategorizeMediaAfterDedup
 } from './db';
 
 interface GedLine {
@@ -456,8 +457,17 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
   }
 
   // Rebuild FTS index after bulk load
-  onProgress?.(98, 'Building search index...');
+  onProgress?.(95, 'Building search index...');
   await rebuildFTS();
+
+  // Classify sources and compute validation status
+  onProgress?.(97, 'Classifying sources...');
+  await classifySources();
+  await computeValidationStatus();
+
+  // Auto-categorize media
+  onProgress?.(99, 'Categorizing media...');
+  await autoCategorizeMediaAfterDedup();
 
   // Run PRAGMA optimize after bulk load
   await db.execute("PRAGMA optimize");
