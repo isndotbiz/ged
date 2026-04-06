@@ -47,7 +47,7 @@ Note: Uses `x-api-key` header (NOT Bearer token). The `anthropic-version` header
 | `claude-haiku-4-5-20251001` | 200K | $1.00 | $5.00 | Yes | Yes |
 | `claude-opus-4-6` | 1M | $5.00 | $25.00 | Yes | Yes |
 
-**Long context pricing:** Requests exceeding 200K input tokens on Sonnet are charged at $6.00 input / $22.50 output per 1M tokens. Sonnet 4.5 requires the `context-1m-2025-08-07` beta header for >200K requests (tier 4+ organizations).
+**Long context pricing:** Requests exceeding 200K input tokens on Sonnet are charged at $6.00 input / $22.50 output per 1M tokens. The `context-1m-2025-08-07` beta header is deprecated and no longer needed for Sonnet 4.6+ or Opus 4.6+ — 1M context is available natively without the header.
 
 ### System Prompt Support
 **Yes** -- first-class `system` parameter in the request body.
