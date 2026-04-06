@@ -17,8 +17,8 @@
 
   let { children }: { children: Snippet } = $props();
   let sidebarOpen = $state(false);
-  type ThemeMode = 'dark';
-  let themeMode = $state<ThemeMode>('dark');
+  type ThemeMode = 'light' | 'dark';
+  let themeMode = $state<ThemeMode>('light');
   let showWebWelcome = $state(false);
   let webWelcomeError = $state('');
   let showShortcutOverlay = $state(false);
