@@ -63,7 +63,12 @@
       }
     },
     "macOS": {
-      "minimumSystemVersion": "10.15"
+      "minimumSystemVersion": "10.15",
+      "signingIdentity": "-"
+    },
+    "iOS": {
+      "developmentTeam": "L9H828B9W5",
+      "minimumSystemVersion": "15.0"
     }
   },
   "plugins": {

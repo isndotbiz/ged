@@ -3,11 +3,10 @@
   import {
     getProposals, approveProposal, rejectProposal, undoChange,
     getAgentRuns, getChangeLog, getQualityRules, toggleQualityRule,
-    getPerson, getPendingProposalCount, getPersons
+    getPerson, getPersons
   } from '$lib/db';
   import { runResearchAgent, runBatchResearch, findResearchCandidates } from '$lib/research-agent';
-  import { findSources, batchFindSources } from '$lib/source-finder';
-  import { appStats } from '$lib/stores';
+  import { batchFindSources } from '$lib/source-finder';
   import type { Proposal, AgentRun, ChangeLogEntry, QualityRule, Person } from '$lib/types';
 
   // --- State ---

@@ -27,7 +27,7 @@ tauri-plugin-dialog = "2.6.0"
 tauri-plugin-fs = "2.4.5"
 tauri-plugin-shell = "2.3.5"
 tauri-plugin-notification = "2"
-tiny_http = "0.13"
+tiny_http = "0.12"
 image = "0.25"
 little_exif = "0.4"
 

@@ -81,10 +81,24 @@ export async function findRelationshipPath(xrefA: string, xrefB: string): Promis
 }
 
 export function summarizeRelationship(path: RelationshipStep[] | null): string {
-  if (!path || path.length < 2) return 'No relationship found within 15 generations';
+  if (!path || path.length < 2) return 'No relationship found within 30 generations';
   const pattern = path.slice(1).map((s) => s.relationship);
-  if (pattern.every((r) => r === 'parent')) return `Direct ancestor (${pattern.length} generations)`;
-  if (pattern.every((r) => r === 'child')) return `Direct descendant (${pattern.length} generations)`;
+  if (pattern.every((r) => r === 'parent')) {
+    if (pattern.length === 1) return 'Parent';
+    if (pattern.length === 2) return 'Grandparent';
+    return `Direct ancestor (${pattern.length} generations)`;
+  }
+  if (pattern.every((r) => r === 'child')) {
+    if (pattern.length === 1) return 'Child';
+    if (pattern.length === 2) return 'Grandchild';
+    return `Direct descendant (${pattern.length} generations)`;
+  }
   if (pattern.length === 1 && pattern[0] === 'spouse') return 'Spouse';
+  if (pattern.every((r) => r !== 'spouse')) {
+    const up = pattern.filter((r) => r === 'parent').length;
+    const down = pattern.filter((r) => r === 'child').length;
+    if (up === 1 && down === 1) return 'Sibling';
+    if (up >= 2 && down >= 2) return 'Cousin';
+  }
   return 'Connected relative';
 }

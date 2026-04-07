@@ -2,7 +2,7 @@
   import { t } from '$lib/i18n';
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
-  import { appStats, treeIssues, isImporting, importProgress, importMessage } from '$lib/stores';
+  import { appStats, isImporting, importProgress, importMessage } from '$lib/stores';
   import { isDbEmpty, getStats, getSetting, setSetting, exportDbAsJson, getPendingProposalCount } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
   import { isTauri } from '$lib/platform';
@@ -472,6 +472,19 @@
       isMacOS = typeof navigator !== 'undefined' && /mac/i.test(navigator.userAgent);
       tauriInvoke = invoke;
 
+      // Chrome extension bridge: receive imported records
+      const extListener = await listen('extension-import', (event) => {
+        try {
+          const data = typeof event.payload === 'string' ? JSON.parse(event.payload as string) : event.payload;
+          console.log('Extension import received:', data);
+          announce('Record received from Chrome extension');
+          // Navigate to proposals page where the record will appear
+          goto('/proposals');
+        } catch (e) {
+          console.error('Failed to parse extension import:', e);
+        }
+      });
+
       const listener = await listen('menu-action', (event) => {
         const action = event.payload as string;
         const routes: Record<string, string> = {
@@ -490,7 +503,7 @@
         if (action === 'undo') undoManager.undo();
         if (action === 'redo') undoManager.redo();
       });
-      unlisten = listener;
+      unlisten = () => { listener(); extListener(); };
     })();
 
     return () => {
