@@ -1873,9 +1873,9 @@ export async function batchDeletePersons(xrefs: string[]): Promise<void> {
           const db = await getDb();
           for (const p of people) {
             await db.execute(
-              `INSERT OR IGNORE INTO person (id, xref, givenName, surname, suffix, sex, isLiving, birthDate, birthPlace, deathDate, deathPlace, sourceCount, mediaCount, personColor, proofStatus)
-               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
-              [p.id, p.xref, p.givenName, p.surname, p.suffix, p.sex, p.isLiving ? 1 : 0, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace, p.sourceCount, p.mediaCount, p.personColor, p.proofStatus]
+              `INSERT OR IGNORE INTO person (id, xref, givenName, surname, suffix, sex, isLiving, birthDate, birthPlace, deathDate, deathPlace, sourceCount, mediaCount, personColor, proofStatus, validationStatus)
+               VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
+              [p.id, p.xref, p.givenName, p.surname, p.suffix, p.sex, p.isLiving ? 1 : 0, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace, p.sourceCount, p.mediaCount, p.personColor, p.proofStatus, p.validationStatus || 'unvalidated']
             );
           }
           for (const e of events) {
@@ -2093,9 +2093,9 @@ export async function isDbEmpty(): Promise<boolean> {
 export async function insertPerson(p: Omit<Person, 'id'>): Promise<void> {
   const d = await getDb();
   await d.execute(
-    `INSERT OR IGNORE INTO person (xref, givenName, surname, suffix, sex, isLiving, birthDate, birthPlace, deathDate, deathPlace, sourceCount, mediaCount, personColor, proofStatus)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)`,
-    [p.xref, p.givenName, p.surname, p.suffix, p.sex, p.isLiving ? 1 : 0, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace, p.sourceCount, p.mediaCount, p.personColor || '', p.proofStatus || 'UNKNOWN']
+    `INSERT OR IGNORE INTO person (xref, givenName, surname, suffix, sex, isLiving, birthDate, birthPlace, deathDate, deathPlace, sourceCount, mediaCount, personColor, proofStatus, validationStatus)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+    [p.xref, p.givenName, p.surname, p.suffix, p.sex, p.isLiving ? 1 : 0, p.birthDate, p.birthPlace, p.deathDate, p.deathPlace, p.sourceCount, p.mediaCount, p.personColor || '', p.proofStatus || 'UNKNOWN', p.validationStatus || 'unvalidated']
   );
 }
 
@@ -2170,8 +2170,8 @@ export async function deleteEventById(id: number): Promise<void> {
 export async function insertSource(s: Omit<Source, 'id'>): Promise<void> {
   const d = await getDb();
   await d.execute(
-    `INSERT OR IGNORE INTO source (xref, title, author, publisher) VALUES ($1,$2,$3,$4)`,
-    [s.xref, s.title, s.author, s.publisher]
+    `INSERT OR IGNORE INTO source (xref, title, author, publisher, sourceType) VALUES ($1,$2,$3,$4,$5)`,
+    [s.xref, s.title, s.author, s.publisher, s.sourceType || 'unknown']
   );
 }
 
@@ -2302,10 +2302,10 @@ export async function getPendingProposalCount(): Promise<number> {
 }
 
 export const SAFE_FIELDS: Record<string, Set<string>> = {
-  person: new Set(['givenName','surname','suffix','sex','birthDate','birthPlace','deathDate','deathPlace','personColor','proofStatus']),
+  person: new Set(['givenName','surname','suffix','sex','birthDate','birthPlace','deathDate','deathPlace','personColor','proofStatus','validationStatus']),
   family: new Set(['partner1Xref','partner2Xref','marriageDate','marriagePlace']),
   event: new Set(['eventType','dateValue','place','description']),
-  source: new Set(['title','author','publisher']),
+  source: new Set(['title','author','publisher','sourceType']),
 };
 
 export async function approveProposal(proposalId: number): Promise<{ success: boolean; error?: string }> {

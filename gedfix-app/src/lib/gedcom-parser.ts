@@ -1,6 +1,6 @@
 import {
   insertPerson, insertFamily, insertEvent,
-  insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS, linkMediaToPerson,
+  insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS,
   classifySources, computeValidationStatus, autoCategorizeMediaAfterDedup
 } from './db';
 
@@ -49,6 +49,13 @@ interface Record {
   xref: string;
   tag: string;
   lines: GedLine[];
+}
+
+interface CitationDraft {
+  personXref: string;
+  sourceXref: string;
+  page: string;
+  quality: 'PRIMARY' | 'SECONDARY' | 'QUESTIONABLE' | 'UNKNOWN';
 }
 
 function groupRecords(lines: GedLine[]): Record[] {
@@ -137,6 +144,51 @@ function extractEventDate(rec: Record, eventTag: string): { date: string; place:
 
 function countSubTags(rec: Record, tag: string): number {
   return rec.lines.filter(l => l.tag === tag).length;
+}
+
+function mapQuayToQuality(quay: string): 'PRIMARY' | 'SECONDARY' | 'QUESTIONABLE' | 'UNKNOWN' {
+  const q = quay.trim();
+  if (q === '0') return 'QUESTIONABLE';
+  if (q === '1') return 'SECONDARY';
+  if (q === '2' || q === '3') return 'PRIMARY';
+  return 'UNKNOWN';
+}
+
+function getParentLine(lines: GedLine[], idx: number): GedLine | null {
+  const level = lines[idx].level;
+  for (let i = idx - 1; i >= 0; i--) {
+    if (lines[i].level < level) return lines[i];
+  }
+  return null;
+}
+
+function extractCitationsForRecord(
+  rec: Record,
+  personXrefsForRecord: string[],
+  eventTags: string[]
+): CitationDraft[] {
+  const out: CitationDraft[] = [];
+  const seen = new Set<string>();
+  for (let i = 0; i < rec.lines.length; i++) {
+    const line = rec.lines[i];
+    if (line.tag !== 'SOUR' || !line.value.startsWith('@')) continue;
+    const sourceXref = cleanPointer(line.value);
+    if (!sourceXref) continue;
+    const parent = getParentLine(rec.lines, i);
+    const isRecordLevel = line.level === 1;
+    const isEventLevel = parent != null && parent.level === 1 && eventTags.includes(parent.tag);
+    if (!isRecordLevel && !isEventLevel) continue;
+    const page = getSubValue(rec.lines, line.level, i, 'PAGE');
+    const quality = mapQuayToQuality(getSubValue(rec.lines, line.level, i, 'QUAY'));
+    for (const personXref of personXrefsForRecord) {
+      if (!personXref) continue;
+      const key = `${personXref}|${sourceXref}|${page}|${quality}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ personXref, sourceXref, page, quality });
+    }
+  }
+  return out;
 }
 
 export const __testables = {
@@ -249,6 +301,14 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
         validationStatus: 'unvalidated',
       });
 
+      const indiCitations = extractCitationsForRecord(rec, [rec.xref], ['BIRT', 'DEAT', 'BURI', 'CHR', 'BAPM', 'RESI', 'OCCU', 'EDUC', 'EMIG', 'IMMI', 'NATU', 'CENS', 'PROB', 'WILL', 'EVEN']);
+      for (const c of indiCitations) {
+        await db.execute(
+          `INSERT INTO citation (sourceXref, personXref, eventId, page, quality, text, note) VALUES ($1,$2,'',$3,$4,'','')`,
+          [c.sourceXref, c.personXref, c.page, c.quality]
+        );
+      }
+
       // Extract events
       const eventTags = ['BIRT', 'DEAT', 'BURI', 'CHR', 'BAPM', 'RESI', 'OCCU', 'EDUC', 'EMIG', 'IMMI', 'NATU', 'CENS', 'PROB', 'WILL', 'EVEN'];
       for (let i = 0; i < rec.lines.length; i++) {
@@ -323,6 +383,14 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
         marriagePlace: marr.place,
       });
 
+      const famCitations = extractCitationsForRecord(rec, [partner1, partner2].filter(Boolean), ['MARR', 'DIV', 'ANUL', 'EVEN']);
+      for (const c of famCitations) {
+        await db.execute(
+          `INSERT INTO citation (sourceXref, personXref, eventId, page, quality, text, note) VALUES ($1,$2,'',$3,$4,'','')`,
+          [c.sourceXref, c.personXref, c.page, c.quality]
+        );
+      }
+
       // Insert child links
       for (let ci = 0; ci < children.length; ci++) {
         await insertChildLink({
@@ -369,6 +437,19 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
         publisher,
         sourceType: 'unknown',
       });
+
+    } else if (rec.tag === 'EVEN') {
+      const personRefs = rec.lines
+        .filter((l) => l.level === 1 && ['ASSO', 'INDI', '_INDI', '_PER'].includes(l.tag) && l.value.startsWith('@'))
+        .map((l) => cleanPointer(l.value))
+        .filter(Boolean);
+      const evenCitations = extractCitationsForRecord(rec, personRefs, ['EVEN']);
+      for (const c of evenCitations) {
+        await db.execute(
+          `INSERT INTO citation (sourceXref, personXref, eventId, page, quality, text, note) VALUES ($1,$2,'',$3,$4,'','')`,
+          [c.sourceXref, c.personXref, c.page, c.quality]
+        );
+      }
 
     } else if (rec.tag === 'OBJE') {
       // Top-level media object — canonical file record

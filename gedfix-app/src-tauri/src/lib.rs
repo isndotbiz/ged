@@ -505,6 +505,65 @@ fn build_menu(app: &tauri::AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> 
 }
 
 // ============================================================
+// Chrome Extension Bridge — local HTTP server on port 19876
+// ============================================================
+
+#[cfg(desktop)]
+fn start_extension_bridge(app_handle: tauri::AppHandle) {
+    use std::io::Read as IoRead;
+
+    std::thread::spawn(move || {
+        let server = match tiny_http::Server::http("127.0.0.1:19876") {
+            Ok(s) => s,
+            Err(e) => {
+                eprintln!("Failed to start extension bridge: {}", e);
+                return;
+            }
+        };
+        println!("Extension bridge listening on http://127.0.0.1:19876");
+
+        for mut request in server.incoming_requests() {
+            // CORS preflight
+            if request.method().as_str() == "OPTIONS" {
+                let response = tiny_http::Response::from_string("")
+                    .with_header(tiny_http::Header::from_bytes(b"Access-Control-Allow-Origin", b"*").unwrap())
+                    .with_header(tiny_http::Header::from_bytes(b"Access-Control-Allow-Methods", b"POST, GET, OPTIONS").unwrap())
+                    .with_header(tiny_http::Header::from_bytes(b"Access-Control-Allow-Headers", b"Content-Type").unwrap());
+                let _ = request.respond(response);
+                continue;
+            }
+
+            let url = request.url().to_string();
+            let cors = tiny_http::Header::from_bytes(b"Access-Control-Allow-Origin", b"*").unwrap();
+            let ct = tiny_http::Header::from_bytes(b"Content-Type", b"application/json").unwrap();
+
+            match url.as_str() {
+                "/ping" => {
+                    let resp = tiny_http::Response::from_string(r#"{"status":"ok","app":"gedfix"}"#)
+                        .with_header(cors).with_header(ct);
+                    let _ = request.respond(resp);
+                }
+                "/import" => {
+                    let mut body = String::new();
+                    let _ = request.as_reader().read_to_string(&mut body);
+                    // Forward to frontend via Tauri event
+                    let _ = app_handle.emit("extension-import", body.clone());
+                    let resp = tiny_http::Response::from_string(r#"{"status":"received"}"#)
+                        .with_header(cors).with_header(ct);
+                    let _ = request.respond(resp);
+                }
+                _ => {
+                    let resp = tiny_http::Response::from_string(r#"{"error":"not found"}"#)
+                        .with_status_code(404)
+                        .with_header(cors).with_header(ct);
+                    let _ = request.respond(resp);
+                }
+            }
+        }
+    });
+}
+
+// ============================================================
 // App entry
 // ============================================================
 
@@ -525,6 +584,8 @@ pub fn run() {
                 app.on_menu_event(|app, event| {
                     let _ = app.emit("menu-action", event.id().0.clone());
                 });
+                // Start Chrome extension bridge
+                start_extension_bridge(app.handle().clone());
             }
             Ok(())
         })

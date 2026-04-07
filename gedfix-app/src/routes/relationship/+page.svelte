@@ -30,7 +30,7 @@
     loading = true;
     path = await findRelationshipPath(personA, personB);
     relationSummary = summarizeRelationship(path);
-    if (!path) error = 'No relationship found within 15 generations';
+    if (!path) error = 'No relationship found within 30 generations';
     loading = false;
   }
 

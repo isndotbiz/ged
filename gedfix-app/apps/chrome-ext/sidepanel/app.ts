@@ -35,24 +35,41 @@ async function initDb(): Promise<void> {
       xref TEXT UNIQUE,
       givenName TEXT DEFAULT '',
       surname TEXT DEFAULT '',
+      suffix TEXT DEFAULT '',
       sex TEXT DEFAULT 'U',
+      isLiving INTEGER DEFAULT 0,
       birthDate TEXT DEFAULT '',
+      birthPlace TEXT DEFAULT '',
+      deathPlace TEXT DEFAULT '',
+      sourceCount INTEGER DEFAULT 0,
+      mediaCount INTEGER DEFAULT 0,
+      personColor TEXT DEFAULT '',
+      proofStatus TEXT DEFAULT 'UNKNOWN',
+      validationStatus TEXT DEFAULT 'unvalidated',
       deathDate TEXT DEFAULT ''
     );
     CREATE TABLE IF NOT EXISTS family (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       xref TEXT UNIQUE,
       partner1Xref TEXT DEFAULT '',
-      partner2Xref TEXT DEFAULT ''
+      partner2Xref TEXT DEFAULT '',
+      marriageDate TEXT DEFAULT '',
+      marriagePlace TEXT DEFAULT ''
     );
     CREATE TABLE IF NOT EXISTS proposal (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
+      agentRunId TEXT DEFAULT '',
       entityType TEXT,
       entityId TEXT,
       fieldName TEXT,
       oldValue TEXT,
       newValue TEXT,
-      status TEXT DEFAULT 'pending'
+      confidence REAL DEFAULT 0.5,
+      reasoning TEXT DEFAULT '',
+      evidenceSource TEXT DEFAULT '',
+      status TEXT DEFAULT 'pending',
+      createdAt TEXT DEFAULT '',
+      resolvedAt TEXT DEFAULT ''
     );
   `);
 }
