@@ -29,14 +29,6 @@ async function pushUndoAction(
   );
 }
 
-export function parseDateForSort(dateValue: string | null | undefined): number {
-  if (!dateValue) return 0;
-  const trimmed = dateValue.trim();
-  if (!trimmed) return 0;
-  const match = trimmed.match(/(\d{4})/);
-  return match ? parseInt(match[1], 10) : 0;
-}
-
 export async function getDb(): Promise<PlatformDatabase> {
   if (!db) {
     if (isTauri()) {
@@ -637,29 +629,6 @@ export async function updatePerson(xref: string, data: Partial<Person>): Promise
   );
 }
 
-export async function updatePersonField(xref: string, field: string, value: string): Promise<void> {
-  const d = await getDb();
-  if (!SAFE_FIELDS.person.has(field)) throw new Error(`Invalid person field ${field}`);
-  const before = await getPerson(xref);
-  if (!before) return;
-  const oldValue = String((before as any)[field] ?? '');
-  await d.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [value, xref]);
-  const { undoManager } = await import('./undo-manager');
-  await undoManager.push({
-    id: crypto.randomUUID(),
-    description: `Changed ${field} for ${before.givenName} ${before.surname}`.trim(),
-    timestamp: new Date().toISOString(),
-    undo: async () => {
-      const db = await getDb();
-      await db.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [oldValue, xref]);
-    },
-    redo: async () => {
-      const db = await getDb();
-      await db.execute(`UPDATE person SET ${field} = $1 WHERE xref = $2`, [value, xref]);
-    },
-  }, { tableName: 'person', rowId: xref, oldData: { [field]: oldValue }, newData: { [field]: value } });
-}
-
 // ===== Event queries =====
 
 export async function getEvents(ownerXref: string): Promise<GedcomEvent[]> {
@@ -682,28 +651,12 @@ export async function getFamilies(): Promise<Family[]> {
   return await d.select<Family[]>(`SELECT * FROM family ORDER BY xref`);
 }
 
-export async function getFamily(xref: string): Promise<Family | null> {
-  const d = await getDb();
-  const rows = await d.select<Family[]>(`SELECT * FROM family WHERE xref = $1`, [xref]);
-  return rows.length > 0 ? rows[0] : null;
-}
-
 export async function getSpouseFamilies(personXref: string): Promise<Family[]> {
   const d = await getDb();
   return await d.select<Family[]>(
     `SELECT * FROM family WHERE partner1Xref = $1 OR partner2Xref = $1`,
     [personXref]
   );
-}
-
-export async function getParentFamily(childXref: string): Promise<Family | null> {
-  const d = await getDb();
-  const links = await d.select<ChildLink[]>(
-    `SELECT * FROM child_link WHERE childXref = $1 LIMIT 1`,
-    [childXref]
-  );
-  if (links.length === 0) return null;
-  return await getFamily(links[0].familyXref);
 }
 
 export async function getParents(personXref: string): Promise<{ father: Person | null; mother: Person | null }> {
@@ -755,21 +708,6 @@ export async function getMediaForPerson(ownerXref: string): Promise<(GedcomMedia
   if (junction.length > 0) return junction;
   // Fallback to old ownerXref pattern
   return await d.select<GedcomMedia[]>(`SELECT * FROM media WHERE ownerXref = $1`, [ownerXref]);
-}
-
-export async function getAllMedia(): Promise<GedcomMedia[]> {
-  const d = await getDb();
-  return await d.select<GedcomMedia[]>(`SELECT * FROM media WHERE filePath != '' ORDER BY title`);
-}
-
-export async function getAllMediaWithPersons(): Promise<(GedcomMedia & { personGivenName: string; personSurname: string; personSex: string; personBirthDate: string; personDeathDate: string })[]> {
-  const d = await getDb();
-  return await d.select(
-    `SELECT m.*, COALESCE(p.givenName, '') as personGivenName, COALESCE(p.surname, '') as personSurname,
-            COALESCE(p.sex, 'U') as personSex, COALESCE(p.birthDate, '') as personBirthDate, COALESCE(p.deathDate, '') as personDeathDate
-     FROM media m LEFT JOIN person p ON m.ownerXref = p.xref
-     WHERE m.filePath != '' ORDER BY m.title`
-  );
 }
 
 export async function getPrimaryPhoto(ownerXref: string): Promise<GedcomMedia | null> {
@@ -824,102 +762,6 @@ export async function getPeopleForMedia(mediaId: number): Promise<{ personXref: 
     WHERE mpl.mediaId = $1
     ORDER BY mpl.isPrimary DESC
   `, [mediaId]);
-}
-
-export async function linkMediaToPerson(mediaId: number, personXref: string, isPrimary: boolean = false, role: string = 'tagged'): Promise<void> {
-  const d = await getDb();
-  const before = await d.select<any[]>(
-    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
-    [mediaId, personXref]
-  );
-  await d.execute(`
-    INSERT OR IGNORE INTO media_person_link (mediaId, personXref, isPrimary, role, addedBy, createdAt)
-    VALUES ($1, $2, $3, $4, 'gedcom_import', datetime('now'))
-  `, [mediaId, personXref, isPrimary ? 1 : 0, role]);
-  const after = await d.select<any[]>(
-    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
-    [mediaId, personXref]
-  );
-  if (before.length === 0 && after.length > 0) {
-    await pushUndoAction(
-      `Linked media ${mediaId} to ${personXref}`,
-      async () => {
-        const db = await getDb();
-        await db.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
-      },
-      async () => {
-        const db = await getDb();
-        await db.execute(
-          `INSERT OR IGNORE INTO media_person_link (mediaId, personXref, isPrimary, role, addedBy, createdAt)
-           VALUES ($1, $2, $3, $4, $5, $6)`,
-          [mediaId, personXref, isPrimary ? 1 : 0, role, after[0].addedBy || 'gedcom_import', after[0].createdAt || new Date().toISOString()]
-        );
-      },
-      { tableName: 'media_person_link', rowId: `${mediaId}:${personXref}`, newData: after[0] }
-    );
-  }
-}
-
-export async function unlinkMediaFromPerson(mediaId: number, personXref: string): Promise<void> {
-  const d = await getDb();
-  const before = await d.select<any[]>(
-    `SELECT * FROM media_person_link WHERE mediaId = $1 AND personXref = $2`,
-    [mediaId, personXref]
-  );
-  if (before.length === 0) return;
-  await d.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
-  const row = before[0];
-  await pushUndoAction(
-    `Unlinked media ${mediaId} from ${personXref}`,
-    async () => {
-      const db = await getDb();
-      await db.execute(
-        `INSERT OR IGNORE INTO media_person_link (mediaId, personXref, role, isPrimary, sortOrder, faceX, faceY, faceW, faceH, caption, addedBy, verified, createdAt)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)`,
-        [row.mediaId, row.personXref, row.role, row.isPrimary, row.sortOrder, row.faceX, row.faceY, row.faceW, row.faceH, row.caption, row.addedBy, row.verified, row.createdAt]
-      );
-    },
-    async () => {
-      const db = await getDb();
-      await db.execute(`DELETE FROM media_person_link WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
-    },
-    { tableName: 'media_person_link', rowId: `${mediaId}:${personXref}`, oldData: row }
-  );
-}
-
-export async function setMediaPrimary(mediaId: number, personXref: string): Promise<void> {
-  const d = await getDb();
-  const before = await d.select<{ mediaId: number; isPrimary: number }[]>(
-    `SELECT mediaId, isPrimary FROM media_person_link WHERE personXref = $1`,
-    [personXref]
-  );
-  const oldPrimaryId = before.find((row) => row.isPrimary === 1)?.mediaId ?? null;
-  // Clear old primary for this person
-  await d.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
-  // Set new primary
-  await d.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
-  if (oldPrimaryId === mediaId) return;
-  await pushUndoAction(
-    `Changed primary media for ${personXref}`,
-    async () => {
-      const db = await getDb();
-      await db.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
-      if (oldPrimaryId !== null) {
-        await db.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [oldPrimaryId, personXref]);
-      }
-    },
-    async () => {
-      const db = await getDb();
-      await db.execute(`UPDATE media_person_link SET isPrimary = 0 WHERE personXref = $1`, [personXref]);
-      await db.execute(`UPDATE media_person_link SET isPrimary = 1 WHERE mediaId = $1 AND personXref = $2`, [mediaId, personXref]);
-    },
-    {
-      tableName: 'media_person_link',
-      rowId: personXref,
-      oldData: { primaryMediaId: oldPrimaryId },
-      newData: { primaryMediaId: mediaId },
-    }
-  );
 }
 
 export type MediaCategory = 'headshots' | 'other' | 'delete-queue' | 'uncategorized';
@@ -1149,12 +991,6 @@ export async function updateMediaFilePath(mediaId: number, filePath: string): Pr
 export async function getPlaces(): Promise<Place[]> {
   const d = await getDb();
   return await d.select<Place[]>(`SELECT * FROM place ORDER BY eventCount DESC`);
-}
-
-export async function getPlaceCount(): Promise<number> {
-  const d = await getDb();
-  const r = await d.select<[{ c: number }]>(`SELECT COUNT(*) as c FROM place`);
-  return r[0]?.c ?? 0;
 }
 
 // ===== Alternate name queries =====
@@ -1988,11 +1824,6 @@ export async function clearAIChatHistory(): Promise<void> {
 export async function getStories(): Promise<GeneratedStory[]> {
   const db = await getDb();
   return db.select<GeneratedStory[]>('SELECT * FROM stories ORDER BY createdAt DESC');
-}
-
-export async function getStoriesForPerson(xref: string): Promise<GeneratedStory[]> {
-  const db = await getDb();
-  return db.select<GeneratedStory[]>('SELECT * FROM stories WHERE personXref = $1 ORDER BY createdAt DESC', [xref]);
 }
 
 export async function insertStory(story: Omit<GeneratedStory, 'id'>): Promise<void> {

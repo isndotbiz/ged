@@ -7,15 +7,6 @@ describe('db.ts helpers', () => {
     vi.resetModules();
   });
 
-  it('parseDateForSort handles common formats', async () => {
-    const mod = await import('$lib/db');
-    expect(mod.parseDateForSort('3 Jan 1900')).toBe(1900);
-    expect(mod.parseDateForSort('Abt 1850')).toBe(1850);
-    expect(mod.parseDateForSort('Bet 1800 and 1810')).toBe(1800);
-    expect(mod.parseDateForSort('')).toBe(0);
-    expect(mod.parseDateForSort(null)).toBe(0);
-  });
-
   it('SAFE_FIELDS allows whitelisted fields only', async () => {
     const mod = await import('$lib/db');
     expect(mod.SAFE_FIELDS.person.has('birthDate')).toBe(true);
@@ -376,5 +367,101 @@ describe('db.ts helpers', () => {
     const queries = select.mock.calls.map((call) => String(call.at(0) ?? ''));
     expect(queries.some((q) => q.includes('INNER JOIN media_person_link mpl ON mpl.mediaId = m.id'))).toBe(true);
     expect(queries.some((q) => q.includes('LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id'))).toBe(true);
+  });
+
+  it('insertPerson skips duplicate xref rows', async () => {
+    const persons: Array<{ xref: string }> = [];
+    const execute = vi.fn(async (query: string, args?: any[]) => {
+      if (query.includes('INSERT OR IGNORE INTO person')) {
+        const xref = String(args?.[0] ?? '');
+        if (!persons.some((p) => p.xref === xref)) persons.push({ xref });
+      }
+      return { rowsAffected: 1, lastInsertId: 1 };
+    });
+    const select = vi.fn(async (query: string) => {
+      if (query.includes('PRAGMA table_info(')) return [];
+      return [];
+    });
+
+    vi.doMock('@tauri-apps/plugin-sql', () => ({
+      default: { load: vi.fn(async () => ({ select, execute })) },
+    }));
+
+    const mod = await import('$lib/db');
+    await mod.getDb();
+
+    const payload = {
+      xref: 'I_DUP',
+      givenName: 'Dup',
+      surname: 'Person',
+      suffix: '',
+      sex: 'U',
+      isLiving: false,
+      birthDate: '',
+      birthPlace: '',
+      deathDate: '',
+      deathPlace: '',
+      sourceCount: 0,
+      mediaCount: 0,
+      personColor: '',
+      proofStatus: 'UNKNOWN' as const,
+      validationStatus: 'unvalidated' as const,
+    };
+    await mod.insertPerson(payload);
+    await mod.insertPerson(payload);
+
+    expect(persons).toHaveLength(1);
+    expect(persons[0]?.xref).toBe('I_DUP');
+  });
+
+  it('computeValidationStatus does not crash on empty DB', async () => {
+    const execute = vi.fn(async () => ({ rowsAffected: 0, lastInsertId: 0 }));
+    const select = vi.fn(async (query: string) => {
+      if (query.includes('PRAGMA table_info(')) return [];
+      return [];
+    });
+    vi.doMock('@tauri-apps/plugin-sql', () => ({
+      default: { load: vi.fn(async () => ({ select, execute })) },
+    }));
+
+    const mod = await import('$lib/db');
+    await mod.getDb();
+    await expect(mod.computeValidationStatus()).resolves.toBeUndefined();
+  });
+
+  it('batchDeletePersons with empty input returns without touching DB', async () => {
+    const load = vi.fn(async () => ({
+      select: vi.fn(async () => []),
+      execute: vi.fn(async () => ({ rowsAffected: 0, lastInsertId: 0 })),
+    }));
+    vi.doMock('@tauri-apps/plugin-sql', () => ({ default: { load } }));
+
+    const mod = await import('$lib/db');
+    await expect(mod.batchDeletePersons([])).resolves.toBeUndefined();
+    expect(load).not.toHaveBeenCalled();
+  });
+
+  it('getPersons handles SQL-special search terms safely', async () => {
+    const select = vi.fn(async (query: string, args?: unknown[]) => {
+      if (query.includes('JOIN person_fts')) {
+        expect(Array.isArray(args)).toBe(true);
+        expect(String(args?.[0] ?? '')).toContain('"%');
+        return [];
+      }
+      if (query.includes('JOIN alternate_name')) {
+        expect(args).toEqual([`%%_' OR 1=1 --%`, 10]);
+        return [];
+      }
+      return [];
+    });
+    const execute = vi.fn(async () => ({ rowsAffected: 0, lastInsertId: 0 }));
+
+    vi.doMock('@tauri-apps/plugin-sql', () => ({
+      default: { load: vi.fn(async () => ({ select, execute })) },
+    }));
+
+    const mod = await import('$lib/db');
+    await mod.getDb();
+    await expect(mod.getPersons(`%_' OR 1=1 --`, 10)).resolves.toEqual([]);
   });
 });

@@ -122,6 +122,11 @@ describe('gedcom-parser import defaults', () => {
 
 describe('gedcom-parser citation extraction', () => {
   function setupImportMock() {
+    const insertPerson = vi.fn(async () => {});
+    const insertFamily = vi.fn(async () => {});
+    const insertEvent = vi.fn(async () => {});
+    const insertSource = vi.fn(async () => {});
+    const insertMedia = vi.fn(async () => {});
     const select = vi.fn(async (query: string) => {
       if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return [];
       if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return [];
@@ -131,11 +136,11 @@ describe('gedcom-parser citation extraction', () => {
     });
     const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
     vi.doMock('$lib/db', () => ({
-      insertPerson: vi.fn(async () => {}),
-      insertFamily: vi.fn(async () => {}),
-      insertEvent: vi.fn(async () => {}),
-      insertSource: vi.fn(async () => {}),
-      insertMedia: vi.fn(async () => {}),
+      insertPerson,
+      insertFamily,
+      insertEvent,
+      insertSource,
+      insertMedia,
       insertChildLink: vi.fn(async () => {}),
       clearAll: vi.fn(async () => {}),
       getDb: vi.fn(async () => ({ select, execute })),
@@ -144,7 +149,7 @@ describe('gedcom-parser citation extraction', () => {
       computeValidationStatus: vi.fn(async () => {}),
       autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
     }));
-    return { execute };
+    return { execute, insertPerson, insertFamily, insertEvent, insertSource, insertMedia };
   }
 
   it('creates no citation rows when no SOUR tags exist', async () => {
@@ -158,6 +163,118 @@ describe('gedcom-parser citation extraction', () => {
 1 NAME No /Source/
 1 SEX U
 0 TRLR`);
+    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
+    expect(citationInserts).toHaveLength(0);
+  });
+
+  it('handles INDI without NAME by defaulting givenName/surname to empty strings', async () => {
+    vi.resetModules();
+    const { insertPerson } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @I1@ INDI
+1 SEX U
+0 TRLR`);
+
+    expect(insertPerson).toHaveBeenCalledWith(expect.objectContaining({
+      xref: 'I1',
+      givenName: '',
+      surname: '',
+    }));
+  });
+
+  it('does not crash on unparseable or blank DATE values', async () => {
+    vi.resetModules();
+    const { insertPerson, insertEvent } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await expect(importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @I1@ INDI
+1 NAME Date /Edge/
+1 BIRT
+2 DATE ABT UNKNOWN
+1 DEAT
+2 DATE CIRCA 1850
+1 EVEN
+2 DATE
+0 TRLR`)).resolves.toBeUndefined();
+
+    expect(insertPerson).toHaveBeenCalledTimes(1);
+    expect(insertEvent).toHaveBeenCalled();
+  });
+
+  it('imports FAM without HUSB/WIFE using empty partner xrefs', async () => {
+    vi.resetModules();
+    const { insertFamily } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @F1@ FAM
+1 MARR
+2 DATE 1 JAN 1900
+0 TRLR`);
+
+    expect(insertFamily).toHaveBeenCalledWith(expect.objectContaining({
+      xref: 'F1',
+      partner1Xref: '',
+      partner2Xref: '',
+    }));
+  });
+
+  it('extracts nested SOUR under INDI EVEN blocks', async () => {
+    vi.resetModules();
+    const { execute } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @S1@ SOUR
+1 TITL Event Source
+0 @I1@ INDI
+1 NAME Deep /Source/
+1 EVEN
+2 TYPE Residence
+2 SOUR @S1@
+3 PAGE p.77
+3 QUAY 1
+0 TRLR`);
+
+    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
+    expect(citationInserts).toHaveLength(1);
+    expect(citationInserts[0]?.at(1)).toEqual(['S1', 'I1', 'p.77', 'SECONDARY']);
+  });
+
+  it('handles duplicate XREF records without crashing', async () => {
+    vi.resetModules();
+    const { insertPerson } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await expect(importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @I1@ INDI
+1 NAME First /Person/
+0 @I1@ INDI
+1 NAME Second /Person/
+0 TRLR`)).resolves.toBeUndefined();
+    expect(insertPerson).toHaveBeenCalledTimes(2);
+  });
+
+  it('imports a HEAD/TRLR-only file without creating rows', async () => {
+    vi.resetModules();
+    const { insertPerson, insertFamily, insertSource, insertMedia, execute } = setupImportMock();
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await expect(importGedcom(`0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 TRLR`)).resolves.toBeUndefined();
+    expect(insertPerson).not.toHaveBeenCalled();
+    expect(insertFamily).not.toHaveBeenCalled();
+    expect(insertSource).not.toHaveBeenCalled();
+    expect(insertMedia).not.toHaveBeenCalled();
     const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
     expect(citationInserts).toHaveLength(0);
   });
