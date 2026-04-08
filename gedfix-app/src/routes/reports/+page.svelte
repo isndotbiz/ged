@@ -122,6 +122,51 @@
     window.print();
   }
 
+  function serializeReportToText(): string {
+    const date = new Date().toISOString().slice(0, 10);
+    const header = `GedFix Report — ${selected ? fullName(selected) : 'Unknown'} — ${date}`;
+    const lines: string[] = [header, ''];
+
+    for (const section of sections) {
+      lines.push(`Generation ${section.generation}`);
+      for (const entry of section.entries) {
+        const eventsText = entry.events.length > 0
+          ? entry.events
+              .slice(0, 12)
+              .map((evt) => `${evt.eventType}${evt.dateValue ? ` (${evt.dateValue})` : ''}${evt.place ? ` @ ${evt.place}` : ''}`)
+              .join('; ')
+          : 'None';
+        const sourcesText = entry.sources.length > 0
+          ? entry.sources
+              .slice(0, 12)
+              .map((src) => `${src.title}${src.page ? ` p.${src.page}` : ''}`)
+              .join('; ')
+          : 'None';
+        lines.push(`${entry.numberLabel}. ${fullName(entry.person)}`);
+        lines.push(`Birth: ${entry.person.birthDate || 'Unknown'}`);
+        lines.push(`Death: ${entry.person.deathDate || 'Unknown'}`);
+        lines.push(`Events: ${eventsText}`);
+        lines.push(`Sources: ${sourcesText}`);
+        lines.push('');
+      }
+    }
+
+    return lines.join('\n');
+  }
+
+  function downloadTxtReport() {
+    if (!generated) return;
+    const content = serializeReportToText();
+    const date = new Date().toISOString().slice(0, 10);
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gedfix-report-${date}.txt`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   $effect(() => {
     loadPeople();
   });
@@ -167,6 +212,9 @@
       </button>
       <button class="btn-secondary px-4 py-2" onclick={printReport} disabled={!generated} aria-label={t('common.actions')}>
         {t('reports.print')}
+      </button>
+      <button class="btn-secondary px-4 py-2" onclick={downloadTxtReport} disabled={!generated} aria-label={t('common.actions')}>
+        {t('reports.downloadTxt')}
       </button>
     </div>
   </div>

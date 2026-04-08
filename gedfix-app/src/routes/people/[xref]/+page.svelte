@@ -121,6 +121,12 @@
     return colors[q] || '#7A6F62';
   }
 
+  function validationStatusLabel(status: string): string {
+    if (status === 'validated') return t('person.validated');
+    if (status === 'tree_only') return t('person.treeOnly');
+    return t('person.unverified');
+  }
+
   function cropTitleObjectPosition(title: string | undefined): string | null {
     if (!title?.startsWith('crop:')) return null;
     const parts = title.replace('crop:', '').split(',');
@@ -430,6 +436,9 @@
           <div class="header-info">
             <div class="flex items-center gap-2 flex-wrap">
               <h1 class="header-name">{fullName(person)}</h1>
+              <span class={`proof-badge validation-${person.validationStatus}`}>
+                {validationStatusLabel(person.validationStatus)}
+              </span>
               <span class="gender-icon" title={person.sex === 'M' ? t('people.male') : person.sex === 'F' ? t('people.female') : t('people.unknown')}>{genderIcon(person.sex)}</span>
             </div>
             <div class="header-dates">
@@ -1438,6 +1447,9 @@
   .proof-disputed { background: #FFF3E0; color: #E65100; }
   .proof-proposed { background: #E3F2FD; color: #1565C0; }
   .proof-unknown { background: var(--parchment); color: var(--ink-muted); }
+  .validation-validated { background: #E8F5E9; color: #2D7D46; }
+  .validation-tree_only { background: #FFF8E1; color: #C9880E; }
+  .validation-unvalidated { background: var(--parchment); color: var(--ink-muted); }
 
   /* ===== LIGHTBOX ===== */
   .lightbox-overlay {

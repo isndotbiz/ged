@@ -54,8 +54,8 @@
       const birthYear = birth ? extractYear(birth.dateValue) : (person.birthDate ? extractYear(person.birthDate) : null);
       const deathYear = death ? extractYear(death.dateValue) : (person.deathDate ? extractYear(person.deathDate) : null);
 
-      if (birthYear && deathYear && deathYear < birthYear) {
-        results.push({ id: `c${idCounter++}`, severity: 'critical', category: 'Impossible Date', title: `Death before birth: ${person.givenName} ${person.surname}`, detail: `Born ${birthYear}, died ${deathYear}`, personXrefs: [person.xref], suggestion: 'Check birth or death date' });
+      if (birthYear && deathYear && birthYear > deathYear) {
+        results.push({ id: `c${idCounter++}`, severity: 'critical', category: 'Impossible Date', title: `Born after death: ${person.givenName} ${person.surname}`, detail: `Born ${birthYear}, died ${deathYear}`, personXrefs: [person.xref], suggestion: 'Check birth or death date' });
       }
 
       if (birthYear && deathYear && (deathYear - birthYear) > 120) {
@@ -154,6 +154,20 @@
               suggestion: 'Verify parent-child relationship and birth dates',
             });
           }
+          if (parentBirth) {
+            const parentAgeAtBirth = childBirth - parentBirth;
+            if (parentAgeAtBirth < 10 || parentAgeAtBirth > 80) {
+              results.push({
+                id: `c${idCounter++}`,
+                severity: 'warning',
+                category: 'Parent Age',
+                title: `Impossible age at parenthood`,
+                detail: `${parent.givenName} ${parent.surname} was ${parentAgeAtBirth} when ${child?.givenName} was born`,
+                personXrefs: [childXref, parentXref],
+                suggestion: 'Verify parent-child links and birth dates',
+              });
+            }
+          }
           if ((parent.sex || '').toUpperCase() === 'F' && parentBirth && (childBirth - parentBirth) > 50) {
             results.push({
               id: `c${idCounter++}`,
@@ -169,6 +183,22 @@
       }
       const marriageYear = extractYear(fam.marriageDate || '');
       if (marriageYear) {
+        const children = childrenByFamily.get(fam.xref) || [];
+        for (const childXref of children) {
+          const child = personByXref.get(childXref);
+          const childBirthYear = extractYear(child?.birthDate || '');
+          if (childBirthYear && childBirthYear < marriageYear) {
+            results.push({
+              id: `c${idCounter++}`,
+              severity: 'warning',
+              category: 'Family Timeline',
+              title: 'Child born before marriage',
+              detail: `${child?.givenName || childXref} born in ${childBirthYear} before family marriage in ${marriageYear}`,
+              personXrefs: [childXref, fam.partner1Xref, fam.partner2Xref].filter(Boolean) as string[],
+              suggestion: 'Verify child birth date and marriage date',
+            });
+          }
+        }
         for (const partnerXref of [fam.partner1Xref, fam.partner2Xref]) {
           const partner = personByXref.get(partnerXref);
           if (!partner) continue;
