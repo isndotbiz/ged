@@ -151,6 +151,49 @@
     return ((p.givenName?.[0] ?? '') + (p.surname?.[0] ?? '')).toUpperCase();
   }
 
+  // --- Export PNG/SVG ---
+  async function downloadPng() {
+    const date = new Date().toISOString().slice(0, 10);
+    const name = rootPerson ? `${rootPerson.givenName}-${rootPerson.surname}`.replace(/\s+/g, '-') : 'chart';
+    const filename = `gedfix-pedigree-${name}-${date}.png`;
+
+    const treeEl = document.getElementById('pedigree-tree-area');
+    if (!treeEl) return;
+
+    const rect = treeEl.getBoundingClientRect();
+    const canvas = document.createElement('canvas');
+    canvas.width = rect.width * window.devicePixelRatio;
+    canvas.height = rect.height * window.devicePixelRatio;
+    const ctx = canvas.getContext('2d')!;
+    ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+    ctx.fillStyle = '#f5f0e8';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+
+    const svgData = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}">
+      <foreignObject width="100%" height="100%">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:${rect.width}px;height:${rect.height}px;overflow:hidden;">
+          ${treeEl.innerHTML}
+        </div>
+      </foreignObject>
+    </svg>`;
+
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0);
+      URL.revokeObjectURL(url);
+      canvas.toBlob((b) => {
+        if (!b) return;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = filename;
+        a.click();
+      }, 'image/png');
+    };
+    img.src = url;
+  }
+
   // --- Print mode state ---
   let printMode = $state<'none' | 'pedigree' | 'family-group'>('none');
 
