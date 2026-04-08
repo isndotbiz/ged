@@ -387,9 +387,9 @@ db.transaction(() => {
         if (inMarr && l.level === 2 && l.tag === "PLAC") marrPlace = l.value;
       }
 
-      insertFamily.run({ xref: rec.xref, p1, p2, marr: marrDate, marrPlace });
+      insertFamily.run(rec.xref, p1, p2, marrDate, marrPlace);
       for (let ci = 0; ci < children.length; ci++) {
-        insertChildLink.run({ fam: rec.xref, child: children[ci], order: ci });
+        insertChildLink.run(rec.xref, children[ci], ci);
       }
       famCount++;
     }
@@ -402,7 +402,7 @@ db.transaction(() => {
         if (l.level === 1 && l.tag === "AUTH") author = l.value;
         if (l.level === 1 && l.tag === "PUBL") pub = l.value;
       }
-      insertSource.run({ xref: rec.xref, title, author, pub });
+      insertSource.run(rec.xref, title, author, pub);
       srcCount++;
     }
   }
