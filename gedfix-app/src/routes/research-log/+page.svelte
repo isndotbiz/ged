@@ -30,20 +30,25 @@
 
   async function save() {
     await insertResearchLog({
-      personXref: '', repository, searchTerms, recordsViewed, conclusion,
+      personXref: editorPersonXref, repository, searchTerms, recordsViewed, conclusion,
       sourceXref: '', resultType, searchDate, createdAt: new Date().toISOString()
     });
     showEditor = false;
-    repository = ''; searchTerms = ''; recordsViewed = ''; conclusion = ''; searchDate = '';
+    repository = ''; searchTerms = ''; recordsViewed = ''; conclusion = ''; searchDate = ''; editorPersonXref = '';
     resultType = 'NEGATIVE';
     await load();
   }
 
-  async function remove(id: number) { await deleteResearchLog(id); await load(); }
+  async function remove(id: number) {
+    if (!confirm('Delete this research log entry?')) return;
+    await deleteResearchLog(id);
+    await load();
+  }
 
   let filtered = $derived(filterType ? entries.filter(e => e.resultType === filterType) : entries);
 
-  $effect(() => { load(); });
+  $effect(() => { load(); loadPeople(); });
+  $effect(() => { if (filterPersonXref !== undefined) load(); });
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
@@ -64,6 +69,16 @@
     <div class="px-3 py-1.5 rounded-lg text-sm font-medium" style="background: var(--parchment); color: var(--ink-light);">{entries.filter(e => e.resultType === 'INCONCLUSIVE').length} Inconclusive</div>
   </div>
 
+  <!-- Person filter + type filter -->
+  <div class="flex gap-2 mb-4 flex-wrap">
+    <select bind:value={filterPersonXref} class="px-3 py-1.5 text-sm arch-input" aria-label={t('researchLog.filterPerson')}>
+      <option value="">{t('researchLog.filterPerson')}</option>
+      {#each persons as p}
+        <option value={p.xref}>{p.givenName} {p.surname}</option>
+      {/each}
+    </select>
+  </div>
+
   <!-- Filter -->
   <div class="flex gap-2 mb-6">
     <button onclick={() => filterType = null} class="px-3 py-1 text-xs rounded-full {filterType === null ? 'btn-filter-active' : 'btn-filter'}">All</button>
@@ -79,6 +94,12 @@
         <input bind:value={repository} placeholder={t('research.repositorySource')} class="px-3 py-2 text-sm arch-input"  aria-label={t('research.repositorySource')} />
         <input bind:value={searchDate} placeholder={t('research.searchDate')} class="px-3 py-2 text-sm arch-input"  aria-label={t('research.searchDate')} />
       </div>
+      <select bind:value={editorPersonXref} class="w-full px-3 py-2 text-sm arch-input mb-4" aria-label={t('researchLog.filterPerson')}>
+        <option value="">Link to person (optional)</option>
+        {#each persons as p}
+          <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
+        {/each}
+      </select>
       <input bind:value={searchTerms} placeholder={t('research.searchTerms')} class="w-full px-3 py-2 text-sm arch-input mb-4"  aria-label={t('research.searchTerms')} />
       <textarea bind:value={recordsViewed} placeholder={t('research.recordsViewed')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>
       <textarea bind:value={conclusion} placeholder={t('research.conclusion')} class="w-full px-3 py-2 text-sm arch-input mb-4 h-20"></textarea>

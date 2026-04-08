@@ -35,7 +35,9 @@
         "https://www.findagrave.com/*",
         "https://www.wikitree.com/*",
         "https://www.geni.com/*",
-        "https://www.newspapers.com/*"
+        "https://www.newspapers.com/*",
+        "https://www.myheritage.com/*",
+        "https://*.myheritage.com/*"
       ],
       "js": ["content/detector.js"]
     }

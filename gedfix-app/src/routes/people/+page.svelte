@@ -324,7 +324,15 @@
     </div>
 
     <!-- Virtual scroll list — only renders visible items, handles 10K+ -->
-    <div class="flex-1" style="contain: strict;">
+    <div
+      class="flex-1"
+      style="contain: strict;"
+      role="listbox"
+      aria-label={t('people.searchCountPlaceholder', { count: persons.length })}
+      aria-activedescendant={focusedIndex >= 0 && persons[focusedIndex] ? `person-option-${persons[focusedIndex].xref}` : undefined}
+      tabindex="0"
+      onkeydown={handleListKeydown}
+    >
       <VList data={persons} style="height: 100%;" getKey={(_, i) => persons[i]?.xref ?? i}>
         {#snippet children(person, index)}
           <div class="person-row-wrap">
@@ -333,11 +341,15 @@
               <button class="row-action-btn danger" onclick={() => deleteOne(person.xref)}>{t('common.delete')}</button>
             </div>
           <button
-            onclick={() => selectPerson(person)}
+            id="person-option-{person.xref}"
+            role="option"
+            aria-selected={selected?.xref === person.xref}
+            tabindex={focusedIndex === index ? 0 : -1}
+            onclick={() => { focusedIndex = index; selectPerson(person); }}
             ontouchstart={handleRowTouchStart}
             ontouchend={(event) => handleRowTouchEnd(event, person.xref)}
             class="person-row w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-black/[0.03] transition-colors contain-content
-                   {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''} {swipedXref === person.xref ? 'row-swiped' : ''}"
+                   {selected?.xref === person.xref ? 'bg-[var(--accent-subtle)]' : ''} {focusedIndex === index ? 'ring-1 ring-inset ring-[var(--accent)]' : ''} {swipedXref === person.xref ? 'row-swiped' : ''}"
           >
             <input
               type="checkbox"

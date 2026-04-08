@@ -541,6 +541,17 @@
       </div>
       <div class="flex items-center justify-between px-5 py-4">
         <div>
+          <div class="text-sm font-medium text-ink">{t('nav.theme')}</div>
+          <div class="text-xs text-ink-muted">Choose light, dark, or follow system</div>
+        </div>
+        <select bind:value={themePreference} onchange={saveTheme} class="arch-input px-2 py-1.5 text-sm" aria-label={t('common.filter')}>
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
           <div class="text-sm font-medium text-ink">{t('settings.language')}</div>
           <div class="text-xs text-ink-muted">Change application locale</div>
         </div>

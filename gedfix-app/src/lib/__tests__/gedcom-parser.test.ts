@@ -424,3 +424,53 @@ describe('gedcom-parser citation extraction', () => {
     ]);
   });
 });
+
+describe('gedcom-parser merge mode', () => {
+  function makeDbMock(clearAll: ReturnType<typeof vi.fn>) {
+    const execute = vi.fn().mockResolvedValue([]);
+    const select = vi.fn().mockImplementation((sql: string) => {
+      if (String(sql).includes('COUNT(*)')) return Promise.resolve([{ c: 0 }]);
+      return Promise.resolve([]);
+    });
+    return {
+      clearAll,
+      upsertPerson: vi.fn().mockResolvedValue(undefined),
+      insertPerson: vi.fn().mockResolvedValue(undefined),
+      insertFamily: vi.fn().mockResolvedValue(undefined),
+      insertSource: vi.fn().mockResolvedValue(undefined),
+      insertEvent: vi.fn().mockResolvedValue(undefined),
+      insertCitation: vi.fn().mockResolvedValue(undefined),
+      insertNote: vi.fn().mockResolvedValue(undefined),
+      insertMedia: vi.fn().mockResolvedValue(undefined),
+      insertChildLink: vi.fn().mockResolvedValue(undefined),
+      rebuildFTS: vi.fn().mockResolvedValue(undefined),
+      classifySources: vi.fn().mockResolvedValue(undefined),
+      computeValidationStatus: vi.fn().mockResolvedValue(undefined),
+      autoCategorizeMediaAfterDedup: vi.fn().mockResolvedValue(undefined),
+      autoLinkOrphanMedia: vi.fn().mockResolvedValue({ linked: 0, skipped: 0 }),
+      getDb: vi.fn(async () => ({ select, execute })),
+      execute,
+      select,
+    };
+  }
+
+  it('skips clearAll when mode is merge', async () => {
+    vi.resetModules();
+    const clearAll = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('$lib/db', () => makeDbMock(clearAll));
+    vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }));
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await importGedcom(`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`, undefined, { force: true, mode: 'merge' });
+    expect(clearAll).not.toHaveBeenCalled();
+  });
+
+  it('calls clearAll when mode is replace', async () => {
+    vi.resetModules();
+    const clearAll = vi.fn().mockResolvedValue(undefined);
+    vi.doMock('$lib/db', () => makeDbMock(clearAll));
+    vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }));
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    await importGedcom(`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`, undefined, { force: true, mode: 'replace' });
+    expect(clearAll).toHaveBeenCalled();
+  });
+});

@@ -475,6 +475,36 @@ async fn set_badge_count(_app: tauri::AppHandle, count: u32) -> Result<(), Strin
     Ok(())
 }
 
+// ============================================================
+// Database backup
+// ============================================================
+
+#[tauri::command]
+async fn backup_database(app: tauri::AppHandle) -> Result<String, String> {
+    let data_dir = app.path()
+        .app_data_dir()
+        .map_err(|e: tauri::Error| e.to_string())?;
+
+    let db_path = data_dir.join("gedfix.db");
+    if !db_path.exists() {
+        return Err("Database file not found".to_string());
+    }
+
+    let backup_dir = data_dir.join("backups");
+    std::fs::create_dir_all(&backup_dir).map_err(|e| e.to_string())?;
+
+    let now = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs();
+    let stamp = format!("{}", now);
+    let backup_path = backup_dir.join(format!("gedfix-backup-{}.db", stamp));
+
+    std::fs::copy(&db_path, &backup_path).map_err(|e| e.to_string())?;
+
+    Ok(backup_path.to_string_lossy().to_string())
+}
+
 #[tauri::command]
 async fn set_bridge_stats(persons: u64, families: u64, sources: u64) -> Result<(), String> {
     if let Ok(mut stats) = bridge_stats_store().lock() {
@@ -639,6 +669,7 @@ pub fn run() {
             organize_media_folders,
             set_badge_count,
             set_bridge_stats,
+            backup_database,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

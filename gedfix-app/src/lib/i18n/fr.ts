@@ -394,7 +394,6 @@ export default {
   "places.geocode": "Geocoder",
   "pedigree.downloadPng": "Telecharger PNG",
   "pedigree.downloadSvg": "Telecharger SVG",
-  "pedigree.findPerson": "Trouver une personne...",
   "stories.generate": "Generer une histoire",
   "stories.generating": "Generation...",
   "stories.delete": "Supprimer l'histoire",

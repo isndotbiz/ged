@@ -638,7 +638,60 @@
         <div class="quality-bar" style="height: 12px; margin-bottom: 0.5rem;">
           <span style="width: {validationPct}%; background: var(--color-cyan);"></span>
         </div>
-        <div class="stat-meta">{validationPct}% of people validated with primary/secondary records</div>
+        <div class="stat-meta">{validationPct}% {t('dashboard.validatedPct')} — people validated with primary/secondary records</div>
+      </section>
+
+      <!-- Birth decade SVG bar chart + Top Surnames -->
+      <section class="dashboard-grid-2">
+        <div class="spirit-surface panel">
+          <div class="panel-header">{t('dashboard.byDecade')} (births)</div>
+          {#if birthDecadeData.length > 0}
+            {@const maxVal = Math.max(...birthDecadeData.map(d => d.value), 1)}
+            <div style="overflow-x: auto;">
+              <svg width="100%" viewBox="0 0 {birthDecadeData.length * 40 + 40} 120" style="min-width: {birthDecadeData.length * 40}px;">
+                {#each birthDecadeData as d, i}
+                  {@const barH = Math.round((d.value / maxVal) * 80)}
+                  <rect
+                    x={i * 40 + 10}
+                    y={90 - barH}
+                    width="28"
+                    height={barH}
+                    rx="3"
+                    fill="var(--color-blue, #1E9FF2)"
+                    opacity="0.85"
+                  />
+                  <text x={i * 40 + 24} y="108" text-anchor="middle" font-size="7" fill="currentColor" opacity="0.6">{d.label}</text>
+                  <text x={i * 40 + 24} y={87 - barH} text-anchor="middle" font-size="8" fill="currentColor" opacity="0.8">{d.value}</text>
+                {/each}
+              </svg>
+            </div>
+          {:else}
+            <div class="empty-state">No birth data available</div>
+          {/if}
+        </div>
+
+        <div class="spirit-surface panel">
+          <div class="panel-header">{t('dashboard.topSurnames')}</div>
+          {#if topSurnames.length > 0}
+            {@const maxSurname = Math.max(...topSurnames.map(s => s.count), 1)}
+            <div class="quality-list">
+              {#each topSurnames as s}
+                <div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:2px;">
+                    <span style="font-size:0.75rem;font-weight:600;color:var(--ink);">{s.surname}</span>
+                    <span style="font-size:0.7rem;color:var(--ink-muted);font-family:var(--font-mono);">{s.count}</span>
+                  </div>
+                  <div class="quality-bar">
+                    <span style="width: {(s.count / maxSurname * 100)}%; background: var(--color-cyan);"></span>
+                  </div>
+                </div>
+              {/each}
+            </div>
+          {:else}
+            <div class="empty-state">No surname data available</div>
+          {/if}
+          {#if lastImportDate}<div class="stat-meta" style="margin-top:0.5rem;">Last import: {lastImportDate}</div>{/if}
+        </div>
       </section>
     {/if}
   </div>

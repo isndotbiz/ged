@@ -15,8 +15,48 @@ async function probeDesktopBridge() {
   }
 }
 
+async function updateBadge() {
+  const { gedfix_pending_records } = await chrome.storage.local.get('gedfix_pending_records');
+  const pending = Array.isArray(gedfix_pending_records) ? gedfix_pending_records : [];
+  if (pending.length > 0) {
+    chrome.action.setBadgeText({ text: String(pending.length) });
+    chrome.action.setBadgeBackgroundColor({ color: '#E57C00' });
+  } else {
+    chrome.action.setBadgeText({ text: '' });
+  }
+}
+
+async function flushPendingQueue() {
+  const { gedfix_pending_records } = await chrome.storage.local.get('gedfix_pending_records');
+  const pending = Array.isArray(gedfix_pending_records) ? gedfix_pending_records : [];
+  if (pending.length === 0) return;
+  const remaining = [];
+  for (const record of pending) {
+    try {
+      const resp = await fetch(`${BRIDGE_URL}/import`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(record),
+        signal: AbortSignal.timeout(3000),
+      });
+      if (!resp.ok) remaining.push(record);
+    } catch {
+      remaining.push(record);
+      break; // If bridge is gone, stop trying
+    }
+  }
+  await chrome.storage.local.set({ gedfix_pending_records: remaining });
+  await updateBadge();
+}
+
 async function checkDesktopBridge() {
+  const wasBefore = desktopAvailable;
   await probeDesktopBridge();
+  // If we just connected and had a queue, flush it
+  if (!wasBefore && desktopAvailable) {
+    await flushPendingQueue();
+  }
+  await updateBadge();
   // Re-check every 30 seconds
   setTimeout(checkDesktopBridge, 30000);
 }
@@ -37,8 +77,13 @@ async function sendToApp(record) {
       desktopAvailable = false;
     }
   }
-  // Fallback: store locally for side panel
-  return { sent: false, target: 'local' };
+  // Fallback: queue locally for retry when desktop reconnects
+  const { gedfix_pending_records } = await chrome.storage.local.get('gedfix_pending_records');
+  const pending = Array.isArray(gedfix_pending_records) ? gedfix_pending_records : [];
+  pending.push(record);
+  await chrome.storage.local.set({ gedfix_pending_records: pending });
+  await updateBadge();
+  return { sent: false, target: 'local', queued: true };
 }
 
 // Context menus

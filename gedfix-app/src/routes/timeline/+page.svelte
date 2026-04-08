@@ -13,6 +13,8 @@
   let loading = $state(true);
   let filterType = $state('');
   let filterPerson = $state('');
+  let yearFrom = $state('');
+  let yearTo = $state('');
 
   const eventLabels: Record<string, string> = {
     BIRT: 'Birth', DEAT: 'Death', BURI: 'Burial', CHR: 'Christening',
@@ -68,6 +70,8 @@
       const name = i.person ? `${i.person.givenName} ${i.person.surname}`.toLowerCase() : '';
       if (!name.includes(q)) return false;
     }
+    if (yearFrom && i.year < parseInt(yearFrom)) return false;
+    if (yearTo && i.year > parseInt(yearTo)) return false;
     return true;
   }));
 
@@ -108,6 +112,18 @@
           <option value={t}>{eventLabels[t] ?? t}</option>
         {/each}
       </select>
+      <input
+        type="number"
+        placeholder={t('timeline.yearFrom')}
+        bind:value={yearFrom}
+        class="w-24 px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
+        aria-label={t('timeline.yearFrom')} />
+      <input
+        type="number"
+        placeholder={t('timeline.yearTo')}
+        bind:value={yearTo}
+        class="w-24 px-3 py-2 text-sm rounded-lg border-none outline-none arch-input"
+        aria-label={t('timeline.yearTo')} />
     </div>
   </div>
 

@@ -3,6 +3,7 @@ import {
   insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS,
   classifySources, computeValidationStatus, autoCategorizeMediaAfterDedup, autoLinkOrphanMedia
 } from './db';
+import { clearRelationshipCache } from './relationship-finder';
 
 interface GedLine {
   level: number;
@@ -571,6 +572,7 @@ export async function importGedcom(
   // Run PRAGMA optimize after bulk load
   await db.execute("PRAGMA optimize");
 
+    clearRelationshipCache();
     onProgress?.(100, 'Import complete!');
     return linkResult;
   } catch (error) {

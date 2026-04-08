@@ -310,6 +310,7 @@
       showWebWelcome = false;
       $isImporting = false;
       $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
+      notifyImportComplete();
     } catch (e) {
       console.error('Import error:', e);
       $importMessage = `Import error: ${e}`;
@@ -334,6 +335,7 @@
       appStats.set(stats);
       showWebWelcome = false;
       $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
+      notifyImportComplete();
     } catch (e) {
       console.error('Import error:', e);
       webWelcomeError = `Import failed: ${e}`;
@@ -454,12 +456,19 @@
   async function loadThemePreference() {
     try {
       const saved = await getSetting('theme_mode');
-      themeMode = (saved === 'dark') ? 'dark' : 'light';
+      if (saved === 'dark' || saved === 'light') {
+        themeMode = saved;
+      } else {
+        // Default to system preference
+        const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        themeMode = prefersDark ? 'dark' : 'light';
+      }
       applyTheme(themeMode);
     } catch (e) {
       console.error('Failed to load theme preference:', e);
-      themeMode = 'light';
-      applyTheme('light');
+      const prefersDark = typeof window !== 'undefined' && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      themeMode = prefersDark ? 'dark' : 'light';
+      applyTheme(themeMode);
     }
   }
 

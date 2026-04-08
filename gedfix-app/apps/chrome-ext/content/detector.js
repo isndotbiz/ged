@@ -164,6 +164,37 @@ function extractNewspapers() {
   };
 }
 
+function extractMyHeritage() {
+  const name = cleanText(
+    document.querySelector('.person-name') ||
+    document.querySelector('h1.name') ||
+    document.querySelector('[itemprop="name"]') ||
+    document.querySelector('h1')
+  );
+  const birthText = cleanText(
+    document.querySelector('.birth-info .date') ||
+    document.querySelector('[itemprop="birthDate"]') ||
+    document.querySelector('.birth-date')
+  );
+  const deathText = cleanText(
+    document.querySelector('.death-info .date') ||
+    document.querySelector('[itemprop="deathDate"]') ||
+    document.querySelector('.death-date')
+  );
+  const parsed = parseNameFromText(name);
+
+  return {
+    source: 'MyHeritage',
+    url: location.href,
+    name,
+    given: parsed.given,
+    surname: parsed.surname,
+    birthDate: parseDateFromText(birthText),
+    deathDate: parseDateFromText(deathText),
+    recordType: 'Tree Person',
+  };
+}
+
 function detectAndExtract() {
   const host = location.hostname;
   let record = null;
@@ -187,6 +218,10 @@ function detectAndExtract() {
 
   if (host.includes('geni.com') && location.pathname.includes('/people/')) {
     record = extractGeni();
+  }
+
+  if (host.includes('myheritage.com') && (location.pathname.includes('/person') || location.pathname.includes('/family'))) {
+    record = extractMyHeritage();
   }
 
   if (host.includes('newspapers.com') && location.pathname.includes('/image/')) {

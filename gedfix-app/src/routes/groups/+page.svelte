@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { getGroups, insertGroup, deleteGroup, getGroupMembers, getGroupMemberCount, getPerson, getAllPersons, addGroupMember, removeGroupMember } from '$lib/db';
+  import { getGroups, insertGroup, deleteGroup, getGroupMembers, getGroupMemberCount, getPerson, getAllPersons, addGroupMember, removeGroupMember, batchAddToGroup } from '$lib/db';
   import type { PersonGroup, Person } from '$lib/types';
   import { focusTrap } from '$lib/accessibility';
 
@@ -77,6 +77,24 @@
     await selectGroup(selectedGroup);
   }
 
+  let pickerSelectedXrefs = $state<Set<string>>(new Set());
+
+  function togglePickerSelection(xref: string) {
+    const next = new Set(pickerSelectedXrefs);
+    if (next.has(xref)) next.delete(xref);
+    else next.add(xref);
+    pickerSelectedXrefs = next;
+  }
+
+  async function addSelectedPeopleToGroup() {
+    if (!selectedGroup || pickerSelectedXrefs.size === 0) return;
+    await batchAddToGroup(Array.from(pickerSelectedXrefs), selectedGroup);
+    await load();
+    await selectGroup(selectedGroup);
+    pickerSelectedXrefs = new Set();
+    showPicker = false;
+  }
+
   let pickerOptions = $derived(
     allPeople.filter((p) => (`${p.givenName} ${p.surname} ${p.xref}`).toLowerCase().includes(pickerQuery.toLowerCase())).slice(0, 80)
   );
@@ -140,7 +158,7 @@
               </div>
             </div>
             <div class="flex items-center gap-3">
-              <span class="text-xs text-ink-faint">{group.memberCount} members</span>
+              <span class="text-xs font-medium px-2 py-0.5 rounded-full" style="background: var(--parchment); color: var(--ink-light);">{t('groups.memberCount').replace('{count}', String(group.memberCount))}</span>
               <button onclick={(e) => { e.stopPropagation(); openPicker(group.id); }} class="text-xs" style="color: var(--accent);">{t('groups.addMember')}</button>
               <button onclick={(e) => { e.stopPropagation(); removeGroup(group.id); }} class="text-xs text-red-500 hover:text-red-700">{t('common.delete')}</button>
             </div>
@@ -169,14 +187,21 @@
       <div class="arch-card w-full max-w-xl p-5 relative z-10" role="dialog" aria-modal="true" aria-labelledby="group-picker-title" tabindex="-1" onkeydown={handlePickerKeydown} use:focusTrap>
         <h2 id="group-picker-title" class="text-base mb-3" style="color: var(--ink);">{t('groups.addPersonToGroup')}</h2>
         <input bind:this={pickerInputEl} bind:value={pickerQuery} placeholder={t('people.searchPlaceholder')} class="w-full px-3 py-2 text-sm arch-input mb-3"  aria-label={t('people.searchPlaceholder')} />
-        <select bind:value={pickerSelectedXref} class="w-full px-3 py-2 text-sm arch-input mb-3" size="8" aria-label={t('common.filter')}>
+        <div class="max-h-64 overflow-y-auto border rounded-lg mb-3" style="border-color: var(--border-subtle);">
           {#each pickerOptions as p}
-            <option value={p.xref}>{p.givenName} {p.surname} ({p.xref})</option>
+            <label class="flex items-center gap-2 px-3 py-2 hover:bg-black/5 cursor-pointer text-sm">
+              <input type="checkbox" checked={pickerSelectedXrefs.has(p.xref)} onchange={() => togglePickerSelection(p.xref)} class="accent-amber-600" />
+              <span style="color: var(--ink);">{p.givenName} {p.surname}</span>
+              <span class="text-xs ml-auto" style="color: var(--ink-faint);">{p.xref}</span>
+            </label>
           {/each}
-        </select>
-        <div class="flex justify-end gap-2">
-          <button class="btn-outline" onclick={() => showPicker = false}>{t('common.cancel')}</button>
-          <button class="btn-primary" onclick={addSelectedPersonToGroup} disabled={!pickerSelectedXref} aria-label={t('common.actions')}>{t('common.add')}</button>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-xs" style="color: var(--ink-muted);">{pickerSelectedXrefs.size} selected</span>
+          <div class="flex gap-2">
+            <button class="btn-outline" onclick={() => showPicker = false}>{t('common.cancel')}</button>
+            <button class="btn-primary" onclick={addSelectedPeopleToGroup} disabled={pickerSelectedXrefs.size === 0} aria-label={t('common.actions')}>{t('groups.addSelected')}</button>
+          </div>
         </div>
       </div>
     </div>

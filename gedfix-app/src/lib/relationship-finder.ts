@@ -1,5 +1,16 @@
 import { getChildren, getParents, getPerson, getSpouseFamilies } from './db';
 
+// Module-level cache: keyed by "xrefA|xrefB" (canonical order, both directions hit same entry)
+const _relationshipCache = new Map<string, RelationshipStep[] | null>();
+
+function cacheKey(a: string, b: string): string {
+  return a < b ? `${a}|${b}` : `${b}|${a}`;
+}
+
+export function clearRelationshipCache(): void {
+  _relationshipCache.clear();
+}
+
 export interface RelationshipStep {
   personXref: string;
   personName: string;
@@ -25,9 +36,16 @@ async function neighbors(xref: string): Promise<Edge[]> {
 }
 
 export async function findRelationshipPath(xrefA: string, xrefB: string): Promise<RelationshipStep[] | null> {
+  const key = cacheKey(xrefA, xrefB);
+  if (_relationshipCache.has(key)) {
+    return _relationshipCache.get(key) ?? null;
+  }
+
   if (xrefA === xrefB) {
     const person = await getPerson(xrefA);
-    return person ? [{ personXref: person.xref, personName: `${person.givenName} ${person.surname}`.trim(), relationship: 'self' }] : null;
+    const result = person ? [{ personXref: person.xref, personName: `${person.givenName} ${person.surname}`.trim(), relationship: 'self' as const }] : null;
+    _relationshipCache.set(key, result);
+    return result;
   }
 
   const maxDepth = 30;
@@ -54,7 +72,10 @@ export async function findRelationshipPath(xrefA: string, xrefB: string): Promis
     }
   }
 
-  if (!visited.has(xrefB)) return null;
+  if (!visited.has(xrefB)) {
+    _relationshipCache.set(key, null);
+    return null;
+  }
 
   const path: { xref: string; rel: RelationshipStep['relationship'] }[] = [];
   let cursor = xrefB;
@@ -77,6 +98,7 @@ export async function findRelationshipPath(xrefA: string, xrefB: string): Promis
       relationship: i === 0 ? 'self' : path[i].rel,
     });
   }
+  _relationshipCache.set(key, withNames);
   return withNames;
 }
 

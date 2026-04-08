@@ -115,7 +115,13 @@
 
 <div class="p-8 max-w-4xl animate-fade-in overflow-y-auto h-full">
   <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('ai.settingsTitle')}</h1>
-  <p class="text-sm text-ink-muted mt-1 mb-4">Configure AI providers — keys are saved locally to your database</p>
+  <p class="text-sm text-ink-muted mt-1 mb-2">Configure AI providers — keys are saved locally to your database</p>
+  <div class="flex items-start gap-2 p-3 mb-4 rounded-lg text-xs" style="background: #fef9c3; border: 1px solid #fde047; color: #713f12;">
+    <span style="font-size: 14px; line-height: 1;">&#128274;</span>
+    <div>
+      <strong>Local storage only.</strong> API keys are stored in your GedFix database file at <code style="font-size: 10px;">~/Library/Application Support/com.gedfix.app/</code> — protected by macOS file permissions (your user only). Keys are never sent anywhere except directly to the AI provider when you use a feature. Do not sync your GedFix database to iCloud or a shared drive with API keys saved.
+    </div>
+  </div>
 
   <!-- Active provider -->
   <div class="arch-card p-4 mb-6">

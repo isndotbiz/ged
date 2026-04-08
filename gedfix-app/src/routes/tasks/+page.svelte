@@ -102,11 +102,13 @@
   {/if}
 
   <div class="space-y-2">
-    <div class="flex gap-2 mb-2">
-      <button onclick={() => filterStatus = null} class="px-3 py-1 text-xs rounded-full {filterStatus === null ? 'btn-filter-active' : 'btn-filter'}">All</button>
-      <button onclick={() => filterStatus = 'TODO'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'TODO' ? 'btn-filter-active' : 'btn-filter'}">TODO</button>
-      <button onclick={() => filterStatus = 'IN_PROGRESS'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'IN_PROGRESS' ? 'btn-filter-active' : 'btn-filter'}">In Progress</button>
-      <button onclick={() => filterStatus = 'DONE'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'DONE' ? 'btn-filter-active' : 'btn-filter'}">Done</button>
+    <div class="flex gap-2 mb-2 flex-wrap">
+      <button onclick={() => filterStatus = null} class="px-3 py-1 text-xs rounded-full {filterStatus === null ? 'btn-filter-active' : 'btn-filter'}">{t('tasks.filterAll')}</button>
+      <button onclick={() => filterStatus = 'OPEN'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'OPEN' ? 'btn-filter-active' : 'btn-filter'}">{t('tasks.filterOpen')}</button>
+      <button onclick={() => filterStatus = 'DONE'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'DONE' ? 'btn-filter-active' : 'btn-filter'}">{t('tasks.filterCompleted')}</button>
+      <button onclick={() => filterStatus = 'OVERDUE'} class="px-3 py-1 text-xs rounded-full {filterStatus === 'OVERDUE' ? 'bg-red-500 text-white' : 'btn-filter'}">
+        {t('tasks.overdue')}{overdueCount > 0 ? ` (${overdueCount})` : ''}
+      </button>
     </div>
     {#each filtered as task}
       <div class="arch-card rounded-xl p-4 flex items-start gap-3 {isOverdue(task) ? 'task-overdue' : ''}">
@@ -114,9 +116,10 @@
           {#if task.status === 'DONE'}<svg class="w-3 h-3" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>{/if}
         </button>
         <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             <span class="font-medium text-sm {task.status === 'DONE' ? 'line-through text-ink-faint' : 'text-ink'}">{task.title}</span>
             <span class="px-1.5 py-0.5 text-[9px] font-semibold rounded {task.priority === 'HIGH' ? 'bg-red-100 text-red-600' : task.priority === 'MEDIUM' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}">{task.priority}</span>
+            {#if isOverdue(task)}<span class="px-1.5 py-0.5 text-[9px] font-semibold rounded bg-red-500 text-white">{t('tasks.overdue')}</span>{/if}
           </div>
           {#if task.description}<div class="text-xs text-ink-muted mt-0.5">{task.description}</div>{/if}
           {#if task.personXref}
@@ -130,7 +133,12 @@
             </div>
           {/if}
         </div>
-        <button onclick={() => remove(task.id)} class="text-xs text-red-500 hover:text-red-700 shrink-0">{t('common.delete')}</button>
+        <div class="flex flex-col items-end gap-1 shrink-0">
+          {#if task.status !== 'DONE'}
+            <button onclick={() => toggle(task)} class="text-xs px-2 py-1 rounded-lg text-white bg-green-500 hover:bg-green-600">{t('tasks.complete')}</button>
+          {/if}
+          <button onclick={() => remove(task.id)} class="text-xs text-red-500 hover:text-red-700">{t('common.delete')}</button>
+        </div>
       </div>
     {/each}
   </div>
