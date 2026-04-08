@@ -2,7 +2,7 @@
 
 ## 1Password Connect — Credential Access
 All credentials via 1Password Connect. No service accounts, no desktop auth, no plaintext .env secrets.
-- `OP_CONNECT_HOST=http://100.67.89.29:8100`
+- `OP_CONNECT_HOST=http://100.83.75.4:8100`
 - `OP_CONNECT_TOKEN` — set in global CLAUDE.md (inherited automatically)
 - Vaults: `Research`, `TrueNAS Infrastructure`
 - Usage: `op item get "Name" --vault "Research" --format json`

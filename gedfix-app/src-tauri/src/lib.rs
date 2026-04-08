@@ -563,6 +563,7 @@ fn build_menu(app: &tauri::AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> 
 
 #[cfg(desktop)]
 fn start_extension_bridge(app_handle: tauri::AppHandle) {
+    #[allow(unused_imports)]
     use std::io::Read as IoRead;
 
     std::thread::spawn(move || {
