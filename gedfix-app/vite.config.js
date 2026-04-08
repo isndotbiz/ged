@@ -1,45 +1,17 @@
 import { sveltekit } from "@sveltejs/kit/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import fs from "fs";
-import path from "path";
-import { fileURLToPath } from "url";
 
 // @ts-expect-error process is a nodejs global
 const host = process.env.TAURI_DEV_HOST;
 // @ts-expect-error process is a nodejs global
 const isWeb = process.env.VITE_WEB === 'true';
-const filePath = fileURLToPath(import.meta.url);
-const rootDir = path.dirname(filePath);
-const ROUTE_CHUNK_THRESHOLD = 100 * 1024;
-
-function collectLargeRoutePages() {
-  const routesDir = path.join(rootDir, "src", "routes");
-  const largePages = new Set();
-
-  /** @param {string} dir */
-  function walk(dir) {
-    const entries = fs.readdirSync(dir, { withFileTypes: true });
-    for (const entry of entries) {
-      const entryPath = path.join(dir, entry.name);
-      if (entry.isDirectory()) {
-        walk(entryPath);
-        continue;
-      }
-      if (entry.isFile() && entry.name === "+page.svelte") {
-        const stat = fs.statSync(entryPath);
-        if (stat.size > ROUTE_CHUNK_THRESHOLD) {
-          largePages.add(path.normalize(entryPath));
-        }
-      }
-    }
-  }
-
-  walk(routesDir);
-  return largePages;
-}
-
-const largeRoutePages = collectLargeRoutePages();
+const LARGE_ROUTE_PAGES = new Set([
+  // Keep route-level pages in dedicated chunks.
+  "src/routes/cleanup/+page.svelte",
+  "src/routes/services/+page.svelte",
+  "src/routes/people/[xref]/+page.svelte",
+]);
 
 /** @param {string} id */
 function packageChunkName(id) {
@@ -67,21 +39,26 @@ function packageChunkName(id) {
 
 /** @param {string} id */
 function manualChunks(id) {
-  const normalizedId = path.normalize(id);
+  const normalizedId = id.replaceAll("\\", "/");
 
-  if (normalizedId.includes(`node_modules${path.sep}sql.js${path.sep}`) || normalizedId.includes("sqlite")) {
+  if (normalizedId.includes("/node_modules/sql.js/") || normalizedId.includes("sqlite")) {
     return "sqlite";
   }
 
-  if (/src[\/\\]lib[\/\\]i18n[\/\\](en|es|de|fr|pt)\.ts$/.test(normalizedId)) {
+  if (/\/src\/lib\/i18n\/(en|es|de|fr|pt)\.ts$/.test(normalizedId)) {
     return "i18n";
   }
 
-  if (largeRoutePages.has(normalizedId)) {
+  if (normalizedId.includes("/@vladmandic/face-api/")) {
+    return "face-ai";
+  }
+
+  const candidateRoutePath = normalizedId.split("/src/routes/")[1];
+  if (candidateRoutePath && LARGE_ROUTE_PAGES.has(`src/routes/${candidateRoutePath}`)) {
     const routePath = normalizedId
-      .split(`${path.sep}src${path.sep}routes${path.sep}`)[1]
-      ?.replace(`${path.sep}+page.svelte`, "")
-      .replace(/[\/\\[\]]+/g, "-")
+      .split("/src/routes/")[1]
+      ?.replace("/+page.svelte", "")
+      .replace(/[\/[\]]+/g, "-")
       .replace(/^-+|-+$/g, "")
       || "page";
     return `route-${routePath}`;
@@ -97,6 +74,7 @@ export default defineConfig({
   plugins: [tailwindcss(), sveltekit()],
   clearScreen: false,
   build: {
+    chunkSizeWarningLimit: 2000,
     rollupOptions: {
       output: {
         manualChunks,
