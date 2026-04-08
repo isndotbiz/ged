@@ -10,6 +10,9 @@
   let livingThreshold = $state(110);
   let confirmClear = $state(false);
   let saveStatus = $state('');
+  let backupBusy = $state(false);
+  let lastBackupDate = $state('');
+  let mergeGedcomBusy = $state(false);
   let exportFormat = $state<'5.5.1' | '7.0'>('5.5.1');
   let exportPreview = $state({ personCount: 0, familyCount: 0, eventCount: 0, sourceCount: 0, mediaCount: 0, placeCount: 0 });
   let exportBusy = $state(false);
