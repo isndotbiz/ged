@@ -44,6 +44,21 @@
   let groups = $state.raw<{ id: number; name: string }[]>([]);
   let swipedXref = $state<string | null>(null);
   let touchStartX = $state(0);
+  let focusedIndex = $state<number>(-1);
+
+  function handleListKeydown(event: KeyboardEvent) {
+    if (persons.length === 0) return;
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      focusedIndex = Math.min(focusedIndex + 1, persons.length - 1);
+    } else if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      focusedIndex = Math.max(focusedIndex - 1, 0);
+    } else if (event.key === 'Enter' && focusedIndex >= 0 && focusedIndex < persons.length) {
+      event.preventDefault();
+      selectPerson(persons[focusedIndex]);
+    }
+  }
 
   // Photo cache for list avatars
   let photoCache = $state.raw<Map<string, string>>(new Map());
