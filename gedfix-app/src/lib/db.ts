@@ -529,15 +529,23 @@ export async function getPersons(search?: string, limit = 500): Promise<Person[]
   const d = await getDb();
   if (search && search.trim()) {
     const term = search.trim();
-    // Try FTS5 first (sub-millisecond), fall back to LIKE
+    const q = `%${term}%`;
+    const selectByLike = async () =>
+      await d.select<Person[]>(
+        `SELECT * FROM person WHERE givenName LIKE $1 OR surname LIKE $1 OR xref LIKE $1 ORDER BY surname, givenName LIMIT $2`,
+        [q, limit]
+      );
+
+    // Try FTS5 first; fall back to LIKE when FTS is unavailable or empty.
     try {
+      const ftsCount = await d.select<{ c: number }[]>(`SELECT COUNT(*) as c FROM person_fts`);
       const ftsQuery = term.split(/\s+/).map(w => `"${w}"*`).join(' ');
-      const base = await d.select<Person[]>(
+      const ftsRows = await d.select<Person[]>(
         `SELECT p.* FROM person p JOIN person_fts f ON p.id = f.rowid
          WHERE person_fts MATCH $1 ORDER BY rank LIMIT $2`,
         [ftsQuery, limit]
       );
-      const q = `%${term}%`;
+      const base = (ftsCount[0]?.c ?? 0) > 0 ? ftsRows : await selectByLike();
       const alt = await d.select<Person[]>(
         `SELECT DISTINCT p.* FROM person p
          JOIN alternate_name a ON a.personXref = p.xref
@@ -550,11 +558,7 @@ export async function getPersons(search?: string, limit = 500): Promise<Person[]
       for (const p of alt) map.set(p.xref, p);
       return Array.from(map.values()).slice(0, limit);
     } catch {
-      const q = `%${term}%`;
-      const base = await d.select<Person[]>(
-        `SELECT * FROM person WHERE givenName LIKE $1 OR surname LIKE $1 OR xref LIKE $1 ORDER BY surname, givenName LIMIT $2`,
-        [q, limit]
-      );
+      const base = await selectByLike();
       const alt = await d.select<Person[]>(
         `SELECT DISTINCT p.* FROM person p
          JOIN alternate_name a ON a.personXref = p.xref
@@ -762,6 +766,47 @@ export async function getPeopleForMedia(mediaId: number): Promise<{ personXref: 
     WHERE mpl.mediaId = $1
     ORDER BY mpl.isPrimary DESC
   `, [mediaId]);
+}
+
+export async function autoLinkOrphanMedia(): Promise<{ linked: number; skipped: number }> {
+  const d = await getDb();
+  const orphanMedia = await d.select<{ id: number; filePath: string }[]>(`
+    SELECT m.id, m.filePath
+    FROM media m
+    LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id
+    WHERE mpl.mediaId IS NULL
+  `);
+
+  let linked = 0;
+  let skipped = 0;
+
+  for (const media of orphanMedia) {
+    const fileName = (media.filePath || '').split(/[\\/]/).pop() || '';
+    const baseName = fileName.replace(/\.[^.]*$/, '');
+    const parts = baseName.split('_');
+    const personXref = parts.length >= 3 ? parts[2].trim() : '';
+
+    if (!personXref) {
+      skipped++;
+      continue;
+    }
+
+    const personRows = await d.select<{ xref: string }[]>(`SELECT xref FROM person WHERE xref = $1 LIMIT 1`, [personXref]);
+    if (personRows.length === 0) {
+      skipped++;
+      continue;
+    }
+
+    const result = await d.execute(
+      `INSERT OR IGNORE INTO media_person_link (mediaId, personXref, role, isPrimary, addedBy, createdAt)
+       VALUES ($1, $2, 'tagged', 0, 'filename_autolink', datetime('now'))`,
+      [media.id, personXref]
+    );
+    if (result.rowsAffected > 0) linked++;
+    else skipped++;
+  }
+
+  return { linked, skipped };
 }
 
 export type MediaCategory = 'headshots' | 'other' | 'delete-queue' | 'uncategorized';

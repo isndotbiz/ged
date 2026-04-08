@@ -369,6 +369,47 @@ describe('db.ts helpers', () => {
     expect(queries.some((q) => q.includes('LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id'))).toBe(true);
   });
 
+  it('autoLinkOrphanMedia links orphan media to person via filename xref token', async () => {
+    const persons = [{ xref: 'I0001' }];
+    const orphanMedia = [{ id: 7, filePath: 'Smith_John_I0001_photo.jpg' }];
+    const links: Array<{ mediaId: number; personXref: string }> = [];
+
+    const select = vi.fn(async (query: string, args?: any[]) => {
+      if (query.includes('PRAGMA table_info(')) return [];
+      if (query.includes('FROM media m') && query.includes('LEFT JOIN media_person_link mpl')) {
+        return orphanMedia.filter((m) => !links.some((l) => l.mediaId === m.id));
+      }
+      if (query.includes('SELECT xref FROM person WHERE xref = $1 LIMIT 1')) {
+        const xref = String(args?.[0] ?? '');
+        return persons.filter((p) => p.xref === xref);
+      }
+      return [];
+    });
+    const execute = vi.fn(async (query: string, args?: any[]) => {
+      if (query.includes('INSERT OR IGNORE INTO media_person_link')) {
+        const mediaId = Number(args?.[0] ?? 0);
+        const personXref = String(args?.[1] ?? '');
+        if (!links.some((l) => l.mediaId === mediaId && l.personXref === personXref)) {
+          links.push({ mediaId, personXref });
+          return { rowsAffected: 1, lastInsertId: 1 };
+        }
+        return { rowsAffected: 0, lastInsertId: 0 };
+      }
+      return { rowsAffected: 0, lastInsertId: 0 };
+    });
+
+    vi.doMock('@tauri-apps/plugin-sql', () => ({
+      default: { load: vi.fn(async () => ({ select, execute })) },
+    }));
+
+    const mod = await import('$lib/db');
+    await mod.getDb();
+    const result = await mod.autoLinkOrphanMedia();
+
+    expect(result).toEqual({ linked: 1, skipped: 0 });
+    expect(links).toEqual([{ mediaId: 7, personXref: 'I0001' }]);
+  });
+
   it('insertPerson skips duplicate xref rows', async () => {
     const persons: Array<{ xref: string }> = [];
     const execute = vi.fn(async (query: string, args?: any[]) => {
@@ -463,5 +504,47 @@ describe('db.ts helpers', () => {
     const mod = await import('$lib/db');
     await mod.getDb();
     await expect(mod.getPersons(`%_' OR 1=1 --`, 10)).resolves.toEqual([]);
+  });
+
+  it('getPersons returns partial-name matches via FTS', async () => {
+    const select = vi.fn(async (query: string, args?: unknown[]) => {
+      if (query.includes('SELECT COUNT(*) as c FROM person_fts')) {
+        return [{ c: 2 }];
+      }
+      if (query.includes('JOIN person_fts')) {
+        expect(args).toEqual(['"Jo"*', 10]);
+        return [
+          {
+            id: 1,
+            xref: 'I1',
+            givenName: 'John',
+            surname: 'Doe',
+            suffix: '',
+            sex: 'M',
+            isLiving: 0,
+            birthDate: '',
+            birthPlace: '',
+            deathDate: '',
+            deathPlace: '',
+            sourceCount: 0,
+            mediaCount: 0,
+            personColor: '',
+            proofStatus: 'UNKNOWN',
+            validationStatus: 'unvalidated',
+          },
+        ];
+      }
+      if (query.includes('JOIN alternate_name')) return [];
+      return [];
+    });
+    const execute = vi.fn(async () => ({ rowsAffected: 0, lastInsertId: 0 }));
+
+    vi.doMock('@tauri-apps/plugin-sql', () => ({
+      default: { load: vi.fn(async () => ({ select, execute })) },
+    }));
+
+    const mod = await import('$lib/db');
+    await mod.getDb();
+    await expect(mod.getPersons('Jo', 10)).resolves.toMatchObject([{ xref: 'I1', givenName: 'John' }]);
   });
 });

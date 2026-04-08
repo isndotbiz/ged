@@ -4,6 +4,7 @@
   import { goto } from '$app/navigation';
   import { getPerson, getEvents, getSpouseFamilies, getChildren, getParents, getMediaForPerson, getPrimaryPhoto, getDb, getNotes, getAlternateNames, insertAlternateName, updateAlternateName, deleteAlternateName, getPersons, isBookmarked, insertBookmark, getBookmarks, deleteBookmark } from '$lib/db';
   import { getThumbUrl } from '$lib/photo';
+  import { getCachedFaceCrop, faceCropToObjectPosition } from '$lib/face-crop';
   import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
   import { focusTrap } from '$lib/accessibility';
@@ -17,6 +18,7 @@
   let media = $state.raw<(GedcomMedia & { isPrimary?: boolean; role?: string })[]>([]);
   let primaryPhoto = $state<GedcomMedia | null>(null);
   let photoUrl = $state('');
+  let photoObjectPosition = $state('50% 50%');
   let notes = $state.raw<ResearchNote[]>([]);
   let citations = $state.raw<{ sourceXref: string; sourceTitle: string; page: string; quality: string }[]>([]);
   let lightboxMedia = $state<GedcomMedia | null>(null);
@@ -119,6 +121,15 @@
     return colors[q] || '#7A6F62';
   }
 
+  function cropTitleObjectPosition(title: string | undefined): string | null {
+    if (!title?.startsWith('crop:')) return null;
+    const parts = title.replace('crop:', '').split(',');
+    const x = parseFloat(parts[0] ?? '50');
+    const y = parseFloat(parts[1] ?? '30');
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return `${x}% ${y}%`;
+  }
+
   function handleLightboxKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape') lightboxMedia = null;
   }
@@ -133,6 +144,7 @@
     media = [];
     primaryPhoto = null;
     photoUrl = '';
+    photoObjectPosition = '50% 50%';
     notes = [];
     citations = [];
     await initFileSrc();
@@ -167,6 +179,13 @@
     // Load photo URL
     if (photo?.filePath) {
       try { photoUrl = await getThumbUrl(photo.filePath, 200); } catch { photoUrl = ''; }
+      const fromTitle = cropTitleObjectPosition(photo.title);
+      if (fromTitle) {
+        photoObjectPosition = fromTitle;
+      } else if (photo.id && photoUrl) {
+        const crop = await getCachedFaceCrop(photo.id, photoUrl);
+        if (crop) photoObjectPosition = faceCropToObjectPosition(crop);
+      }
     } else {
       photoUrl = '';
     }
@@ -332,18 +351,26 @@
   }
 
   // Mini card photo cache
-  let miniPhotoCache = $state.raw<Map<string, string>>(new Map());
+  let miniPhotoCache = $state.raw<Map<string, { filePath: string; objectPosition: string }>>(new Map());
 
-  async function loadMiniPhoto(xref: string): Promise<string> {
+  async function loadMiniPhoto(xref: string): Promise<{ filePath: string; objectPosition: string }> {
     if (miniPhotoCache.has(xref)) return miniPhotoCache.get(xref)!;
     const photo = await getPrimaryPhoto(xref);
     if (photo?.filePath) {
+      let objectPosition = '50% 50%';
+      const fromTitle = cropTitleObjectPosition(photo.title);
+      if (fromTitle) {
+        objectPosition = fromTitle;
+      } else if (photo.id) {
+        const crop = await getCachedFaceCrop(photo.id, convertFileSrc(photo.filePath));
+        if (crop) objectPosition = faceCropToObjectPosition(crop);
+      }
       const updates = new Map(miniPhotoCache);
-      updates.set(xref, photo.filePath);
+      updates.set(xref, { filePath: photo.filePath, objectPosition });
       miniPhotoCache = updates;
-      return photo.filePath;
+      return { filePath: photo.filePath, objectPosition };
     }
-    return '';
+    return { filePath: '', objectPosition: '50% 50%' };
   }
 
   // React to route param changes
@@ -393,7 +420,7 @@
         <section class="bio-header">
           <div class="header-photo">
             {#if photoUrl}
-              <img src={photoUrl} alt={fullName(person)} class="header-photo-img" onerror={() => { photoUrl = ''; }} />
+              <img src={photoUrl} alt={fullName(person)} class="header-photo-img" style="object-position: {photoObjectPosition};" onerror={() => { photoUrl = ''; }} />
             {:else}
               <div class="header-initials" style="background: {avatarColor(person)};">
                 {getInitials(person)}
@@ -479,9 +506,9 @@
               {#if parents.father}
                 {@const f = parents.father}
                 <button class="mini-card" onclick={() => goto(`/people/${encodeURIComponent(f.xref)}`)}>
-                  {#await loadMiniPhoto(f.xref) then filePath}
-                    {#if filePath}
-                      <img use:lazyImage={filePath} alt="" class="mini-card-photo" />
+                  {#await loadMiniPhoto(f.xref) then miniPhoto}
+                    {#if miniPhoto.filePath}
+                      <img use:lazyImage={miniPhoto.filePath} alt="" class="mini-card-photo" style="object-position: {miniPhoto.objectPosition};" />
                     {:else}
                       <div class="mini-card-initials" style="background: {avatarColor(f)};">{getInitials(f)}</div>
                     {/if}
@@ -498,9 +525,9 @@
               {#if parents.mother}
                 {@const m = parents.mother}
                 <button class="mini-card" onclick={() => goto(`/people/${encodeURIComponent(m.xref)}`)}>
-                  {#await loadMiniPhoto(m.xref) then filePath}
-                    {#if filePath}
-                      <img use:lazyImage={filePath} alt="" class="mini-card-photo" />
+                  {#await loadMiniPhoto(m.xref) then miniPhoto}
+                    {#if miniPhoto.filePath}
+                      <img use:lazyImage={miniPhoto.filePath} alt="" class="mini-card-photo" style="object-position: {miniPhoto.objectPosition};" />
                     {:else}
                       <div class="mini-card-initials" style="background: {avatarColor(m)};">{getInitials(m)}</div>
                     {/if}
@@ -529,9 +556,9 @@
                 {#if fam.spouse}
                 {@const sp = fam.spouse}
                 <button class="mini-card" onclick={() => goto(`/people/${encodeURIComponent(sp.xref)}`)}>
-                  {#await loadMiniPhoto(sp.xref) then filePath}
-                    {#if filePath}
-                      <img use:lazyImage={filePath} alt="" class="mini-card-photo" />
+                  {#await loadMiniPhoto(sp.xref) then miniPhoto}
+                    {#if miniPhoto.filePath}
+                      <img use:lazyImage={miniPhoto.filePath} alt="" class="mini-card-photo" style="object-position: {miniPhoto.objectPosition};" />
                     {:else}
                       <div class="mini-card-initials" style="background: {avatarColor(sp)};">{getInitials(sp)}</div>
                     {/if}
@@ -553,9 +580,9 @@
               <div class="person-cards">
                 {#each fam.children as child}
                   <button class="mini-card" onclick={() => goto(`/people/${encodeURIComponent(child.xref)}`)}>
-                    {#await loadMiniPhoto(child.xref) then filePath}
-                      {#if filePath}
-                        <img use:lazyImage={filePath} alt="" class="mini-card-photo" />
+                    {#await loadMiniPhoto(child.xref) then miniPhoto}
+                      {#if miniPhoto.filePath}
+                        <img use:lazyImage={miniPhoto.filePath} alt="" class="mini-card-photo" style="object-position: {miniPhoto.objectPosition};" />
                       {:else}
                         <div class="mini-card-initials" style="background: {avatarColor(child)};">{getInitials(child)}</div>
                       {/if}

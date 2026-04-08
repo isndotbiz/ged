@@ -29,6 +29,7 @@
       "matches": [
         "https://www.familysearch.org/*",
         "https://www.ancestry.com/*",
+        "https://*.ancestry.com/*",
         "https://www.findagrave.com/*"
       ],
       "js": ["content/detector.js"]

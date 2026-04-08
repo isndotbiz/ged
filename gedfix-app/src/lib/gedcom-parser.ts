@@ -1,7 +1,7 @@
 import {
   insertPerson, insertFamily, insertEvent,
   insertSource, insertMedia, insertChildLink, clearAll, getDb, rebuildFTS,
-  classifySources, computeValidationStatus, autoCategorizeMediaAfterDedup
+  classifySources, computeValidationStatus, autoCategorizeMediaAfterDedup, autoLinkOrphanMedia
 } from './db';
 
 interface GedLine {
@@ -199,11 +199,23 @@ export const __testables = {
   isLiving,
 };
 
-export async function importGedcom(text: string, onProgress?: (pct: number, msg: string) => void): Promise<void> {
-  onProgress?.(0, 'Clearing database...');
-  await clearAll();
-
+export async function importGedcom(
+  text: string,
+  onProgress?: (pct: number, msg: string) => void,
+  options?: { force?: boolean }
+): Promise<{ linked: number; skipped: number }> {
+  const force = options?.force === true;
   const db = await getDb();
+  const existing = await db.select<{ c: number }[]>(`SELECT COUNT(*) as c FROM person`);
+  const preImportPersonCount = existing[0]?.c ?? 0;
+  if (!force && preImportPersonCount > 0) {
+    throw new Error('DB not empty — pass force:true to overwrite');
+  }
+
+  try {
+    onProgress?.(0, 'Clearing database...');
+    await clearAll();
+
   const pendingMediaLinks: { personXref: string; objeRefs: string[]; inlineMediaIds: number[]; primaryPhotoXref: string }[] = [];
   const mediaFileCache = new Map<string, number>();
 
@@ -546,12 +558,28 @@ export async function importGedcom(text: string, onProgress?: (pct: number, msg:
   await classifySources();
   await computeValidationStatus();
 
-  // Auto-categorize media
-  onProgress?.(99, 'Categorizing media...');
+  // Auto-link orphan media to persons via filename XREF, then categorize
+  onProgress?.(99, 'Linking media...');
+  const linkResult = await autoLinkOrphanMedia();
   await autoCategorizeMediaAfterDedup();
 
   // Run PRAGMA optimize after bulk load
   await db.execute("PRAGMA optimize");
 
-  onProgress?.(100, 'Import complete!');
+    onProgress?.(100, 'Import complete!');
+    return linkResult;
+  } catch (error) {
+    let currentPersonCount = 0;
+    try {
+      const current = await db.select<{ c: number }[]>(`SELECT COUNT(*) as c FROM person`);
+      currentPersonCount = current[0]?.c ?? 0;
+    } catch {
+      // Keep original import error if count check fails.
+    }
+
+    if (preImportPersonCount > 0 && currentPersonCount === 0) {
+      console.error('Import failed — DB was cleared but import did not complete. Reload from backup.');
+    }
+    throw error;
+  }
 }

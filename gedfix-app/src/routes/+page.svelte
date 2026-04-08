@@ -4,12 +4,14 @@
   import { getPerson, getParents, getPrimaryPhoto, getMediaWithPaths, getStats, getDb, isDbEmpty } from '$lib/db';
   import type { Person, GedcomMedia } from '$lib/types';
   import { getThumbUrl, cropFace, saveFaceCrop, clearCache, getFullImageBase64 } from '$lib/photo';
+  import { getCachedFaceCrop, faceCropToObjectPosition } from '$lib/face-crop';
   import { focusTrap } from '$lib/accessibility';
   import LandingPage from '$lib/components/LandingPage.svelte';
 
   interface TreeNode {
     person: Person | null;
     thumbUrl: string;
+    objectPosition: string;
     gen: number;
     slot: number;
   }
@@ -66,7 +68,7 @@
     rootPerson = p;
 
     const max = Math.pow(2, maxGen) - 1;
-    const arr: TreeNode[] = Array.from({ length: max + 1 }, () => ({ person: null, thumbUrl: '', gen: 0, slot: 0 }));
+    const arr: TreeNode[] = Array.from({ length: max + 1 }, () => ({ person: null, thumbUrl: '', objectPosition: '50% 50%', gen: 0, slot: 0 }));
 
     // BFS level-by-level with parallel fetches per level
     type QueueItem = { xref: string; idx: number; gen: number; slot: number };
@@ -79,15 +81,27 @@
         Promise.all(queue.map(q => getParents(q.xref))),
       ]);
 
-      const thumbs = await Promise.all(photos.map(async (photo) => {
-        if (!photo?.filePath) return '';
+      const photoUi = await Promise.all(photos.map(async (photo) => {
+        if (!photo?.filePath) return { thumbUrl: '', objectPosition: '50% 50%' };
         try {
           if (photo.title?.startsWith('crop:')) {
             const parts = photo.title.replace('crop:', '').split(',');
-            return await cropFace(photo.filePath, parseFloat(parts[0]??'50'), parseFloat(parts[1]??'30'), parseFloat(parts[2]??'2.5'), 96);
+            const x = parseFloat(parts[0] ?? '50');
+            const y = parseFloat(parts[1] ?? '30');
+            return {
+              thumbUrl: await cropFace(photo.filePath, x, y, parseFloat(parts[2] ?? '2.5'), 96),
+              objectPosition: `${x}% ${y}%`,
+            };
           }
-          return await getThumbUrl(photo.filePath);
-        } catch { return ''; }
+          const thumbUrl = await getThumbUrl(photo.filePath);
+          const crop = photo.id ? await getCachedFaceCrop(photo.id, thumbUrl || photo.filePath) : null;
+          return {
+            thumbUrl,
+            objectPosition: crop ? faceCropToObjectPosition(crop) : '50% 50%',
+          };
+        } catch {
+          return { thumbUrl: '', objectPosition: '50% 50%' };
+        }
       }));
 
       const nextQueue: QueueItem[] = [];
@@ -95,7 +109,13 @@
         const q = queue[i];
         const person = persons[i];
         if (!person) continue;
-        arr[q.idx] = { person, thumbUrl: thumbs[i], gen: q.gen, slot: q.slot };
+        arr[q.idx] = {
+          person,
+          thumbUrl: photoUi[i]?.thumbUrl ?? '',
+          objectPosition: photoUi[i]?.objectPosition ?? '50% 50%',
+          gen: q.gen,
+          slot: q.slot
+        };
         if (q.gen + 1 < maxGen) {
           const parents = parentsList[i];
           if (parents.father) nextQueue.push({ xref: parents.father.xref, idx: q.idx * 2, gen: q.gen + 1, slot: q.slot * 2 });
@@ -260,7 +280,7 @@
     const g: TreeNode[][] = [];
     for (let i = 0; i < maxGen; i++) {
       const s = Math.pow(2, i), e = Math.pow(2, i + 1), r: TreeNode[] = [];
-      for (let j = s; j < e; j++) r.push(nodes[j] ?? { person: null, thumbUrl: '', gen: i, slot: j - s });
+      for (let j = s; j < e; j++) r.push(nodes[j] ?? { person: null, thumbUrl: '', objectPosition: '50% 50%', gen: i, slot: j - s });
       g.push(r);
     }
     return g;
@@ -380,7 +400,7 @@
                       src={getImg(node)}
                       alt=""
                       class="w-10 h-10 rounded-full object-cover border-2 group-hover:ring-2 group-hover:ring-amber-500/60"
-                      style="border-color: {p.sex==='F' ? 'var(--card-female-border-hover)' : p.sex==='M' ? 'var(--card-male-border-hover)' : 'var(--card-unknown-border)'};"
+                      style="border-color: {p.sex==='F' ? 'var(--card-female-border-hover)' : p.sex==='M' ? 'var(--card-male-border-hover)' : 'var(--card-unknown-border)'}; object-position: {node.objectPosition};"
                       onerror={(e) => { (e.target as HTMLImageElement).src = personSvg(p); }}
                     />
                   </button>

@@ -80,9 +80,9 @@ describe('gedcom-parser import defaults', () => {
       clearAll: vi.fn(async () => {}),
       getDb: vi.fn(async () => ({ select, execute })),
       rebuildFTS: vi.fn(async () => {}),
-      linkMediaToPerson: vi.fn(async () => {}),
       classifySources: vi.fn(async () => 0),
       computeValidationStatus: vi.fn(async () => {}),
+      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
       autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
     }));
 
@@ -118,6 +118,102 @@ describe('gedcom-parser import defaults', () => {
       filePath: 'photos/john.jpg',
     }));
   });
+
+  it('throws on non-empty DB unless force:true is provided', async () => {
+    vi.resetModules();
+
+    const select = vi.fn(async (query: string) => {
+      if (query.includes('SELECT COUNT(*) as c FROM person')) return [{ c: 1 }];
+      return [];
+    });
+    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
+
+    vi.doMock('$lib/db', () => ({
+      insertPerson: vi.fn(async () => {}),
+      insertFamily: vi.fn(async () => {}),
+      insertEvent: vi.fn(async () => {}),
+      insertSource: vi.fn(async () => {}),
+      insertMedia: vi.fn(async () => {}),
+      insertChildLink: vi.fn(async () => {}),
+      clearAll: vi.fn(async () => {}),
+      getDb: vi.fn(async () => ({ select, execute })),
+      rebuildFTS: vi.fn(async () => {}),
+      classifySources: vi.fn(async () => 0),
+      computeValidationStatus: vi.fn(async () => {}),
+      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+    }));
+
+    const { importGedcom } = await import('$lib/gedcom-parser');
+
+    await expect(importGedcom('0 HEAD\n0 TRLR')).rejects.toThrow('DB not empty — pass force:true to overwrite');
+    await expect(importGedcom('0 HEAD\n0 TRLR', undefined, { force: true })).resolves.toMatchObject({ linked: 0, skipped: 0 });
+  });
+
+  it('rethrows import failures so caller receives the error message', async () => {
+    vi.resetModules();
+
+    let insertPersonCalls = 0;
+    const insertPerson = vi.fn(async () => {
+      insertPersonCalls += 1;
+      if (insertPersonCalls === 2) {
+        throw new Error('insert person failure on second call');
+      }
+    });
+
+    let personCountReads = 0;
+    const select = vi.fn(async (query: string) => {
+      if (query.includes('SELECT COUNT(*) as c FROM person')) {
+        personCountReads += 1;
+        return personCountReads === 1 ? [{ c: 2 }] : [{ c: 0 }];
+      }
+      if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return [];
+      if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return [];
+      if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [];
+      if (query.includes('SELECT id FROM media WHERE xref = $1')) return [];
+      return [];
+    });
+    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
+
+    vi.doMock('$lib/db', () => ({
+      insertPerson,
+      insertFamily: vi.fn(async () => {}),
+      insertEvent: vi.fn(async () => {}),
+      insertSource: vi.fn(async () => {}),
+      insertMedia: vi.fn(async () => {}),
+      insertChildLink: vi.fn(async () => {}),
+      clearAll: vi.fn(async () => {}),
+      getDb: vi.fn(async () => ({ select, execute })),
+      rebuildFTS: vi.fn(async () => {}),
+      classifySources: vi.fn(async () => 0),
+      computeValidationStatus: vi.fn(async () => {}),
+      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+    }));
+
+    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const { importGedcom } = await import('$lib/gedcom-parser');
+    const ged = `0 HEAD
+1 GEDC
+2 VERS 5.5.1
+0 @I1@ INDI
+1 NAME First /Person/
+0 @I2@ INDI
+1 NAME Second /Person/
+0 TRLR`;
+
+    let caught: unknown;
+    try {
+      await importGedcom(ged, undefined, { force: true });
+    } catch (error) {
+      caught = error;
+    }
+
+    expect(caught).toBeInstanceOf(Error);
+    expect((caught as Error).message).toContain('insert person failure on second call');
+    expect(errorSpy).toHaveBeenCalledWith('Import failed — DB was cleared but import did not complete. Reload from backup.');
+    errorSpy.mockRestore();
+  });
 });
 
 describe('gedcom-parser citation extraction', () => {
@@ -147,6 +243,7 @@ describe('gedcom-parser citation extraction', () => {
       rebuildFTS: vi.fn(async () => {}),
       classifySources: vi.fn(async () => 0),
       computeValidationStatus: vi.fn(async () => {}),
+      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
       autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
     }));
     return { execute, insertPerson, insertFamily, insertEvent, insertSource, insertMedia };
@@ -200,7 +297,7 @@ describe('gedcom-parser citation extraction', () => {
 2 DATE CIRCA 1850
 1 EVEN
 2 DATE
-0 TRLR`)).resolves.toBeUndefined();
+0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
 
     expect(insertPerson).toHaveBeenCalledTimes(1);
     expect(insertEvent).toHaveBeenCalled();
@@ -259,7 +356,7 @@ describe('gedcom-parser citation extraction', () => {
 1 NAME First /Person/
 0 @I1@ INDI
 1 NAME Second /Person/
-0 TRLR`)).resolves.toBeUndefined();
+0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
     expect(insertPerson).toHaveBeenCalledTimes(2);
   });
 
@@ -270,7 +367,7 @@ describe('gedcom-parser citation extraction', () => {
     await expect(importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
-0 TRLR`)).resolves.toBeUndefined();
+0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
     expect(insertPerson).not.toHaveBeenCalled();
     expect(insertFamily).not.toHaveBeenCalled();
     expect(insertSource).not.toHaveBeenCalled();

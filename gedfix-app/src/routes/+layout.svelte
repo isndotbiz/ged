@@ -283,16 +283,16 @@
       }
 
       await createAutoBackup();
-      await importGedcom(text, (pct, msg) => {
+      const linkResult = await importGedcom(text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-      });
+      }, { force: true });
 
       const stats = await getStats();
       appStats.set(stats);
       showWebWelcome = false;
       $isImporting = false;
-      $importMessage = '';
+      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
     } catch (e) {
       console.error('Import error:', e);
       $importMessage = `Import error: ${e}`;
@@ -309,14 +309,14 @@
     $importMessage = 'Reading file...';
     try {
       await createAutoBackup();
-      await importGedcom(result.text, (pct, msg) => {
+      const linkResult = await importGedcom(result.text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-      });
+      }, { force: true });
       const stats = await getStats();
       appStats.set(stats);
       showWebWelcome = false;
-      $importMessage = '';
+      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
     } catch (e) {
       console.error('Import error:', e);
       webWelcomeError = `Import failed: ${e}`;
@@ -366,12 +366,13 @@
     $importMessage = t('nav.importingRecords');
     try {
       await createAutoBackup();
-      await importGedcom(await file.text(), (pct, msg) => {
+      const linkResult = await importGedcom(await file.text(), (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-      });
+      }, { force: true });
       appStats.set(await getStats());
       showWebWelcome = false;
+      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
     } catch (e) {
       webWelcomeError = `${e}`;
     } finally {

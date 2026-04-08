@@ -77,12 +77,13 @@
     $importMessage = 'Reading file...';
 
     try {
-      await importGedcom(result.text, (pct, msg) => {
+      const linkResult = await importGedcom(result.text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-      });
+      }, { force: true });
       const stats = await getStats();
       appStats.set(stats);
+      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
     } catch (e) {
       console.error('Import error:', e);
       $importMessage = `Error: ${e}`;
@@ -145,6 +146,28 @@
       exportMessage = `Export error: ${e}`;
     }
     exportBusy = false;
+  }
+
+  async function exportGedcomQuickDownload() {
+    exportBusy = true;
+    exportMessage = '';
+    try {
+      const gedcom = await exportGedcom();
+      const date = new Date().toISOString().slice(0, 10);
+      const filename = `gedfix-export-${date}.ged`;
+      const blob = new Blob([gedcom], { type: 'text/plain' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      exportMessage = `Saved ${filename}`;
+    } catch (e) {
+      exportMessage = `Export error: ${e}`;
+    } finally {
+      exportBusy = false;
+    }
   }
 
   async function exportJson() {
@@ -329,6 +352,16 @@
         <div class="text-xs text-ink-muted mt-1">
           {exportPreview.personCount} people, {exportPreview.familyCount} families, {exportPreview.eventCount} events, {exportPreview.sourceCount} sources, {exportPreview.mediaCount} media, {exportPreview.placeCount} places
         </div>
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">{t('settings.exportGedcom')}</div>
+          <div class="text-xs text-ink-muted">Download GEDCOM 5.5.1</div>
+        </div>
+        <button onclick={exportGedcomQuickDownload} disabled={exportBusy} class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors">
+          {exportBusy ? t('common.exporting') : t('settings.exportGedcom')}
+        </button>
       </div>
 
       <div class="flex items-center justify-between px-5 py-4">

@@ -2,6 +2,7 @@
   import { t } from '$lib/i18n';
   import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto, getSpouseFamilies, getChildren, getEvents } from '$lib/db';
   import type { Person, Family, GedcomEvent, GedcomMedia } from '$lib/types';
+  import { getCachedFaceCrop, faceCropToObjectPosition } from '$lib/face-crop';
   import { isTauri } from '$lib/platform';
 
   let _convertFileSrc: ((path: string) => string) | null = null;
@@ -49,6 +50,7 @@
     person: Person | null;
     photoPath: string;
     thumbPath: string;
+    objectPosition: string;
   }
 
   let persons = $state.raw<Person[]>([]);
@@ -86,7 +88,7 @@
     selectedMedia = [];
 
     const maxSlots = Math.pow(2, maxGen) - 1;
-    const arr: AncestorRow[] = new Array(maxSlots + 1).fill(null).map(() => ({ person: null, photoPath: '', thumbPath: '' }));
+    const arr: AncestorRow[] = new Array(maxSlots + 1).fill(null).map(() => ({ person: null, photoPath: '', thumbPath: '', objectPosition: '50% 50%' }));
 
     async function fill(xref: string, idx: number) {
       if (idx > maxSlots) return;
@@ -95,7 +97,17 @@
       const photo = await getPrimaryPhoto(p.xref);
       const photoPath = photo?.filePath ?? '';
       const thumbPath = photoPath ? await getThumb(photoPath) : '';
-      arr[idx] = { person: p, photoPath, thumbPath };
+      let objectPosition = '50% 50%';
+      if (photo?.title?.startsWith('crop:')) {
+        const parts = photo.title.replace('crop:', '').split(',');
+        const x = parseFloat(parts[0] ?? '50');
+        const y = parseFloat(parts[1] ?? '30');
+        objectPosition = `${x}% ${y}%`;
+      } else if (photo?.id && photoPath) {
+        const crop = await getCachedFaceCrop(photo.id, convertFileSrc(thumbPath || photoPath));
+        if (crop) objectPosition = faceCropToObjectPosition(crop);
+      }
+      arr[idx] = { person: p, photoPath, thumbPath, objectPosition };
       const parents = await getParents(p.xref);
       if (parents.father) await fill(parents.father.xref, idx * 2);
       if (parents.mother) await fill(parents.mother.xref, idx * 2 + 1);
@@ -244,7 +256,7 @@
       for (let i = start; i < end; i++) {
         row.push(ancestors[i] ?? { person: null, photoPath: '', thumbPath: '' });
       }
-      gens.push(row);
+      gens.push(row.map((slot) => slot ?? { person: null, photoPath: '', thumbPath: '', objectPosition: '50% 50%' }));
     }
     return gens;
   }
@@ -508,6 +520,7 @@
                           src={photoSrc(slot.thumbPath || slot.photoPath)}
                           alt=""
                           class="w-11 h-11 rounded-full face-photo shrink-0 {isFemale(p) ? 'female-ring' : 'male-ring'}"
+                          style="object-position: {slot.objectPosition};"
                           onerror={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
                         />
                       {:else}
@@ -561,6 +574,7 @@
                             src={photoSrc(slot.thumbPath || slot.photoPath)}
                             alt=""
                             class="w-12 h-12 rounded-full face-photo mb-1 {isFemale(p) ? 'female-ring' : 'male-ring'}"
+                            style="object-position: {slot.objectPosition};"
                             onerror={(e) => { (e.target as HTMLImageElement).style.display='none'; }}
                           />
                         {:else}

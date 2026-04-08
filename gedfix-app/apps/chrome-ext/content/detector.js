@@ -92,6 +92,24 @@ function extractFindAGrave() {
   };
 }
 
+function extractAncestry() {
+  const name = cleanText(document.querySelector('.userCardTitle, h1.name'));
+  const birthText = cleanText(document.querySelector('[data-testid="birth"] .factItemDate, .birth-date'));
+  const deathText = cleanText(document.querySelector('[data-testid="death"] .factItemDate, .death-date'));
+  const parsed = parseNameFromText(name);
+
+  return {
+    source: 'Ancestry',
+    url: location.href,
+    name,
+    given: parsed.given,
+    surname: parsed.surname,
+    birthDate: parseDateFromText(birthText),
+    deathDate: parseDateFromText(deathText),
+    recordType: 'Tree Person',
+  };
+}
+
 function detectAndExtract() {
   const host = location.hostname;
   let record = null;
@@ -103,6 +121,10 @@ function detectAndExtract() {
 
   if (host.includes('findagrave.com') && location.pathname.startsWith('/memorial/')) {
     record = extractFindAGrave();
+  }
+
+  if (host.includes('ancestry.com') && location.pathname.includes('/person/')) {
+    record = extractAncestry();
   }
 
   if (!record) return;

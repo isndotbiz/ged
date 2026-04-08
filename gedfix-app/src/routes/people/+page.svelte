@@ -4,6 +4,7 @@
   import { runResearchAgent } from '$lib/research-agent';
   import { findSources } from '$lib/source-finder';
   import { exportSubsetGedcom } from '$lib/gedcom-exporter';
+  import { getCachedFaceCrop, faceCropToObjectPosition } from '$lib/face-crop';
   import type { Person, GedcomEvent, Family, GedcomMedia } from '$lib/types';
   import { isTauri } from '$lib/platform';
   import { lazyImage } from '$lib/lazy-image';
@@ -35,6 +36,7 @@
   let selectedParents = $state<{ father: Person | null; mother: Person | null }>({ father: null, mother: null });
   let selectedMedia = $state.raw<GedcomMedia[]>([]);
   let selectedPrimaryPhoto = $state<GedcomMedia | null>(null);
+  let selectedPrimaryPhotoPosition = $state('50% 50%');
   let expandedMedia = $state<GedcomMedia | null>(null);
   let selectedXrefs = $state.raw<Set<string>>(new Set());
   let lastCheckedIndex = $state<number | null>(null);
@@ -153,7 +155,7 @@
 
   function onSearchInput() {
     clearTimeout(searchTimeout);
-    searchTimeout = setTimeout(load, 150);
+    searchTimeout = setTimeout(load, 200);
   }
 
   async function selectPerson(p: Person) {
@@ -170,6 +172,16 @@
     selectedParents = parents;
     selectedMedia = media;
     selectedPrimaryPhoto = photo;
+    selectedPrimaryPhotoPosition = '50% 50%';
+    if (photo?.filePath) {
+      const fromTitle = cropTitleObjectPosition(photo.title);
+      if (fromTitle) {
+        selectedPrimaryPhotoPosition = fromTitle;
+      } else if (photo.id) {
+        const crop = await getCachedFaceCrop(photo.id, convertFileSrc(photo.filePath));
+        if (crop) selectedPrimaryPhotoPosition = faceCropToObjectPosition(crop);
+      }
+    }
     expandedMedia = null;
 
     // Load family details
@@ -209,6 +221,15 @@
     if (/\.html?$/i.test(path)) return 'HTM';
     if (/\.docx?$/i.test(path)) return 'DOC';
     return 'FILE';
+  }
+
+  function cropTitleObjectPosition(title: string | undefined): string | null {
+    if (!title?.startsWith('crop:')) return null;
+    const parts = title.replace('crop:', '').split(',');
+    const x = parseFloat(parts[0] ?? '50');
+    const y = parseFloat(parts[1] ?? '30');
+    if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+    return `${x}% ${y}%`;
   }
 
   const eventLabels: Record<string, string> = {
@@ -361,6 +382,7 @@
               src={convertFileSrc(selectedPrimaryPhoto.filePath)}
               alt={selected.givenName}
               class="w-24 h-24 rounded-2xl object-cover shadow-md shrink-0"
+              style="object-position: {selectedPrimaryPhotoPosition};"
               onerror={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
             />
           {:else}

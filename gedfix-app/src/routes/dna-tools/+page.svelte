@@ -1,6 +1,6 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { predictRelationships, allRelationships, expectedCMForRelationship } from '$lib/dna-calculator';
+  import { predictRelationships, allRelationships, expectedCMForRelationship } from '@gedfix/core';
   import { getPersons, getDb } from '$lib/db';
   import type { DNARelationshipPrediction, Person } from '$lib/types';
 
@@ -36,6 +36,7 @@
   let personB = $state<Person | null>(null);
   let relResult = $state('');
   let relPath = $state<string[]>([]);
+  let dnaEstimate = $state<{ label: string; averageCM: number; minCM: number; maxCM: number } | null>(null);
   let relLoading = $state(false);
   let showDropdownA = $state(false);
   let showDropdownB = $state(false);
@@ -76,6 +77,7 @@
     else { personB = null; searchB = ''; suggestionsB = []; }
     relResult = '';
     relPath = [];
+    dnaEstimate = null;
   }
 
   // --- BFS Ancestor Map: xref -> generation depth ---
@@ -143,6 +145,31 @@
     return ancestors;
   }
 
+  function ordinalRelationship(n: number): string {
+    if (n === 1) return '1st';
+    if (n === 2) return '2nd';
+    if (n === 3) return '3rd';
+    return `${n}th`;
+  }
+
+  function relationshipLabelForDNA(genA: number, genB: number): string | null {
+    if ((genA === 0 && genB === 1) || (genA === 1 && genB === 0)) return 'Parent/Child';
+    if (genA === 1 && genB === 1) return 'Full Sibling';
+    if ((genA === 0 && genB === 2) || (genA === 2 && genB === 0)) return 'Grandparent/Grandchild';
+    if ((genA === 1 && genB === 2) || (genA === 2 && genB === 1)) return 'Aunt/Uncle';
+    if ((genA === 0 && genB === 3) || (genA === 3 && genB === 0)) return 'Great-Grandparent';
+    if ((genA === 0 && genB === 4) || (genA === 4 && genB === 0)) return 'Great-Great-Grandparent';
+
+    const minGen = Math.min(genA, genB);
+    const removed = Math.abs(genA - genB);
+    if (minGen >= 2) {
+      const cousinDegree = minGen - 1;
+      if (removed === 0) return `${ordinalRelationship(cousinDegree)} Cousin`;
+      if (removed === 1) return `${ordinalRelationship(cousinDegree)} Cousin Once Removed`;
+    }
+    return null;
+  }
+
   function describeRelationship(genA: number, genB: number): string {
     // genA = generations from person A to common ancestor
     // genB = generations from person B to common ancestor
@@ -164,14 +191,7 @@
     const cousinDegree = minGen - 1;
     const removed = Math.abs(genA - genB);
 
-    const ordinal = (n: number) => {
-      if (n === 1) return '1st';
-      if (n === 2) return '2nd';
-      if (n === 3) return '3rd';
-      return `${n}th`;
-    };
-
-    let label = `${ordinal(cousinDegree)} cousin`;
+    let label = `${ordinalRelationship(cousinDegree)} cousin`;
     if (removed > 0) {
       label += ` ${removed} time${removed > 1 ? 's' : ''} removed`;
     }
@@ -183,6 +203,7 @@
     relLoading = true;
     relResult = '';
     relPath = [];
+    dnaEstimate = null;
 
     try {
       const graph = await buildFamilyGraph();
@@ -211,6 +232,11 @@
       } else {
         const relDesc = describeRelationship(bestCommon.genA, bestCommon.genB);
         relResult = `${personDisplay(personA)} is ${relDesc} ${personDisplay(personB)}`;
+        const dnaLabel = relationshipLabelForDNA(bestCommon.genA, bestCommon.genB);
+        const expected = dnaLabel ? expectedCMForRelationship(dnaLabel) : undefined;
+        dnaEstimate = expected
+          ? { label: expected.label, averageCM: expected.averageCM, minCM: expected.minCM, maxCM: expected.maxCM }
+          : null;
       }
     } catch (err) {
       relResult = `Error calculating relationship: ${err instanceof Error ? err.message : String(err)}`;
@@ -221,7 +247,7 @@
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">
-  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('nav.dnaTools')}</h1>
+  <h1 class="text-2xl font-bold tracking-tight" style="font-family: var(--font-serif); color: var(--ink);">{t('dna.title')}</h1>
   <p class="text-sm text-ink-muted mt-1 mb-8">Relationship prediction using Shared cM Project v4 data</p>
 
   <!-- cM to Relationship -->
@@ -316,7 +342,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
       <!-- Person A -->
       <div class="relative">
-        <label for="relationship-person-a" class="block text-xs font-medium text-ink-muted mb-1">{t('relationship.personA')}</label>
+        <label for="relationship-person-a" class="block text-xs font-medium text-ink-muted mb-1">{t('dna.selectPerson1')}</label>
         {#if personA}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personA)}</span>
@@ -352,7 +378,7 @@
 
       <!-- Person B -->
       <div class="relative">
-        <label for="relationship-person-b" class="block text-xs font-medium text-ink-muted mb-1">{t('relationship.personB')}</label>
+        <label for="relationship-person-b" class="block text-xs font-medium text-ink-muted mb-1">{t('dna.selectPerson2')}</label>
         {#if personB}
           <div class="flex items-center gap-2 px-3 py-2 text-sm border border-green-200 bg-green-50 rounded-lg">
             <span class="flex-1 text-green-800 font-medium truncate">{personDisplay(personB)}</span>
@@ -399,6 +425,15 @@
       <div class="mt-4 p-4 rounded-lg border {relResult.includes('No common ancestor') || relResult.includes('Error') ? 'bg-yellow-50 border-yellow-200' : 'bg-blue-50 border-blue-200'}">
         <p class="text-sm font-medium {relResult.includes('No common ancestor') || relResult.includes('Error') ? 'text-yellow-800' : 'text-blue-900'}">
           {relResult}
+        </p>
+      </div>
+    {/if}
+
+    {#if dnaEstimate}
+      <div class="mt-3 p-4 rounded-lg border bg-emerald-50 border-emerald-200">
+        <p class="text-sm font-medium text-emerald-900">{t('dna.result')}: {dnaEstimate.label}</p>
+        <p class="text-xs text-emerald-800 mt-1">
+          {dnaEstimate.minCM}–{dnaEstimate.maxCM} cM (avg {dnaEstimate.averageCM} cM)
         </p>
       </div>
     {/if}

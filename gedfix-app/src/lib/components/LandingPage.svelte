@@ -24,11 +24,12 @@
     $importProgress = 0;
     $importMessage = t('landing.importing');
     try {
-      await importGedcom(text, (pct, msg) => {
+      const linkResult = await importGedcom(text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-      });
+      }, { force: true });
       appStats.set(await getStats());
+      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
       onImported();
     } finally {
       $isImporting = false;
