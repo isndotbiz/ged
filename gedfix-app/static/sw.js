@@ -1,6 +1,9 @@
-const CACHE_NAME = 'gedfix-v1';
+const CACHE_NAME = 'gedfix-v2';
 const STATIC_ASSETS = [
   '/',
+  '/people',
+  '/pedigree',
+  '/offline.html',
   '/manifest.json',
   '/favicon.png',
 ];
@@ -36,7 +39,7 @@ self.addEventListener('fetch', (event) => {
             caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
             return res;
           })
-          .catch(() => cached || caches.match('/'))
+          .catch(() => cached || caches.match('/offline.html'))
       )
     );
     return;
@@ -63,6 +66,6 @@ self.addEventListener('fetch', (event) => {
         caches.open(CACHE_NAME).then((cache) => cache.put(req, copy));
         return res;
       })
-      .catch(() => caches.match(req))
+      .catch(() => caches.match(req).then((cached) => cached || caches.match('/offline.html')))
   );
 });

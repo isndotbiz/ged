@@ -177,6 +177,25 @@
     drawFanChart();
   }
 
+  function safeFileName(value: string): string {
+    return value.replace(/[^a-z0-9]+/gi, '-').replace(/^-+|-+$/g, '').toLowerCase() || 'unknown';
+  }
+
+  function downloadPng() {
+    if (!canvasEl || !rootPerson) return;
+    const date = new Date().toISOString().slice(0, 10);
+    const rootName = safeFileName(nameOf(rootPerson));
+    canvasEl.toBlob((blob) => {
+      if (!blob) return;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gedfix-fan-chart-${rootName}-${date}.png`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }, 'image/png');
+  }
+
   function clickChart(e: MouseEvent) {
     if (!canvasEl || !rootPerson) return;
     const rect = canvasEl.getBoundingClientRect();
@@ -237,7 +256,10 @@
     <h1 class="dossier-header" style="margin-bottom: 0.5rem;">{t('fan.title')}</h1>
     <p class="text-sm" style="color: var(--ink-muted);">{t('fan.subtitle')}</p>
     </div>
-    <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label={t('fan.printChart')}>Print</button>
+    <div class="flex items-center gap-2">
+      <button class="btn-secondary px-3 py-2" onclick={downloadPng} aria-label={t('fanChart.downloadPng')}>{t('fanChart.downloadPng')}</button>
+      <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label={t('fan.printChart')}>Print</button>
+    </div>
   </div>
 
   <div class="arch-card p-4 mb-4 no-print">

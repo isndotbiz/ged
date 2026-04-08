@@ -14,7 +14,7 @@
 
   let people = $state.raw<Person[]>([]);
   let selectedXref = $state('');
-  let maxDepth = $state(4);
+  let maxGenerations = $state(5);
   let loading = $state(false);
   let root = $state<DescNode | null>(null);
 
@@ -25,7 +25,7 @@
 
   async function buildNode(person: Person, depth: number): Promise<DescNode> {
     const node: DescNode = { person, spouseName: '', children: [], collapsed: false, depth };
-    if (depth >= maxDepth) return node;
+    if (depth >= maxGenerations) return node;
 
     const fams = await getSpouseFamilies(person.xref);
     const children: DescNode[] = [];
@@ -74,6 +74,10 @@
   });
 
   $effect(() => {
+    maxGenerations = Math.min(10, Math.max(1, Number(maxGenerations) || 1));
+  });
+
+  $effect(() => {
     if (selectedXref) loadTree();
   });
 </script>
@@ -89,12 +93,16 @@
       </select>
     </div>
     <div>
-      <label class="text-xs text-ink-muted" for="depth">{t('descendants.depth')}</label>
-      <select id="depth" class="arch-input" bind:value={maxDepth} aria-label={t('common.filter')}>
-        {#each Array.from({ length: 10 }, (_, i) => i + 1) as d}
-          <option value={d}>{d}</option>
-        {/each}
-      </select>
+      <label class="text-xs text-ink-muted" for="max-generations">{t('descendants.maxGenerations')}</label>
+      <input
+        id="max-generations"
+        type="number"
+        min="1"
+        max="10"
+        class="arch-input"
+        bind:value={maxGenerations}
+        aria-label={t('descendants.maxGenerations')}
+      />
     </div>
     <button class="btn-secondary px-3 py-2" onclick={() => window.print()} aria-label={t('descendants.printChart')}>Print</button>
   </div>

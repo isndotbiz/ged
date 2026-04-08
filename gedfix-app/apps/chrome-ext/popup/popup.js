@@ -10,8 +10,10 @@ const fileInput = document.getElementById('file');
 
 const recentKey = 'gedfix_ext_recent_people';
 const dbKey = 'gedfix_ext_popup_db';
+const BRIDGE_URL = 'http://127.0.0.1:19876';
 
 let db;
+let desktopMode = false;
 
 async function initDb() {
   const SQL = await initSqlJs({ locateFile: (f) => `https://sql.js.org/dist/${f}` });
@@ -34,6 +36,13 @@ function updateStats() {
   const people = p[0]?.values?.[0]?.[0] || 0;
   const families = f[0]?.values?.[0]?.[0] || 0;
   statsEl.innerHTML = `<strong>Tree stats</strong><div class="muted">People: ${people} • Families: ${families}</div>`;
+}
+
+function updateDesktopStats(stats = {}) {
+  const people = Number(stats.persons || stats.personCount || 0);
+  const families = Number(stats.families || stats.familyCount || 0);
+  const sources = Number(stats.sources || stats.sourceCount || 0);
+  statsEl.innerHTML = `<strong>Desktop tree stats</strong><div class="muted">People: ${people} • Families: ${families} • Sources: ${sources}</div>`;
 }
 
 function updateRecent() {
@@ -86,6 +95,7 @@ openFull.onclick = async () => {
 
 importBtn.onclick = () => fileInput.click();
 fileInput.onchange = async () => {
+  if (desktopMode) return;
   const file = fileInput.files?.[0];
   if (!file) return;
   const text = await file.text();
@@ -108,8 +118,67 @@ fileInput.onchange = async () => {
   updateStats();
 };
 
+async function checkBridge() {
+  try {
+    const status = await chrome.runtime.sendMessage({ type: 'gedfix:check-bridge' });
+    if (status?.desktopAvailable) return true;
+  } catch {
+    // ignore and fallback to direct ping
+  }
+  try {
+    const ping = await fetch(`${BRIDGE_URL}/ping`, { signal: AbortSignal.timeout(1200) });
+    if (!ping.ok) return false;
+    const data = await ping.json();
+    return data?.app === 'gedfix';
+  } catch {
+    return false;
+  }
+}
+
+async function fetchBridgeStats() {
+  try {
+    const response = await chrome.runtime.sendMessage({ type: 'gedfix:get-bridge-stats' });
+    if (response?.ok && response?.stats) return response.stats;
+  } catch {
+    // ignore
+  }
+  try {
+    const resp = await fetch(`${BRIDGE_URL}/stats`, { signal: AbortSignal.timeout(1200) });
+    if (!resp.ok) return null;
+    return await resp.json();
+  } catch {
+    return null;
+  }
+}
+
+function setDesktopMode(enabled) {
+  desktopMode = enabled;
+  if (enabled) {
+    importBtn.textContent = 'Open in GedFix';
+    importBtn.onclick = async () => {
+      await chrome.tabs.create({ url: 'http://localhost:5173' });
+    };
+    fileInput.value = '';
+  } else {
+    importBtn.textContent = 'Import GEDCOM';
+    importBtn.onclick = () => fileInput.click();
+  }
+}
+
 (async () => {
   await initDb();
-  updateStats();
+  const bridgeAvailable = await checkBridge();
+  if (bridgeAvailable) {
+    setDesktopMode(true);
+    const stats = await fetchBridgeStats();
+    if (stats) {
+      updateDesktopStats(stats);
+    } else {
+      updateStats();
+    }
+  } else {
+    setDesktopMode(false);
+    updateStats();
+  }
   updateRecent();
 })();

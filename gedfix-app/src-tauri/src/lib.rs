@@ -1,7 +1,20 @@
 use std::path::PathBuf;
+use std::sync::{Mutex, OnceLock};
 use tauri::{Emitter, Manager, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
+
+#[derive(Clone, Serialize, Default)]
+struct BridgeStats {
+    persons: u64,
+    families: u64,
+    sources: u64,
+}
+
+fn bridge_stats_store() -> &'static Mutex<BridgeStats> {
+    static STORE: OnceLock<Mutex<BridgeStats>> = OnceLock::new();
+    STORE.get_or_init(|| Mutex::new(BridgeStats::default()))
+}
 
 // ============================================================
 // Thumbnail generation with custom crop support
@@ -462,6 +475,16 @@ async fn set_badge_count(_app: tauri::AppHandle, count: u32) -> Result<(), Strin
     Ok(())
 }
 
+#[tauri::command]
+async fn set_bridge_stats(persons: u64, families: u64, sources: u64) -> Result<(), String> {
+    if let Ok(mut stats) = bridge_stats_store().lock() {
+        stats.persons = persons;
+        stats.families = families;
+        stats.sources = sources;
+    }
+    Ok(())
+}
+
 // ============================================================
 // Menu bar (desktop only)
 // ============================================================
@@ -485,7 +508,7 @@ fn build_menu(app: &tauri::AppHandle) -> Result<Menu<tauri::Wry>, tauri::Error> 
         &PredefinedMenuItem::paste(app, None)?,
         &PredefinedMenuItem::select_all(app, None)?,
         &PredefinedMenuItem::separator(app)?,
-        &MenuItem::with_id(app, "find", "Find Person…", true, Some("CmdOrCtrl+K"))?,
+        &MenuItem::with_id(app, "quick-search", "Quick Search", true, Some("CmdOrCtrl+K"))?,
     ])?;
 
     let view_menu = Submenu::with_items(app, "View", true, &[
@@ -552,6 +575,17 @@ fn start_extension_bridge(app_handle: tauri::AppHandle) {
                         .with_header(cors).with_header(ct);
                     let _ = request.respond(resp);
                 }
+                "/stats" => {
+                    let stats = bridge_stats_store().lock().map(|s| s.clone()).unwrap_or_default();
+                    let body = serde_json::json!({
+                        "persons": stats.persons,
+                        "families": stats.families,
+                        "sources": stats.sources
+                    }).to_string();
+                    let resp = tiny_http::Response::from_string(body)
+                        .with_header(cors).with_header(ct);
+                    let _ = request.respond(resp);
+                }
                 _ => {
                     let resp = tiny_http::Response::from_string(r#"{"error":"not found"}"#)
                         .with_status_code(404)
@@ -582,7 +616,11 @@ pub fn run() {
                 let menu = build_menu(app.handle())?;
                 app.set_menu(menu)?;
                 app.on_menu_event(|app, event| {
-                    let _ = app.emit("menu-action", event.id().0.clone());
+                    let action_id = event.id().0.clone();
+                    if action_id == "quick-search" {
+                        let _ = app.emit("quick-search", ());
+                    }
+                    let _ = app.emit("menu-action", action_id);
                 });
                 // Start Chrome extension bridge
                 start_extension_bridge(app.handle().clone());
@@ -600,6 +638,7 @@ pub fn run() {
             write_exif_metadata,
             organize_media_folders,
             set_badge_count,
+            set_bridge_stats,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

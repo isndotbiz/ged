@@ -1,6 +1,16 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { getDb, getAIChatHistory, insertAIChatMessage, clearAIChatHistory, getPersons, getEvents } from '$lib/db';
+  import {
+    getDb,
+    getAIChatHistory,
+    insertAIChatMessage,
+    clearAIChatHistory,
+    getPersons,
+    getEvents,
+    getParents,
+    getSpouseFamilies,
+    getChildren,
+  } from '$lib/db';
   import type { AIChatMessage, Person, GedcomEvent } from '$lib/types';
 
   // --- Research modes with rich system prompts ---
@@ -56,6 +66,9 @@
   let personResults = $state<Person[]>([]);
   let selectedPerson = $state<Person | null>(null);
   let selectedPersonEvents = $state<GedcomEvent[]>([]);
+  let selectedPersonParents = $state<string[]>([]);
+  let selectedPersonChildren = $state<string[]>([]);
+  let selectedPersonSources = $state<string[]>([]);
   let showPersonDropdown = $state(false);
 
   // Provider quick-switch
@@ -126,6 +139,34 @@
   async function selectPerson(person: Person) {
     selectedPerson = person;
     selectedPersonEvents = await getEvents(person.xref);
+    const parents = await getParents(person.xref);
+    selectedPersonParents = [parents.father, parents.mother]
+      .filter((p): p is Person => Boolean(p))
+      .map((p) => `${p.givenName} ${p.surname}`.trim() || p.xref);
+
+    const families = await getSpouseFamilies(person.xref);
+    const childNameSet = new Set<string>();
+    for (const fam of families) {
+      const kids = await getChildren(fam.xref);
+      for (const child of kids) {
+        childNameSet.add(`${child.givenName} ${child.surname}`.trim() || child.xref);
+      }
+    }
+    selectedPersonChildren = Array.from(childNameSet);
+
+    const db = await getDb();
+    const sourceRows = await db.select<{ title: string }[]>(
+      `SELECT DISTINCT s.title
+       FROM citation c
+       JOIN source s ON s.xref = c.sourceXref
+       WHERE c.personXref = $1
+       ORDER BY s.title`,
+      [person.xref]
+    );
+    selectedPersonSources = sourceRows
+      .map((row) => row.title?.trim())
+      .filter((title): title is string => Boolean(title));
+
     personSearch = '';
     showPersonDropdown = false;
   }
@@ -133,28 +174,32 @@
   function clearPersonContext() {
     selectedPerson = null;
     selectedPersonEvents = [];
+    selectedPersonParents = [];
+    selectedPersonChildren = [];
+    selectedPersonSources = [];
   }
 
   function buildPersonContext(): string {
     if (!selectedPerson) return '';
     const p = selectedPerson;
-    let ctx = `\n\n[PERSON CONTEXT]\nName: ${p.givenName} ${p.surname}`;
-    if (p.birthDate || p.birthPlace) ctx += `\nBorn: ${p.birthDate || 'unknown'}${p.birthPlace ? ' in ' + p.birthPlace : ''}`;
-    if (p.deathDate || p.deathPlace) ctx += `\nDied: ${p.deathDate || 'unknown'}${p.deathPlace ? ' in ' + p.deathPlace : ''}`;
-    if (p.sex && p.sex !== 'U') ctx += `\nSex: ${p.sex === 'M' ? 'Male' : p.sex === 'F' ? 'Female' : p.sex}`;
+    const name = `${p.givenName} ${p.surname}`.trim() || p.xref;
+    let ctx = `You are analyzing this person: ${name}, born ${p.birthDate || 'unknown'}, died ${p.deathDate || 'unknown'}.`;
+    ctx += `\nParents: ${selectedPersonParents.length > 0 ? selectedPersonParents.join(', ') : 'unknown'}.`;
+    ctx += `\nChildren: ${selectedPersonChildren.length > 0 ? selectedPersonChildren.join(', ') : 'none listed'}.`;
+    ctx += `\nSources: ${selectedPersonSources.length > 0 ? selectedPersonSources.join(', ') : 'none listed'}.`;
     if (selectedPersonEvents.length > 0) {
       ctx += `\nEvents:`;
       for (const ev of selectedPersonEvents) {
         ctx += `\n  - ${ev.eventType}${ev.dateValue ? ' ' + ev.dateValue : ''}${ev.place ? ' at ' + ev.place : ''}${ev.description ? ' (' + ev.description + ')' : ''}`;
       }
     }
-    ctx += `\n[END CONTEXT]`;
     return ctx;
   }
 
   function getCurrentSystemPrompt(): string {
     const mode = researchModes.find(m => m.id === activeMode) || researchModes[0];
-    return mode.prompt + buildPersonContext();
+    if (!selectedPerson?.xref) return mode.prompt;
+    return `${buildPersonContext()}\n\n${mode.prompt}`;
   }
 
   async function switchProvider(pid: string, pModel: string) {

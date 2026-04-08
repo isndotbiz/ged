@@ -5,7 +5,7 @@ const BRIDGE_URL = 'http://127.0.0.1:19876';
 let desktopAvailable = false;
 
 // Check if desktop app is running
-async function checkDesktopBridge() {
+async function probeDesktopBridge() {
   try {
     const resp = await fetch(`${BRIDGE_URL}/ping`, { signal: AbortSignal.timeout(1000) });
     const data = await resp.json();
@@ -13,6 +13,10 @@ async function checkDesktopBridge() {
   } catch {
     desktopAvailable = false;
   }
+}
+
+async function checkDesktopBridge() {
+  await probeDesktopBridge();
   // Re-check every 30 seconds
   setTimeout(checkDesktopBridge, 30000);
 }
@@ -102,9 +106,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
   // Status check from side panel
   if (message?.type === 'gedfix:check-bridge') {
-    checkDesktopBridge().then(() => {
+    probeDesktopBridge().then(() => {
       sendResponse({ desktopAvailable });
     });
+    return true; // async response
+  }
+
+  if (message?.type === 'gedfix:get-bridge-stats') {
+    (async () => {
+      await probeDesktopBridge();
+      if (!desktopAvailable) {
+        sendResponse({ ok: false, desktopAvailable: false });
+        return;
+      }
+      try {
+        const resp = await fetch(`${BRIDGE_URL}/stats`, { signal: AbortSignal.timeout(1500) });
+        if (!resp.ok) {
+          sendResponse({ ok: false, desktopAvailable: true });
+          return;
+        }
+        const data = await resp.json();
+        sendResponse({ ok: true, desktopAvailable: true, stats: data });
+      } catch {
+        sendResponse({ ok: false, desktopAvailable: true });
+      }
+    })();
     return true; // async response
   }
 

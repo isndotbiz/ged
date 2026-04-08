@@ -110,6 +110,60 @@ function extractAncestry() {
   };
 }
 
+function extractWikiTree() {
+  const name = cleanText(document.querySelector('#person-name, h1.person-name'));
+  const birthText = cleanText(document.querySelector('.BIRT .date, [data-field="birth_date"]'));
+  const deathText = cleanText(document.querySelector('.DEAT .date, [data-field="death_date"]'));
+  const parsed = parseNameFromText(name);
+
+  return {
+    source: 'WikiTree',
+    url: location.href,
+    name,
+    given: parsed.given,
+    surname: parsed.surname,
+    birthDate: parseDateFromText(birthText),
+    deathDate: parseDateFromText(deathText),
+    recordType: 'Tree Person',
+  };
+}
+
+function extractGeni() {
+  const name = cleanText(document.querySelector('.profile-name, h1'));
+  const birthText = cleanText(document.querySelector('[data-label="Born"] .date, .birth-date'));
+  const deathText = cleanText(document.querySelector('[data-label="Died"] .date, .death-date'));
+  const parsed = parseNameFromText(name);
+
+  return {
+    source: 'Geni',
+    url: location.href,
+    name,
+    given: parsed.given,
+    surname: parsed.surname,
+    birthDate: parseDateFromText(birthText),
+    deathDate: parseDateFromText(deathText),
+    recordType: 'Tree Person',
+  };
+}
+
+function extractNewspapers() {
+  const headline = cleanText(document.querySelector('.article-title, h1'));
+  const dateText = cleanText(document.querySelector('.issue-date, .article-date'));
+  const publication = cleanText(document.querySelector('.publication-name'));
+  const parsed = parseNameFromText(headline);
+
+  return {
+    source: 'Newspapers.com',
+    url: location.href,
+    name: headline,
+    given: parsed.given,
+    surname: parsed.surname,
+    birthDate: parseDateFromText(dateText),
+    recordType: 'Newspaper Article',
+    raw: { publication },
+  };
+}
+
 function detectAndExtract() {
   const host = location.hostname;
   let record = null;
@@ -125,6 +179,18 @@ function detectAndExtract() {
 
   if (host.includes('ancestry.com') && location.pathname.includes('/person/')) {
     record = extractAncestry();
+  }
+
+  if (host.includes('wikitree.com') && location.pathname.includes('/wiki/')) {
+    record = extractWikiTree();
+  }
+
+  if (host.includes('geni.com') && location.pathname.includes('/people/')) {
+    record = extractGeni();
+  }
+
+  if (host.includes('newspapers.com') && location.pathname.includes('/image/')) {
+    record = extractNewspapers();
   }
 
   if (!record) return;

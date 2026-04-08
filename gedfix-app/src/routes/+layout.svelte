@@ -132,6 +132,17 @@
     document.dispatchEvent(new CustomEvent('gedfix:close-overlays'));
   }
 
+  async function triggerQuickSearch() {
+    if ($page.url.pathname !== '/search') {
+      await goto('/search');
+      requestAnimationFrame(() => {
+        (document.getElementById('global-search-input') as HTMLInputElement | null)?.focus();
+      });
+      return;
+    }
+    (document.getElementById('global-search-input') as HTMLInputElement | null)?.focus();
+  }
+
   function handleGlobalKeydown(e: KeyboardEvent) {
     const inInput = shouldIgnoreShortcutTarget(e.target);
     if (chordPending) {
@@ -177,6 +188,12 @@
       return;
     }
 
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      triggerQuickSearch();
+      return;
+    }
+
     const combo = normalizeKeyCombo(e);
     if (triggerShortcut(combo)) {
       e.preventDefault();
@@ -189,7 +206,7 @@
 
   function bindShortcuts() {
     clearShortcuts();
-    registerShortcut('mod+k', () => goto('/search'), 'Search', 'Global');
+    registerShortcut('mod+k', () => triggerQuickSearch(), 'Search', 'Global');
     registerShortcut('mod+n', openNewPerson, 'New person', 'Global');
     registerShortcut('g then p', () => goto('/people'), 'Go to People', 'Navigation');
     registerShortcut('g then f', () => goto('/families'), 'Go to Families', 'Navigation');
@@ -500,11 +517,14 @@
         if (routes[action]) goto(routes[action]);
         if (action === 'import') document.getElementById('gedcom-import')?.click();
         if (action === 'export') exportGedcomFromMenu();
-        if (action === 'find') goto('/search');
+        if (action === 'find' || action === 'quick-search') triggerQuickSearch();
         if (action === 'undo') undoManager.undo();
         if (action === 'redo') undoManager.redo();
       });
-      unlisten = () => { listener(); extListener(); };
+      const quickSearchListener = await listen('quick-search', () => {
+        triggerQuickSearch();
+      });
+      unlisten = () => { listener(); extListener(); quickSearchListener(); };
     })();
 
     return () => {
@@ -517,6 +537,15 @@
   $effect(() => {
     if (!isTauri() || !tauriInvoke || pendingProposalCount === undefined) return;
     tauriInvoke('set_badge_count', { count: pendingProposalCount }).catch(() => {});
+  });
+
+  $effect(() => {
+    if (!isTauri() || !tauriInvoke) return;
+    tauriInvoke('set_bridge_stats', {
+      persons: $appStats.personCount ?? 0,
+      families: $appStats.familyCount ?? 0,
+      sources: $appStats.sourceCount ?? 0,
+    }).catch(() => {});
   });
 </script>
 

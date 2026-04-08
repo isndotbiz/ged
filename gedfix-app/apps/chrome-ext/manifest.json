@@ -30,7 +30,10 @@
         "https://www.familysearch.org/*",
         "https://www.ancestry.com/*",
         "https://*.ancestry.com/*",
-        "https://www.findagrave.com/*"
+        "https://www.findagrave.com/*",
+        "https://www.wikitree.com/*",
+        "https://www.geni.com/*",
+        "https://www.newspapers.com/*"
       ],
       "js": ["content/detector.js"]
     }
