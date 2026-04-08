@@ -1,11 +1,13 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
-  import { getResearchLogs, insertResearchLog, deleteResearchLog } from '$lib/db';
-  import type { ResearchLogEntry } from '$lib/types';
+  import { getResearchLogs, insertResearchLog, deleteResearchLog, getAllPersons } from '$lib/db';
+  import type { ResearchLogEntry, Person } from '$lib/types';
 
   let entries = $state<ResearchLogEntry[]>([]);
   let showEditor = $state(false);
   let filterType = $state<string | null>(null);
+  let filterPersonXref = $state('');
+  let persons = $state<Person[]>([]);
 
   // Editor fields
   let repository = $state('');
@@ -14,8 +16,17 @@
   let conclusion = $state('');
   let resultType = $state<'POSITIVE' | 'NEGATIVE' | 'INCONCLUSIVE'>('NEGATIVE');
   let searchDate = $state('');
+  let editorPersonXref = $state('');
 
-  async function load() { entries = await getResearchLogs(); }
+  async function load() {
+    entries = filterPersonXref
+      ? await getResearchLogs(filterPersonXref)
+      : await getResearchLogs();
+  }
+
+  async function loadPeople() {
+    persons = await getAllPersons();
+  }
 
   async function save() {
     await insertResearchLog({
