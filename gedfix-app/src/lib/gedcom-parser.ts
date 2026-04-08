@@ -202,19 +202,24 @@ export const __testables = {
 export async function importGedcom(
   text: string,
   onProgress?: (pct: number, msg: string) => void,
-  options?: { force?: boolean }
+  options?: { force?: boolean; mode?: 'replace' | 'merge' }
 ): Promise<{ linked: number; skipped: number }> {
   const force = options?.force === true;
+  const mergeMode = options?.mode === 'merge';
   const db = await getDb();
   const existing = await db.select<{ c: number }[]>(`SELECT COUNT(*) as c FROM person`);
   const preImportPersonCount = existing[0]?.c ?? 0;
-  if (!force && preImportPersonCount > 0) {
+  if (!force && !mergeMode && preImportPersonCount > 0) {
     throw new Error('DB not empty — pass force:true to overwrite');
   }
 
   try {
-    onProgress?.(0, 'Clearing database...');
-    await clearAll();
+    if (!mergeMode) {
+      onProgress?.(0, 'Clearing database...');
+      await clearAll();
+    } else {
+      onProgress?.(0, 'Merging records...');
+    }
 
   const pendingMediaLinks: { personXref: string; objeRefs: string[]; inlineMediaIds: number[]; primaryPhotoXref: string }[] = [];
   const mediaFileCache = new Map<string, number>();
