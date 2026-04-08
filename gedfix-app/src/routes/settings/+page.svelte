@@ -13,6 +13,7 @@
   let backupBusy = $state(false);
   let lastBackupDate = $state('');
   let mergeGedcomBusy = $state(false);
+  let themePreference = $state<'light' | 'dark' | 'system'>('system');
   let exportFormat = $state<'5.5.1' | '7.0'>('5.5.1');
   let exportPreview = $state({ personCount: 0, familyCount: 0, eventCount: 0, sourceCount: 0, mediaCount: 0, placeCount: 0 });
   let exportBusy = $state(false);
@@ -57,6 +58,73 @@
     await refreshBackups();
     await refreshDbStats();
     await loadUndoHistory();
+    const lbd = await getSetting('last_backup_date');
+    if (lbd) lastBackupDate = lbd;
+    const savedTheme = await getSetting('theme_mode');
+    if (savedTheme === 'dark' || savedTheme === 'light') themePreference = savedTheme;
+    else themePreference = 'system';
+  }
+
+  async function backupNow() {
+    backupBusy = true;
+    try {
+      if (isTauri()) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('backup_database');
+      } else {
+        // Web: export JSON backup
+        const backup = await exportDbAsJson();
+        const date = new Date().toISOString().slice(0, 10);
+        const blob = new Blob([JSON.stringify(backup)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gedfix-backup-${date}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+      const now = new Date().toLocaleString();
+      lastBackupDate = now;
+      await setSetting('last_backup_date', now);
+      saveStatus = t('settings.backupSuccess');
+      setTimeout(() => { saveStatus = ''; }, 3000);
+    } catch (e) {
+      saveStatus = `Backup failed: ${e}`;
+    }
+    backupBusy = false;
+  }
+
+  async function mergeGedcom() {
+    const result = await pickAndReadTextFile([{ name: 'GEDCOM', extensions: ['ged'] }]);
+    if (!result) return;
+    mergeGedcomBusy = true;
+    $isImporting = true;
+    $importProgress = 0;
+    $importMessage = 'Merging file...';
+    try {
+      const linkResult = await importGedcom(result.text, (pct, msg) => {
+        $importProgress = pct;
+        $importMessage = msg;
+      }, { force: false, mode: 'merge' });
+      const stats = await getStats();
+      appStats.set(stats);
+      $importMessage = `Merge complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
+    } catch (e) {
+      $importMessage = `Merge error: ${e}`;
+    }
+    $isImporting = false;
+    mergeGedcomBusy = false;
+  }
+
+  async function saveTheme() {
+    await setSetting('theme_mode', themePreference);
+    // Apply immediately
+    const mode = themePreference === 'system'
+      ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      : themePreference;
+    document.documentElement.dataset.theme = mode;
+    saveStatus = 'Theme saved';
+    setTimeout(() => { saveStatus = ''; }, 2000);
   }
 
   async function saveApiKey(config: ApiKeyConfig) {
@@ -306,6 +374,26 @@
           class="px-4 py-2 text-sm btn-accent disabled:opacity-50 transition-colors"
          aria-label={t('common.actions')}>
           {$isImporting ? t('common.importing') : 'Choose File'}
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">{t('settings.mergeGedcom')}</div>
+          <div class="text-xs text-ink-muted">{t('settings.mergeNote')}</div>
+        </div>
+        <button onclick={mergeGedcom} disabled={mergeGedcomBusy || $isImporting} class="px-4 py-2 text-sm btn-secondary disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
+          {mergeGedcomBusy ? t('common.merging') : t('settings.mergeGedcom')}
+        </button>
+      </div>
+
+      <div class="flex items-center justify-between px-5 py-4">
+        <div>
+          <div class="text-sm font-medium text-ink">{t('settings.backupNow')}</div>
+          {#if lastBackupDate}<div class="text-xs text-ink-muted">{t('settings.lastBackup')}: {lastBackupDate}</div>{/if}
+        </div>
+        <button onclick={backupNow} disabled={backupBusy} class="px-4 py-2 text-sm btn-secondary disabled:opacity-50 transition-colors" aria-label={t('common.actions')}>
+          {backupBusy ? 'Backing up...' : t('settings.backupNow')}
         </button>
       </div>
 
