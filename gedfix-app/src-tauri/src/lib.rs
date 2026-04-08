@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use std::sync::{Mutex, OnceLock};
-use tauri::{Emitter, Manager, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
+use tauri::{Manager};
+#[cfg(desktop)]
+use tauri::{Emitter, menu::{Menu, MenuItem, Submenu, PredefinedMenuItem}};
 use image::GenericImageView;
 use serde::{Deserialize, Serialize};
 
