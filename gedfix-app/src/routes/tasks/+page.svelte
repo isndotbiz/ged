@@ -47,10 +47,23 @@
     return p ? `${p.givenName} ${p.surname}`.trim() : xref;
   }
 
+  let overdueCount = $derived(tasks.filter(t => isOverdue(t)).length);
+
   let filtered = $derived(
-    (filterStatus ? tasks.filter(t => t.status === filterStatus) : tasks)
+    (filterStatus === 'OVERDUE'
+      ? tasks.filter(t => isOverdue(t))
+      : filterStatus === 'OPEN'
+        ? tasks.filter(t => t.status !== 'DONE')
+        : filterStatus
+          ? tasks.filter(t => t.status === filterStatus)
+          : tasks)
       .slice()
-      .sort((a, b) => dueSortValue(a) - dueSortValue(b))
+      .sort((a, b) => {
+        const aOD = isOverdue(a) ? 0 : 1;
+        const bOD = isOverdue(b) ? 0 : 1;
+        if (aOD !== bOD) return aOD - bOD;
+        return dueSortValue(a) - dueSortValue(b);
+      })
   );
   let todoCount = $derived(tasks.filter(t => t.status !== 'DONE').length);
 
