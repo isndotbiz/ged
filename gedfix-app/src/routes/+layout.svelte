@@ -342,6 +342,18 @@
     }
   }
 
+  async function notifyImportComplete() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'granted') {
+      new Notification(t('import.notificationTitle'), { body: t('import.notificationBody'), icon: '/favicon.png' });
+    } else if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm === 'granted') {
+        new Notification(t('import.notificationTitle'), { body: t('import.notificationBody'), icon: '/favicon.png' });
+      }
+    }
+  }
+
   async function createAutoBackup(): Promise<void> {
     try {
       const backup = await exportDbAsJson();
