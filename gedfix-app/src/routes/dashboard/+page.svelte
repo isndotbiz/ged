@@ -38,6 +38,9 @@
   let treeOnlyCount = $state(0);
   let unvalidatedCount = $state(0);
   let validationPct = $state(0);
+  let topSurnames = $state<{surname: string; count: number}[]>([]);
+  let birthDecadeData = $state<{label: string; value: number}[]>([]);
+  let lastImportDate = $state('');
 
   let loading = $state(true);
 
@@ -389,6 +392,28 @@
       const tp = topPeople[0];
       mostDocumented = {name: `${tp.givenName} ${tp.surname}`.trim(), xref: tp.xref, score: tp.score};
     }
+
+    // Top 5 surnames
+    const surnameData = await db.select<{surname: string; count: number}[]>(
+      `SELECT surname, COUNT(*) as count FROM person WHERE surname != '' AND surname IS NOT NULL GROUP BY surname ORDER BY count DESC LIMIT 5`
+    );
+    topSurnames = surnameData;
+
+    // Birth decade bar chart
+    const bdData = await db.select<{decade: string; cnt: number}[]>(
+      `SELECT (CAST(SUBSTR(birthDate, -4, 4) AS INTEGER) / 10 * 10) || 's' as decade, COUNT(*) as cnt
+       FROM person WHERE birthDate != '' AND birthDate IS NOT NULL AND LENGTH(birthDate) >= 4
+       AND CAST(SUBSTR(birthDate, -4, 4) AS INTEGER) > 1000
+       GROUP BY CAST(SUBSTR(birthDate, -4, 4) AS INTEGER) / 10
+       ORDER BY CAST(SUBSTR(birthDate, -4, 4) AS INTEGER) / 10`
+    );
+    birthDecadeData = bdData.map(d => ({ label: d.decade, value: d.cnt }));
+
+    // Last import date from settings
+    try {
+      const lir = await db.select<{value: string}[]>(`SELECT value FROM settings WHERE key = 'last_import_date'`);
+      if (lir[0]?.value) lastImportDate = lir[0].value;
+    } catch { /* optional */ }
 
     loading = false;
   }
