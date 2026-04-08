@@ -16,7 +16,9 @@
     "https://www.newspapers.com/*",
     "https://www.wikitree.com/*",
     "https://www.geni.com/*",
-    "https://chroniclingamerica.loc.gov/*"
+    "https://chroniclingamerica.loc.gov/*",
+    "https://www.myheritage.com/*",
+    "https://*.myheritage.com/*"
   ],
   "background": {
     "service_worker": "background.js"
