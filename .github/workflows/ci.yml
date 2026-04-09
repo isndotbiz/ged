@@ -12,9 +12,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e .
+      - run: pip install -e tools/cli
       - run: pip install pytest
-      - run: pytest tests/ -v
+      - run: pytest tools/cli/tests/ -v
 
   frontend:
     runs-on: ubuntu-latest
@@ -29,5 +29,5 @@ jobs:
           cache: pnpm
       - run: pnpm install
       - run: pnpm -C packages/core check
-      - run: pnpm -C gedfix-app check
-      - run: pnpm -C gedfix-app test
+      - run: pnpm -C apps/desktop check
+      - run: pnpm -C apps/desktop test

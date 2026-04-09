@@ -58,7 +58,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          projectPath: gedfix-app
+          projectPath: apps/desktop
           tauriScript: npm run tauri
           tagName: ${{ github.ref_name }}
           releaseName: 'GedFix ${{ github.ref_name }}'
@@ -101,7 +101,7 @@ jobs:
 
       - name: Build Android APK
         run: npm run tauri -- android build --apk
-        working-directory: gedfix-app
+        working-directory: apps/desktop
         env:
           NDK_HOME: ${{ env.ANDROID_HOME }}/ndk/27.0.12077973
 
@@ -109,7 +109,43 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: gedfix-android-apk
-          path: gedfix-app/gen/android/app/build/outputs/apk/universal/release/*.apk
+          path: apps/desktop/gen/android/app/build/outputs/apk/universal/release/*.apk
+
+  release-ios:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust + iOS targets
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-ios,aarch64-apple-ios-sim
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install
+
+      - name: Init iOS project
+        run: npm run tauri -- ios init
+        working-directory: apps/desktop
+
+      - name: Build iOS (simulator)
+        run: npm run tauri -- ios build --target aarch64-apple-ios-sim
+        working-directory: apps/desktop
+
+      - name: Upload iOS build
+        uses: actions/upload-artifact@v4
+        with:
+          name: gedfix-ios
+          path: apps/desktop/gen/apple/build/**/*.app
 
   release-web:
     runs-on: ubuntu-22.04
@@ -129,11 +165,10 @@ jobs:
         run: pnpm install
 
       - name: Build web
-        run: npm run build:web
-        working-directory: gedfix-app
+        run: VITE_WEB=true pnpm -C apps/desktop build
 
       - name: Upload web build
         uses: actions/upload-artifact@v4
         with:
           name: gedfix-web
-          path: gedfix-app/build/
+          path: apps/desktop/build/

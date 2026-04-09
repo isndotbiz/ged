@@ -4,12 +4,12 @@
   "version": "0.1.0",
   "description": "GedFix monorepo — genealogy data management platform",
   "scripts": {
-    "dev": "pnpm -C gedfix-app dev",
-    "build": "pnpm -C gedfix-app build",
-    "check": "pnpm -C gedfix-app check",
-    "test": "pnpm -C gedfix-app test",
-    "dev:web": "pnpm -C gedfix-app dev:web",
-    "build:web": "pnpm -C gedfix-app build:web",
+    "dev": "pnpm -C apps/desktop dev",
+    "build": "pnpm -C apps/desktop build",
+    "check": "pnpm -C apps/desktop check",
+    "test": "pnpm -C apps/desktop test",
+    "dev:web": "pnpm -C apps/desktop dev:web",
+    "build:web": "pnpm -C apps/desktop build:web",
     "build:core": "pnpm -C packages/core build"
   }
 }

@@ -3,9 +3,9 @@ on:
   push:
     branches: [main]
     paths:
-      - 'gedfix-app/src/**'
+      - 'apps/desktop/src/**'
       - 'packages/core/src/**'
-      - 'gedfix-app/static/**'
+      - 'apps/desktop/static/**'
 
 jobs:
   deploy:
@@ -20,11 +20,11 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install
-      - run: VITE_WEB=true pnpm -C gedfix-app build
+      - run: VITE_WEB=true pnpm -C apps/desktop build
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/pages-action@v1
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           accountId: ${{ secrets.CF_ACCOUNT_ID }}
           projectName: gedfix
-          directory: gedfix-app/build
+          directory: apps/desktop/build
