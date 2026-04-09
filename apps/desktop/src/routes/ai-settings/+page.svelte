@@ -43,7 +43,7 @@
       await db.execute(`INSERT OR REPLACE INTO settings (key, value) VALUES ($1, $2)`, [`ai_key_${providerId}`, apiKeys[providerId] ?? '']);
       saveStatus[providerId] = 'Saved!';
       setTimeout(() => { saveStatus[providerId] = ''; }, 2000);
-    } catch (e) {
+    } catch (_e) {
       saveStatus[providerId] = 'Error saving';
     }
   }
