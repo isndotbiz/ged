@@ -295,7 +295,7 @@
           const contactName = profileData?.users?.[0]?.contactName;
           if (contactName) username = contactName;
         }
-      } catch {}
+      } catch { /* no-op */ }
 
       await setSetting('service_familysearch_user', username);
       familysearch = { connected: true, username, lastSync: new Date().toISOString(), loading: false, error: '' };
