@@ -1,0 +1,45 @@
+version: 2
+updates:
+  # pnpm workspace (desktop app + packages/core)
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    groups:
+      tauri:
+        patterns: ["@tauri-apps/*"]
+      svelte:
+        patterns: ["svelte*", "@sveltejs/*"]
+      typescript:
+        patterns: ["typescript", "@typescript-eslint/*"]
+      dev-tooling:
+        patterns: ["eslint*", "prettier*", "vitest*", "@vitest/*", "globals"]
+
+  # Rust (Tauri backend)
+  - package-ecosystem: cargo
+    directory: /apps/desktop/src-tauri
+    schedule:
+      interval: weekly
+      day: monday
+
+  # Python CLI
+  - package-ecosystem: pip
+    directory: /tools/cli
+    schedule:
+      interval: weekly
+      day: monday
+
+  # Chrome extension
+  - package-ecosystem: npm
+    directory: /apps/desktop/apps/chrome-ext
+    schedule:
+      interval: weekly
+      day: monday
+
+  # GitHub Actions
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

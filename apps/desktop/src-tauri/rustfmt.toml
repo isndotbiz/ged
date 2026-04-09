@@ -1,0 +1,7 @@
+edition = "2021"
+max_width = 100
+tab_spaces = 4
+use_tabs = false
+trailing_comma = "Vertical"
+imports_granularity = "Module"
+group_imports = "StdExternalCrate"

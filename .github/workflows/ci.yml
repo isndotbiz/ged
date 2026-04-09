@@ -2,6 +2,7 @@ name: CI
 on: [push, pull_request]
 
 jobs:
+  # ── Python CLI ─────────────────────────────────────────────────────────────
   python:
     runs-on: ubuntu-latest
     strategy:
@@ -12,10 +13,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e tools/cli
-      - run: pip install pytest
-      - run: pytest tools/cli/tests/ -v
+      - name: Install
+        run: pip install -e "tools/cli[dev]"
+      - name: Lint (ruff)
+        run: ruff check tools/cli/gedfix tools/cli/tests
+      - name: Format check (ruff)
+        run: ruff format --check tools/cli/gedfix tools/cli/tests
+      - name: Type check (mypy)
+        run: mypy tools/cli/gedfix
+      - name: Test + coverage
+        run: pytest tools/cli/tests/ -v
+        working-directory: tools/cli
 
+  # ── TypeScript + Svelte ────────────────────────────────────────────────────
   frontend:
     runs-on: ubuntu-latest
     steps:
@@ -27,7 +37,70 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-      - run: pnpm install
-      - run: pnpm -C packages/core check
-      - run: pnpm -C apps/desktop check
-      - run: pnpm -C apps/desktop test
+      - name: Install
+        run: pnpm install
+      - name: Type check (@gedfix/core)
+        run: pnpm -C packages/core check
+      - name: Type check (desktop)
+        run: pnpm -C apps/desktop check
+      - name: Lint (eslint)
+        run: pnpm -C apps/desktop lint
+      - name: Format check (prettier)
+        run: pnpm -C apps/desktop format:check
+      - name: Test + coverage
+        run: pnpm -C apps/desktop test:coverage
+
+  # ── Rust ───────────────────────────────────────────────────────────────────
+  rust:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            apps/desktop/src-tauri/target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('apps/desktop/src-tauri/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-cargo-
+      - name: Install Linux dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev patchelf
+      - name: Format check (rustfmt)
+        run: cargo fmt --check
+        working-directory: apps/desktop/src-tauri
+      - name: Lint (clippy)
+        run: cargo clippy -- -D warnings
+        working-directory: apps/desktop/src-tauri
+
+  # ── Security ───────────────────────────────────────────────────────────────
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - name: Install
+        run: pnpm install
+      - name: Audit npm deps
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+      - name: Install cargo-audit
+        run: cargo install cargo-audit --quiet
+      - name: Audit Rust deps
+        run: cargo audit
+        working-directory: apps/desktop/src-tauri
+        continue-on-error: true
