@@ -10,6 +10,26 @@
     "test": "pnpm -C apps/desktop test",
     "dev:web": "pnpm -C apps/desktop dev:web",
     "build:web": "pnpm -C apps/desktop build:web",
-    "build:core": "pnpm -C packages/core build"
+    "build:core": "pnpm -C packages/core build",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@commitlint/cli": "^20.5.0",
+    "@commitlint/config-conventional": "^20.5.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0"
+  },
+  "lint-staged": {
+    "apps/desktop/src/**/*.ts": [
+      "pnpm -C apps/desktop lint:fix",
+      "prettier --write"
+    ],
+    "apps/desktop/src/**/*.svelte": [
+      "pnpm -C apps/desktop lint:fix"
+    ],
+    "tools/cli/**/*.py": [
+      "ruff check --fix",
+      "ruff format"
+    ]
   }
 }

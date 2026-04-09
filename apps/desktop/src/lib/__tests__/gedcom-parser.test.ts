@@ -1,94 +1,94 @@
-import { describe, expect, it, vi } from 'vitest';
-import { __testables } from '$lib/gedcom-parser';
+import { describe, expect, it, vi } from 'vitest'
+import { __testables } from '$lib/gedcom-parser'
 
-const { detectGedcomVersion, parseLine, groupRecords, parseName, isLiving } = __testables;
+const { detectGedcomVersion, parseLine, groupRecords, parseName, isLiving } = __testables
 
 describe('gedcom-parser internals', () => {
-  it('detects GEDCOM versions', () => {
-    const v7 = `0 HEAD\n1 GEDC\n2 VERS 7.0\n0 TRLR`;
-    const v551 = `0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 TRLR`;
-    expect(detectGedcomVersion(v7)).toBe('7.0');
-    expect(detectGedcomVersion(v551)).toBe('5.5.1');
-  });
+	it('detects GEDCOM versions', () => {
+		const v7 = `0 HEAD\n1 GEDC\n2 VERS 7.0\n0 TRLR`
+		const v551 = `0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 TRLR`
+		expect(detectGedcomVersion(v7)).toBe('7.0')
+		expect(detectGedcomVersion(v551)).toBe('5.5.1')
+	})
 
-  it('parses minimal INDI/FAM/SOUR and malformed lines safely', () => {
-    expect(parseLine('1 NAME John /Doe/', '5.5.1')?.tag).toBe('NAME');
-    expect(parseLine('broken line', '5.5.1')).toBeNull();
+	it('parses minimal INDI/FAM/SOUR and malformed lines safely', () => {
+		expect(parseLine('1 NAME John /Doe/', '5.5.1')?.tag).toBe('NAME')
+		expect(parseLine('broken line', '5.5.1')).toBeNull()
 
-    const lines = [
-      parseLine('0 @I1@ INDI', '5.5.1'),
-      parseLine('1 NAME John /Doe/', '5.5.1'),
-      parseLine('0 @F1@ FAM', '5.5.1'),
-      parseLine('1 HUSB @I1@', '5.5.1'),
-      parseLine('0 @S1@ SOUR', '5.5.1'),
-      parseLine('1 TITL Census', '5.5.1'),
-    ].filter(Boolean) as any[];
+		const lines = [
+			parseLine('0 @I1@ INDI', '5.5.1'),
+			parseLine('1 NAME John /Doe/', '5.5.1'),
+			parseLine('0 @F1@ FAM', '5.5.1'),
+			parseLine('1 HUSB @I1@', '5.5.1'),
+			parseLine('0 @S1@ SOUR', '5.5.1'),
+			parseLine('1 TITL Census', '5.5.1'),
+		].filter(Boolean) as any[]
 
-    const records = groupRecords(lines);
-    expect(records.map((r) => r.tag)).toEqual(['INDI', 'FAM', 'SOUR']);
-  });
+		const records = groupRecords(lines)
+		expect(records.map((r) => r.tag)).toEqual(['INDI', 'FAM', 'SOUR'])
+	})
 
-  it('handles name parsing, living inference, and CONT/CONC-friendly line parsing', () => {
-    expect(parseName('John /Doe/ Jr')).toEqual({ givenName: 'John', surname: 'Doe', suffix: 'Jr' });
+	it('handles name parsing, living inference, and CONT/CONC-friendly line parsing', () => {
+		expect(parseName('John /Doe/ Jr')).toEqual({ givenName: 'John', surname: 'Doe', suffix: 'Jr' })
 
-    const recYoung = {
-      xref: 'I1',
-      tag: 'INDI',
-      lines: [
-        { level: 1, xref: '', tag: 'BIRT', value: '' },
-        { level: 2, xref: '', tag: 'DATE', value: '1 JAN 2000' },
-      ],
-    } as any;
-    const recOld = {
-      xref: 'I2',
-      tag: 'INDI',
-      lines: [
-        { level: 1, xref: '', tag: 'BIRT', value: '' },
-        { level: 2, xref: '', tag: 'DATE', value: '1 JAN 1800' },
-      ],
-    } as any;
-    expect(isLiving(recYoung)).toBe(true);
-    expect(isLiving(recOld)).toBe(false);
-  });
-});
+		const recYoung = {
+			xref: 'I1',
+			tag: 'INDI',
+			lines: [
+				{ level: 1, xref: '', tag: 'BIRT', value: '' },
+				{ level: 2, xref: '', tag: 'DATE', value: '1 JAN 2000' },
+			],
+		} as any
+		const recOld = {
+			xref: 'I2',
+			tag: 'INDI',
+			lines: [
+				{ level: 1, xref: '', tag: 'BIRT', value: '' },
+				{ level: 2, xref: '', tag: 'DATE', value: '1 JAN 1800' },
+			],
+		} as any
+		expect(isLiving(recYoung)).toBe(true)
+		expect(isLiving(recOld)).toBe(false)
+	})
+})
 
 describe('gedcom-parser import defaults', () => {
-  it('sets default sourceType, validationStatus, and creates media for inline OBJE', async () => {
-    vi.resetModules();
+	it('sets default sourceType, validationStatus, and creates media for inline OBJE', async () => {
+		vi.resetModules()
 
-    const insertPerson = vi.fn(async () => {});
-    const insertSource = vi.fn(async () => {});
-    const insertMedia = vi.fn(async () => {});
+		const insertPerson = vi.fn(async () => {})
+		const insertSource = vi.fn(async () => {})
+		const insertMedia = vi.fn(async () => {})
 
-    const select = vi.fn(async (query: string) => {
-      if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return [];
-      if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return [];
-      if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [{ id: 1 }];
-      if (query.includes('SELECT id FROM media WHERE xref = $1')) return [{ id: 1 }];
-      return [];
-    });
+		const select = vi.fn(async (query: string) => {
+			if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return []
+			if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return []
+			if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [{ id: 1 }]
+			if (query.includes('SELECT id FROM media WHERE xref = $1')) return [{ id: 1 }]
+			return []
+		})
 
-    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
+		const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }))
 
-    vi.doMock('$lib/db', () => ({
-      insertPerson,
-      insertFamily: vi.fn(async () => {}),
-      insertEvent: vi.fn(async () => {}),
-      insertSource,
-      insertMedia,
-      insertChildLink: vi.fn(async () => {}),
-      clearAll: vi.fn(async () => {}),
-      getDb: vi.fn(async () => ({ select, execute })),
-      rebuildFTS: vi.fn(async () => {}),
-      classifySources: vi.fn(async () => 0),
-      computeValidationStatus: vi.fn(async () => {}),
-      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
-      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
-    }));
+		vi.doMock('$lib/db', () => ({
+			insertPerson,
+			insertFamily: vi.fn(async () => {}),
+			insertEvent: vi.fn(async () => {}),
+			insertSource,
+			insertMedia,
+			insertChildLink: vi.fn(async () => {}),
+			clearAll: vi.fn(async () => {}),
+			getDb: vi.fn(async () => ({ select, execute })),
+			rebuildFTS: vi.fn(async () => {}),
+			classifySources: vi.fn(async () => 0),
+			computeValidationStatus: vi.fn(async () => {}),
+			autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+			autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+		}))
 
-    const { importGedcom } = await import('$lib/gedcom-parser');
+		const { importGedcom } = await import('$lib/gedcom-parser')
 
-    const ged = `0 HEAD
+		const ged = `0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
@@ -102,191 +102,208 @@ describe('gedcom-parser import defaults', () => {
 2 TITL Portrait
 0 @S1@ SOUR
 1 TITL Census 1900
-0 TRLR`;
+0 TRLR`
 
-    await importGedcom(ged);
+		await importGedcom(ged)
 
-    expect(insertPerson).toHaveBeenCalledWith(expect.objectContaining({
-      xref: 'I1',
-      validationStatus: 'unvalidated',
-    }));
-    expect(insertSource).toHaveBeenCalledWith(expect.objectContaining({
-      xref: 'S1',
-      sourceType: 'unknown',
-    }));
-    expect(insertMedia).toHaveBeenCalledWith(expect.objectContaining({
-      filePath: 'photos/john.jpg',
-    }));
-  });
+		expect(insertPerson).toHaveBeenCalledWith(
+			expect.objectContaining({
+				xref: 'I1',
+				validationStatus: 'unvalidated',
+			})
+		)
+		expect(insertSource).toHaveBeenCalledWith(
+			expect.objectContaining({
+				xref: 'S1',
+				sourceType: 'unknown',
+			})
+		)
+		expect(insertMedia).toHaveBeenCalledWith(
+			expect.objectContaining({
+				filePath: 'photos/john.jpg',
+			})
+		)
+	})
 
-  it('throws on non-empty DB unless force:true is provided', async () => {
-    vi.resetModules();
+	it('throws on non-empty DB unless force:true is provided', async () => {
+		vi.resetModules()
 
-    const select = vi.fn(async (query: string) => {
-      if (query.includes('SELECT COUNT(*) as c FROM person')) return [{ c: 1 }];
-      return [];
-    });
-    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
+		const select = vi.fn(async (query: string) => {
+			if (query.includes('SELECT COUNT(*) as c FROM person')) return [{ c: 1 }]
+			return []
+		})
+		const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }))
 
-    vi.doMock('$lib/db', () => ({
-      insertPerson: vi.fn(async () => {}),
-      insertFamily: vi.fn(async () => {}),
-      insertEvent: vi.fn(async () => {}),
-      insertSource: vi.fn(async () => {}),
-      insertMedia: vi.fn(async () => {}),
-      insertChildLink: vi.fn(async () => {}),
-      clearAll: vi.fn(async () => {}),
-      getDb: vi.fn(async () => ({ select, execute })),
-      rebuildFTS: vi.fn(async () => {}),
-      classifySources: vi.fn(async () => 0),
-      computeValidationStatus: vi.fn(async () => {}),
-      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
-      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
-    }));
+		vi.doMock('$lib/db', () => ({
+			insertPerson: vi.fn(async () => {}),
+			insertFamily: vi.fn(async () => {}),
+			insertEvent: vi.fn(async () => {}),
+			insertSource: vi.fn(async () => {}),
+			insertMedia: vi.fn(async () => {}),
+			insertChildLink: vi.fn(async () => {}),
+			clearAll: vi.fn(async () => {}),
+			getDb: vi.fn(async () => ({ select, execute })),
+			rebuildFTS: vi.fn(async () => {}),
+			classifySources: vi.fn(async () => 0),
+			computeValidationStatus: vi.fn(async () => {}),
+			autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+			autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+		}))
 
-    const { importGedcom } = await import('$lib/gedcom-parser');
+		const { importGedcom } = await import('$lib/gedcom-parser')
 
-    await expect(importGedcom('0 HEAD\n0 TRLR')).rejects.toThrow('DB not empty — pass force:true to overwrite');
-    await expect(importGedcom('0 HEAD\n0 TRLR', undefined, { force: true })).resolves.toMatchObject({ linked: 0, skipped: 0 });
-  });
+		await expect(importGedcom('0 HEAD\n0 TRLR')).rejects.toThrow(
+			'DB not empty — pass force:true to overwrite'
+		)
+		await expect(importGedcom('0 HEAD\n0 TRLR', undefined, { force: true })).resolves.toMatchObject(
+			{ linked: 0, skipped: 0 }
+		)
+	})
 
-  it('rethrows import failures so caller receives the error message', async () => {
-    vi.resetModules();
+	it('rethrows import failures so caller receives the error message', async () => {
+		vi.resetModules()
 
-    let insertPersonCalls = 0;
-    const insertPerson = vi.fn(async () => {
-      insertPersonCalls += 1;
-      if (insertPersonCalls === 2) {
-        throw new Error('insert person failure on second call');
-      }
-    });
+		let insertPersonCalls = 0
+		const insertPerson = vi.fn(async () => {
+			insertPersonCalls += 1
+			if (insertPersonCalls === 2) {
+				throw new Error('insert person failure on second call')
+			}
+		})
 
-    let personCountReads = 0;
-    const select = vi.fn(async (query: string) => {
-      if (query.includes('SELECT COUNT(*) as c FROM person')) {
-        personCountReads += 1;
-        return personCountReads === 1 ? [{ c: 2 }] : [{ c: 0 }];
-      }
-      if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return [];
-      if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return [];
-      if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [];
-      if (query.includes('SELECT id FROM media WHERE xref = $1')) return [];
-      return [];
-    });
-    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
+		let personCountReads = 0
+		const select = vi.fn(async (query: string) => {
+			if (query.includes('SELECT COUNT(*) as c FROM person')) {
+				personCountReads += 1
+				return personCountReads === 1 ? [{ c: 2 }] : [{ c: 0 }]
+			}
+			if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return []
+			if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return []
+			if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return []
+			if (query.includes('SELECT id FROM media WHERE xref = $1')) return []
+			return []
+		})
+		const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }))
 
-    vi.doMock('$lib/db', () => ({
-      insertPerson,
-      insertFamily: vi.fn(async () => {}),
-      insertEvent: vi.fn(async () => {}),
-      insertSource: vi.fn(async () => {}),
-      insertMedia: vi.fn(async () => {}),
-      insertChildLink: vi.fn(async () => {}),
-      clearAll: vi.fn(async () => {}),
-      getDb: vi.fn(async () => ({ select, execute })),
-      rebuildFTS: vi.fn(async () => {}),
-      classifySources: vi.fn(async () => 0),
-      computeValidationStatus: vi.fn(async () => {}),
-      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
-      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
-    }));
+		vi.doMock('$lib/db', () => ({
+			insertPerson,
+			insertFamily: vi.fn(async () => {}),
+			insertEvent: vi.fn(async () => {}),
+			insertSource: vi.fn(async () => {}),
+			insertMedia: vi.fn(async () => {}),
+			insertChildLink: vi.fn(async () => {}),
+			clearAll: vi.fn(async () => {}),
+			getDb: vi.fn(async () => ({ select, execute })),
+			rebuildFTS: vi.fn(async () => {}),
+			classifySources: vi.fn(async () => 0),
+			computeValidationStatus: vi.fn(async () => {}),
+			autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+			autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+		}))
 
-    const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    const ged = `0 HEAD
+		const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		const ged = `0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
 1 NAME First /Person/
 0 @I2@ INDI
 1 NAME Second /Person/
-0 TRLR`;
+0 TRLR`
 
-    let caught: unknown;
-    try {
-      await importGedcom(ged, undefined, { force: true });
-    } catch (error) {
-      caught = error;
-    }
+		let caught: unknown
+		try {
+			await importGedcom(ged, undefined, { force: true })
+		} catch (error) {
+			caught = error
+		}
 
-    expect(caught).toBeInstanceOf(Error);
-    expect((caught as Error).message).toContain('insert person failure on second call');
-    expect(errorSpy).toHaveBeenCalledWith('Import failed — DB was cleared but import did not complete. Reload from backup.');
-    errorSpy.mockRestore();
-  });
-});
+		expect(caught).toBeInstanceOf(Error)
+		expect((caught as Error).message).toContain('insert person failure on second call')
+		expect(errorSpy).toHaveBeenCalledWith(
+			'Import failed — DB was cleared but import did not complete. Reload from backup.'
+		)
+		errorSpy.mockRestore()
+	})
+})
 
 describe('gedcom-parser citation extraction', () => {
-  function setupImportMock() {
-    const insertPerson = vi.fn(async () => {});
-    const insertFamily = vi.fn(async () => {});
-    const insertEvent = vi.fn(async () => {});
-    const insertSource = vi.fn(async () => {});
-    const insertMedia = vi.fn(async () => {});
-    const select = vi.fn(async (query: string) => {
-      if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return [];
-      if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return [];
-      if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [{ id: 1 }];
-      if (query.includes('SELECT id FROM media WHERE xref = $1')) return [{ id: 1 }];
-      return [];
-    });
-    const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }));
-    vi.doMock('$lib/db', () => ({
-      insertPerson,
-      insertFamily,
-      insertEvent,
-      insertSource,
-      insertMedia,
-      insertChildLink: vi.fn(async () => {}),
-      clearAll: vi.fn(async () => {}),
-      getDb: vi.fn(async () => ({ select, execute })),
-      rebuildFTS: vi.fn(async () => {}),
-      classifySources: vi.fn(async () => 0),
-      computeValidationStatus: vi.fn(async () => {}),
-      autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
-      autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
-    }));
-    return { execute, insertPerson, insertFamily, insertEvent, insertSource, insertMedia };
-  }
+	function setupImportMock() {
+		const insertPerson = vi.fn(async () => {})
+		const insertFamily = vi.fn(async () => {})
+		const insertEvent = vi.fn(async () => {})
+		const insertSource = vi.fn(async () => {})
+		const insertMedia = vi.fn(async () => {})
+		const select = vi.fn(async (query: string) => {
+			if (query.includes('SELECT xref, id FROM media WHERE xref !=')) return []
+			if (query.includes('SELECT id, xref FROM media WHERE LOWER(filePath)')) return []
+			if (query.includes('SELECT id FROM media WHERE LOWER(filePath)')) return [{ id: 1 }]
+			if (query.includes('SELECT id FROM media WHERE xref = $1')) return [{ id: 1 }]
+			return []
+		})
+		const execute = vi.fn(async () => ({ rowsAffected: 1, lastInsertId: 1 }))
+		vi.doMock('$lib/db', () => ({
+			insertPerson,
+			insertFamily,
+			insertEvent,
+			insertSource,
+			insertMedia,
+			insertChildLink: vi.fn(async () => {}),
+			clearAll: vi.fn(async () => {}),
+			getDb: vi.fn(async () => ({ select, execute })),
+			rebuildFTS: vi.fn(async () => {}),
+			classifySources: vi.fn(async () => 0),
+			computeValidationStatus: vi.fn(async () => {}),
+			autoLinkOrphanMedia: vi.fn(async () => ({ linked: 0, skipped: 0 })),
+			autoCategorizeMediaAfterDedup: vi.fn(async () => ({ updated: 0 })),
+		}))
+		return { execute, insertPerson, insertFamily, insertEvent, insertSource, insertMedia }
+	}
 
-  it('creates no citation rows when no SOUR tags exist', async () => {
-    vi.resetModules();
-    const { execute } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('creates no citation rows when no SOUR tags exist', async () => {
+		vi.resetModules()
+		const { execute } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
 1 NAME No /Source/
 1 SEX U
-0 TRLR`);
-    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
-    expect(citationInserts).toHaveLength(0);
-  });
+0 TRLR`)
+		const citationInserts = execute.mock.calls.filter((call) =>
+			String(call.at(0) ?? '').includes('INSERT INTO citation')
+		)
+		expect(citationInserts).toHaveLength(0)
+	})
 
-  it('handles INDI without NAME by defaulting givenName/surname to empty strings', async () => {
-    vi.resetModules();
-    const { insertPerson } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('handles INDI without NAME by defaulting givenName/surname to empty strings', async () => {
+		vi.resetModules()
+		const { insertPerson } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
 1 SEX U
-0 TRLR`);
+0 TRLR`)
 
-    expect(insertPerson).toHaveBeenCalledWith(expect.objectContaining({
-      xref: 'I1',
-      givenName: '',
-      surname: '',
-    }));
-  });
+		expect(insertPerson).toHaveBeenCalledWith(
+			expect.objectContaining({
+				xref: 'I1',
+				givenName: '',
+				surname: '',
+			})
+		)
+	})
 
-  it('does not crash on unparseable or blank DATE values', async () => {
-    vi.resetModules();
-    const { insertPerson, insertEvent } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await expect(importGedcom(`0 HEAD
+	it('does not crash on unparseable or blank DATE values', async () => {
+		vi.resetModules()
+		const { insertPerson, insertEvent } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await expect(
+			importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
@@ -297,36 +314,39 @@ describe('gedcom-parser citation extraction', () => {
 2 DATE CIRCA 1850
 1 EVEN
 2 DATE
-0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
+0 TRLR`)
+		).resolves.toMatchObject({ linked: 0, skipped: 0 })
 
-    expect(insertPerson).toHaveBeenCalledTimes(1);
-    expect(insertEvent).toHaveBeenCalled();
-  });
+		expect(insertPerson).toHaveBeenCalledTimes(1)
+		expect(insertEvent).toHaveBeenCalled()
+	})
 
-  it('imports FAM without HUSB/WIFE using empty partner xrefs', async () => {
-    vi.resetModules();
-    const { insertFamily } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('imports FAM without HUSB/WIFE using empty partner xrefs', async () => {
+		vi.resetModules()
+		const { insertFamily } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @F1@ FAM
 1 MARR
 2 DATE 1 JAN 1900
-0 TRLR`);
+0 TRLR`)
 
-    expect(insertFamily).toHaveBeenCalledWith(expect.objectContaining({
-      xref: 'F1',
-      partner1Xref: '',
-      partner2Xref: '',
-    }));
-  });
+		expect(insertFamily).toHaveBeenCalledWith(
+			expect.objectContaining({
+				xref: 'F1',
+				partner1Xref: '',
+				partner2Xref: '',
+			})
+		)
+	})
 
-  it('extracts nested SOUR under INDI EVEN blocks', async () => {
-    vi.resetModules();
-    const { execute } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('extracts nested SOUR under INDI EVEN blocks', async () => {
+		vi.resetModules()
+		const { execute } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @S1@ SOUR
@@ -338,49 +358,57 @@ describe('gedcom-parser citation extraction', () => {
 2 SOUR @S1@
 3 PAGE p.77
 3 QUAY 1
-0 TRLR`);
+0 TRLR`)
 
-    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
-    expect(citationInserts).toHaveLength(1);
-    expect(citationInserts[0]?.at(1)).toEqual(['S1', 'I1', 'p.77', 'SECONDARY']);
-  });
+		const citationInserts = execute.mock.calls.filter((call) =>
+			String(call.at(0) ?? '').includes('INSERT INTO citation')
+		)
+		expect(citationInserts).toHaveLength(1)
+		expect(citationInserts[0]?.at(1)).toEqual(['S1', 'I1', 'p.77', 'SECONDARY'])
+	})
 
-  it('handles duplicate XREF records without crashing', async () => {
-    vi.resetModules();
-    const { insertPerson } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await expect(importGedcom(`0 HEAD
+	it('handles duplicate XREF records without crashing', async () => {
+		vi.resetModules()
+		const { insertPerson } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await expect(
+			importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @I1@ INDI
 1 NAME First /Person/
 0 @I1@ INDI
 1 NAME Second /Person/
-0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
-    expect(insertPerson).toHaveBeenCalledTimes(2);
-  });
+0 TRLR`)
+		).resolves.toMatchObject({ linked: 0, skipped: 0 })
+		expect(insertPerson).toHaveBeenCalledTimes(2)
+	})
 
-  it('imports a HEAD/TRLR-only file without creating rows', async () => {
-    vi.resetModules();
-    const { insertPerson, insertFamily, insertSource, insertMedia, execute } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await expect(importGedcom(`0 HEAD
+	it('imports a HEAD/TRLR-only file without creating rows', async () => {
+		vi.resetModules()
+		const { insertPerson, insertFamily, insertSource, insertMedia, execute } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await expect(
+			importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
-0 TRLR`)).resolves.toMatchObject({ linked: 0, skipped: 0 });
-    expect(insertPerson).not.toHaveBeenCalled();
-    expect(insertFamily).not.toHaveBeenCalled();
-    expect(insertSource).not.toHaveBeenCalled();
-    expect(insertMedia).not.toHaveBeenCalled();
-    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
-    expect(citationInserts).toHaveLength(0);
-  });
+0 TRLR`)
+		).resolves.toMatchObject({ linked: 0, skipped: 0 })
+		expect(insertPerson).not.toHaveBeenCalled()
+		expect(insertFamily).not.toHaveBeenCalled()
+		expect(insertSource).not.toHaveBeenCalled()
+		expect(insertMedia).not.toHaveBeenCalled()
+		const citationInserts = execute.mock.calls.filter((call) =>
+			String(call.at(0) ?? '').includes('INSERT INTO citation')
+		)
+		expect(citationInserts).toHaveLength(0)
+	})
 
-  it('creates one citation row for one INDI SOUR tag', async () => {
-    vi.resetModules();
-    const { execute } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('creates one citation row for one INDI SOUR tag', async () => {
+		vi.resetModules()
+		const { execute } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @S1@ SOUR
@@ -390,17 +418,19 @@ describe('gedcom-parser citation extraction', () => {
 1 SOUR @S1@
 2 PAGE p.12
 2 QUAY 2
-0 TRLR`);
-    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
-    expect(citationInserts).toHaveLength(1);
-    expect(citationInserts[0]?.at(1)).toEqual(['S1', 'I1', 'p.12', 'PRIMARY']);
-  });
+0 TRLR`)
+		const citationInserts = execute.mock.calls.filter((call) =>
+			String(call.at(0) ?? '').includes('INSERT INTO citation')
+		)
+		expect(citationInserts).toHaveLength(1)
+		expect(citationInserts[0]?.at(1)).toEqual(['S1', 'I1', 'p.12', 'PRIMARY'])
+	})
 
-  it('creates multiple citation rows for multiple INDI SOUR tags', async () => {
-    vi.resetModules();
-    const { execute } = setupImportMock();
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD
+	it('creates multiple citation rows for multiple INDI SOUR tags', async () => {
+		vi.resetModules()
+		const { execute } = setupImportMock()
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(`0 HEAD
 1 GEDC
 2 VERS 5.5.1
 0 @S1@ SOUR
@@ -415,62 +445,72 @@ describe('gedcom-parser citation extraction', () => {
 1 SOUR @S2@
 2 PAGE p.2
 2 QUAY 0
-0 TRLR`);
-    const citationInserts = execute.mock.calls.filter((call) => String(call.at(0) ?? '').includes('INSERT INTO citation'));
-    expect(citationInserts).toHaveLength(2);
-    expect(citationInserts.map((call) => call.at(1))).toEqual([
-      ['S1', 'I1', 'p.1', 'SECONDARY'],
-      ['S2', 'I1', 'p.2', 'QUESTIONABLE'],
-    ]);
-  });
-});
+0 TRLR`)
+		const citationInserts = execute.mock.calls.filter((call) =>
+			String(call.at(0) ?? '').includes('INSERT INTO citation')
+		)
+		expect(citationInserts).toHaveLength(2)
+		expect(citationInserts.map((call) => call.at(1))).toEqual([
+			['S1', 'I1', 'p.1', 'SECONDARY'],
+			['S2', 'I1', 'p.2', 'QUESTIONABLE'],
+		])
+	})
+})
 
 describe('gedcom-parser merge mode', () => {
-  function makeDbMock(clearAll: ReturnType<typeof vi.fn>) {
-    const execute = vi.fn().mockResolvedValue([]);
-    const select = vi.fn().mockImplementation((sql: string) => {
-      if (String(sql).includes('COUNT(*)')) return Promise.resolve([{ c: 0 }]);
-      return Promise.resolve([]);
-    });
-    return {
-      clearAll,
-      upsertPerson: vi.fn().mockResolvedValue(undefined),
-      insertPerson: vi.fn().mockResolvedValue(undefined),
-      insertFamily: vi.fn().mockResolvedValue(undefined),
-      insertSource: vi.fn().mockResolvedValue(undefined),
-      insertEvent: vi.fn().mockResolvedValue(undefined),
-      insertCitation: vi.fn().mockResolvedValue(undefined),
-      insertNote: vi.fn().mockResolvedValue(undefined),
-      insertMedia: vi.fn().mockResolvedValue(undefined),
-      insertChildLink: vi.fn().mockResolvedValue(undefined),
-      rebuildFTS: vi.fn().mockResolvedValue(undefined),
-      classifySources: vi.fn().mockResolvedValue(undefined),
-      computeValidationStatus: vi.fn().mockResolvedValue(undefined),
-      autoCategorizeMediaAfterDedup: vi.fn().mockResolvedValue(undefined),
-      autoLinkOrphanMedia: vi.fn().mockResolvedValue({ linked: 0, skipped: 0 }),
-      getDb: vi.fn(async () => ({ select, execute })),
-      execute,
-      select,
-    };
-  }
+	function makeDbMock(clearAll: ReturnType<typeof vi.fn>) {
+		const execute = vi.fn().mockResolvedValue([])
+		const select = vi.fn().mockImplementation((sql: string) => {
+			if (String(sql).includes('COUNT(*)')) return Promise.resolve([{ c: 0 }])
+			return Promise.resolve([])
+		})
+		return {
+			clearAll,
+			upsertPerson: vi.fn().mockResolvedValue(undefined),
+			insertPerson: vi.fn().mockResolvedValue(undefined),
+			insertFamily: vi.fn().mockResolvedValue(undefined),
+			insertSource: vi.fn().mockResolvedValue(undefined),
+			insertEvent: vi.fn().mockResolvedValue(undefined),
+			insertCitation: vi.fn().mockResolvedValue(undefined),
+			insertNote: vi.fn().mockResolvedValue(undefined),
+			insertMedia: vi.fn().mockResolvedValue(undefined),
+			insertChildLink: vi.fn().mockResolvedValue(undefined),
+			rebuildFTS: vi.fn().mockResolvedValue(undefined),
+			classifySources: vi.fn().mockResolvedValue(undefined),
+			computeValidationStatus: vi.fn().mockResolvedValue(undefined),
+			autoCategorizeMediaAfterDedup: vi.fn().mockResolvedValue(undefined),
+			autoLinkOrphanMedia: vi.fn().mockResolvedValue({ linked: 0, skipped: 0 }),
+			getDb: vi.fn(async () => ({ select, execute })),
+			execute,
+			select,
+		}
+	}
 
-  it('skips clearAll when mode is merge', async () => {
-    vi.resetModules();
-    const clearAll = vi.fn().mockResolvedValue(undefined);
-    vi.doMock('$lib/db', () => makeDbMock(clearAll));
-    vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }));
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`, undefined, { force: true, mode: 'merge' });
-    expect(clearAll).not.toHaveBeenCalled();
-  });
+	it('skips clearAll when mode is merge', async () => {
+		vi.resetModules()
+		const clearAll = vi.fn().mockResolvedValue(undefined)
+		vi.doMock('$lib/db', () => makeDbMock(clearAll))
+		vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }))
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(
+			`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`,
+			undefined,
+			{ force: true, mode: 'merge' }
+		)
+		expect(clearAll).not.toHaveBeenCalled()
+	})
 
-  it('calls clearAll when mode is replace', async () => {
-    vi.resetModules();
-    const clearAll = vi.fn().mockResolvedValue(undefined);
-    vi.doMock('$lib/db', () => makeDbMock(clearAll));
-    vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }));
-    const { importGedcom } = await import('$lib/gedcom-parser');
-    await importGedcom(`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`, undefined, { force: true, mode: 'replace' });
-    expect(clearAll).toHaveBeenCalled();
-  });
-});
+	it('calls clearAll when mode is replace', async () => {
+		vi.resetModules()
+		const clearAll = vi.fn().mockResolvedValue(undefined)
+		vi.doMock('$lib/db', () => makeDbMock(clearAll))
+		vi.doMock('$lib/relationship-finder', () => ({ clearRelationshipCache: vi.fn() }))
+		const { importGedcom } = await import('$lib/gedcom-parser')
+		await importGedcom(
+			`0 HEAD\n1 GEDC\n2 VERS 5.5.1\n0 @I1@ INDI\n1 NAME Test /Person/\n0 TRLR`,
+			undefined,
+			{ force: true, mode: 'replace' }
+		)
+		expect(clearAll).toHaveBeenCalled()
+	})
+})

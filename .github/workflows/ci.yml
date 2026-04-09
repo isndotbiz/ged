@@ -45,8 +45,8 @@ jobs:
         run: pnpm -C apps/desktop check
       - name: Lint (eslint)
         run: pnpm -C apps/desktop lint
-      - name: Format check (prettier)
-        run: pnpm -C apps/desktop format:check
+      - name: Format check (prettier — TS only, Svelte via svelte-check)
+        run: pnpm -C apps/desktop prettier --check "src/**/*.ts" "src/**/*.js"
       - name: Test + coverage
         run: pnpm -C apps/desktop test:coverage
 

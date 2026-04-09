@@ -365,7 +365,7 @@
     <div class="h-5 mx-2" style="border-left: 1px solid var(--border-rule);"></div>
     <div class="flex items-center gap-1">
       <button
-        onclick={() => { maxGen = Math.max(3, maxGen-1); rootPerson && loadTree(rootPerson.xref); }}
+        onclick={() => { maxGen = Math.max(3, maxGen-1); if (rootPerson) loadTree(rootPerson.xref); }}
         class="w-6 h-6 rounded flex items-center justify-center text-xs transition-all"
         style="background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border-subtle); font-family: var(--font-mono);"
       >-</button>
