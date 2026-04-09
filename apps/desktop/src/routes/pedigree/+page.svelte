@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
   import { getPersons, getPerson, getParents, getMediaWithPaths, getPrimaryPhoto, getSpouseFamilies, getChildren, getEvents } from '$lib/db';
-  import type { Person, Family, GedcomEvent, GedcomMedia } from '$lib/types';
+  import type { Person, GedcomEvent, GedcomMedia } from '$lib/types';
   import { getCachedFaceCrop, faceCropToObjectPosition } from '$lib/face-crop';
   import { isTauri } from '$lib/platform';
 
