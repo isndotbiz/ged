@@ -80,7 +80,21 @@ env/
 # Local MCP config (machine-specific)
 .mcp.json
 compound-engineering.local.md
-GedFixApp/.build/
-GedFixKMP/.gradle/
-GedFixKMP/.build/
-GedFixKMP/composeApp/build/
+
+# Archive build artifacts (Gradle, Swift, Kotlin)
+archive/kmp/.gradle/
+archive/kmp/.kotlin/
+archive/kmp/composeApp/build/
+archive/swift/.build/
+archive/swift/.swiftpm/xcode/xcuserdata/
+
+# Rust build artifacts
+apps/desktop/src-tauri/target/
+
+# Coverage reports
+apps/desktop/coverage/
+tools/cli/.coverage
+tools/cli/htmlcov/
+
+# pnpm lock file (regenerated)
+# pnpm-lock.yaml is kept — it ensures reproducible installs
