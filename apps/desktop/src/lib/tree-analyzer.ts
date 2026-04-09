@@ -1,4 +1,4 @@
-import type { TreeIssue, Person, Family, GedcomEvent } from './types';
+import type { TreeIssue, Person, GedcomEvent } from './types';
 import { getAllPersons, getFamilies, getDb } from './db';
 
 function parseYear(dateStr: string): number | null {
