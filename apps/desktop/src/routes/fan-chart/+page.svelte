@@ -231,9 +231,10 @@
     loadPeople();
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-expressions
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     fanNodes;
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     rootPerson;
     if (!loading) drawFanChart();
   });

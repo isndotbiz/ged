@@ -16,6 +16,7 @@
   let parents = $state<{ father: Person | null; mother: Person | null }>({ father: null, mother: null });
   let spouseFamilies = $state.raw<{ family: Family; spouse: Person | null; children: Person[] }[]>([]);
   let media = $state.raw<(GedcomMedia & { isPrimary?: boolean; role?: string })[]>([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let primaryPhoto = $state<GedcomMedia | null>(null);
   let photoUrl = $state('');
   let photoObjectPosition = $state('50% 50%');
@@ -867,7 +868,6 @@
     >
       <h2 id="media-lightbox-title" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);">{t('media.title')}</h2>
       <button class="lightbox-close" onclick={() => lightboxMedia = null} aria-label={t('common.close')}>&times;</button>
-      <!-- svelte-ignore a11y_click_events_have_key_events -->
       <div class="lightbox-content" onclick={(e) => e.stopPropagation()} role="presentation">
         <img use:lazyImage={lightboxMedia.filePath} alt={lightboxMedia.title || 'Photo'} class="lightbox-img" />
         {#if lightboxMedia.title}

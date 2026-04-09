@@ -374,7 +374,7 @@
         style="color: var(--ink-muted); font-family: var(--font-mono);"
       >{maxGen}gen</span>
       <button
-        onclick={() => { maxGen = Math.min(8, maxGen+1); rootPerson && loadTree(rootPerson.xref); }}
+        onclick={() => { maxGen = Math.min(8, maxGen+1); if (rootPerson) loadTree(rootPerson.xref); }}
         class="w-6 h-6 rounded flex items-center justify-center text-xs transition-all"
         style="background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border-subtle); font-family: var(--font-mono);"
       >+</button>

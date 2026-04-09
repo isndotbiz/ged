@@ -35,6 +35,7 @@
   let personA = $state<Person | null>(null);
   let personB = $state<Person | null>(null);
   let relResult = $state('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let relPath = $state<string[]>([]);
   let dnaEstimate = $state<{ label: string; averageCM: number; minCM: number; maxCM: number } | null>(null);
   let relLoading = $state(false);

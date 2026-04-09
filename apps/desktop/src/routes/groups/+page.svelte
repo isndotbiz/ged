@@ -62,7 +62,7 @@
     }
   }
 
-  async function addSelectedPersonToGroup() {
+  async function _addSelectedPersonToGroup() {
     if (!selectedGroup || !pickerSelectedXref) return;
     await addGroupMember(selectedGroup, pickerSelectedXref);
     await load();

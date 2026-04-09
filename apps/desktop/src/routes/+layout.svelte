@@ -119,6 +119,7 @@
 
   // Close sidebar on navigation (mobile)
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     $page.url.pathname;
     sidebarOpen = false;
   });

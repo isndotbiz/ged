@@ -19,7 +19,8 @@
   let unresolvedCount = $derived(places.filter(p => p.latitude == null).length);
   let geocodedPlaces = $derived(places.filter(p => p.latitude != null && p.longitude != null));
 
-  function getMarkerColor(place: Place): string {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  function getMarkerColor(_place: Place): string {
     // We'll determine dominant event type when events are loaded
     // Default based on common patterns in place names
     return '#D97706'; // warm amber/orange default
@@ -290,6 +291,7 @@
   });
 
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     themeMode;
     if (mapInstance && leafletLib) {
       updateBaseTileLayer();

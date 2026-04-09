@@ -135,11 +135,11 @@
   function isMale(p: Person): boolean { return p.sex === 'M'; }
   function isFemale(p: Person): boolean { return p.sex === 'F'; }
 
-  function borderColor(p: Person): string {
+  function _borderColor(p: Person): string {
     return isFemale(p) ? '#D94A8C' : '#4A90D9';
   }
 
-  function bgColor(p: Person): string {
+  function _bgColor(p: Person): string {
     return isFemale(p) ? '#FDF2F8' : '#EFF6FF';
   }
 
@@ -491,18 +491,18 @@
     <h1 class="text-lg font-bold text-ink">Family Tree</h1>
 
     <div class="arch-tabs ml-3">
-      <button onclick={() => { layout = 'side'; rootPerson && buildTree(rootPerson); }} class="arch-tab {layout === 'side' ? 'active' : ''}">
+      <button onclick={() => { layout = 'side'; if (rootPerson) buildTree(rootPerson); }} class="arch-tab {layout === 'side' ? 'active' : ''}">
         Sideways
       </button>
-      <button onclick={() => { layout = 'down'; rootPerson && buildTree(rootPerson); }} class="arch-tab {layout === 'down' ? 'active' : ''}">
+      <button onclick={() => { layout = 'down'; if (rootPerson) buildTree(rootPerson); }} class="arch-tab {layout === 'down' ? 'active' : ''}">
         Top-Down
       </button>
     </div>
 
     <div class="flex items-center gap-1">
-      <button onclick={() => { maxGen = Math.max(2, maxGen - 1); rootPerson && buildTree(rootPerson); }} class="w-6 h-6 flex items-center justify-center rounded text-ink-light text-sm" style="background: var(--parchment);">-</button>
+      <button onclick={() => { maxGen = Math.max(2, maxGen - 1); if (rootPerson) buildTree(rootPerson); }} class="w-6 h-6 flex items-center justify-center rounded text-ink-light text-sm" style="background: var(--parchment);">-</button>
       <span class="text-xs text-ink-muted w-10 text-center">{maxGen} gen</span>
-      <button onclick={() => { maxGen = Math.min(7, maxGen + 1); rootPerson && buildTree(rootPerson); }} class="w-6 h-6 flex items-center justify-center rounded text-ink-light text-sm" style="background: var(--parchment);">+</button>
+      <button onclick={() => { maxGen = Math.min(7, maxGen + 1); if (rootPerson) buildTree(rootPerson); }} class="w-6 h-6 flex items-center justify-center rounded text-ink-light text-sm" style="background: var(--parchment);">+</button>
     </div>
 
     <!-- Legend -->

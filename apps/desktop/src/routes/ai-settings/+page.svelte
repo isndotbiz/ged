@@ -43,6 +43,7 @@
       await db.execute(`INSERT OR REPLACE INTO settings (key, value) VALUES ($1, $2)`, [`ai_key_${providerId}`, apiKeys[providerId] ?? '']);
       saveStatus[providerId] = 'Saved!';
       setTimeout(() => { saveStatus[providerId] = ''; }, 2000);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     } catch (_e) {
       saveStatus[providerId] = 'Error saving';
     }

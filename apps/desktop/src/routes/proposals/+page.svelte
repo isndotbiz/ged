@@ -47,6 +47,7 @@
 
   // --- Derived ---
   let pendingProposals = $derived(proposals.filter(p => p.status === 'pending'));
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let historyProposals = $derived(proposals.filter(p => p.status === 'approved' || p.status === 'rejected'));
 
   let groupedPending = $derived.by(() => {

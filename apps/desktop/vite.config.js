@@ -27,14 +27,14 @@ function packageChunkName(id) {
     const nestedName = nestedSegments[0].startsWith("@")
       ? `${nestedSegments[0]}/${nestedSegments[1] ?? "unknown"}`
       : nestedSegments[0];
-    return `vendor-${nestedName.replace(/[\/@]/g, "_")}`;
+    return `vendor-${nestedName.replace(/[/@]/g, "_")}`;
   }
 
   const segments = pkgPath.split("/");
   const packageName = segments[0].startsWith("@")
     ? `${segments[0]}/${segments[1] ?? "unknown"}`
     : segments[0];
-  return `vendor-${packageName.replace(/[\/@]/g, "_")}`;
+  return `vendor-${packageName.replace(/[/@]/g, "_")}`;
 }
 
 /** @param {string} id */
@@ -58,7 +58,7 @@ function manualChunks(id) {
     const routePath = normalizedId
       .split("/src/routes/")[1]
       ?.replace("/+page.svelte", "")
-      .replace(/[\/[\]]+/g, "-")
+      .replace(/[/[\]]+/g, "-")
       .replace(/^-+|-+$/g, "")
       || "page";
     return `route-${routePath}`;

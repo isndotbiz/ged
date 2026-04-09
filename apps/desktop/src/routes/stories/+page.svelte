@@ -1,7 +1,7 @@
 <script lang="ts">
   import { t } from '$lib/i18n';
   import { getDb, getPersons, getEvents, getStories, insertStory, deleteStory, getParents, getChildren, getSpouseFamilies } from '$lib/db';
-  import type { Person, GedcomEvent, GeneratedStory } from '$lib/types';
+  import type { Person, GeneratedStory } from '$lib/types';
 
   // --- State ---
   let storyMode = $state<'single' | 'family'>('single');

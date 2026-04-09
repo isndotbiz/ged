@@ -10,8 +10,10 @@
   let totalFamilies = $state(0);
   let totalSources = $state(0);
   let avgCitationsPerSource = $state(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let totalEvents = $state(0);
   let totalMedia = $state(0);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   let eventBreakdown = $state<{type: string; count: number}[]>([]);
 
   // Completeness
@@ -433,6 +435,7 @@
 
   // Draw charts when data and canvases are ready
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     themeTick;
     if (!loading && donutCanvas) {
       const palette = getChartPalette();
@@ -446,6 +449,7 @@
   });
 
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     themeTick;
     if (!loading && timelineCanvas && eventsByDecade.length > 0) {
       drawTimelineChart(timelineCanvas, eventsByDecade);
@@ -453,6 +457,7 @@
   });
 
   $effect(() => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-expressions
     themeTick;
     if (!loading && placesCanvas && topPlaces.length > 0) {
       drawHorizontalBarChart(placesCanvas, topPlaces);

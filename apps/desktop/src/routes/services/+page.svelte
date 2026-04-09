@@ -354,7 +354,7 @@
           const me = await meResp.json();
           username = me?.name || me?.first_name || username;
         }
-      } catch {}
+      } catch { /* no-op */ }
 
       await setSetting('service_geni_user', username);
       await setSetting('service_geni_last_sync', new Date().toISOString());
