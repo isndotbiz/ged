@@ -1,74 +1,92 @@
-# GEDCOM Processing Platform
+# GedFix — Monorepo
 
 ## 1Password Connect — Credential Access
 All credentials via 1Password Connect. No service accounts, no desktop auth, no plaintext .env secrets.
-- `OP_CONNECT_HOST=http://100.83.75.4:8100`
+- `OP_CONNECT_HOST` — set in global CLAUDE.md (Helsinki primary 100.65.226.125:8100)
 - `OP_CONNECT_TOKEN` — set in global CLAUDE.md (inherited automatically)
 - Vaults: `Research`, `TrueNAS Infrastructure`
-- Usage: `op item get "Name" --vault "Research" --format json`
 
-A production-grade Python platform for cleaning, standardizing, and validating GEDCOM 5.5.1 genealogy datasets with audit trails and zero data loss guarantees.
+## Monorepo Structure
 
-## Stack
-
-- Python 3.11
-- ged4py >= 0.5.2 (GEDCOM parsing), click >= 8.1 (CLI), rapidfuzz >= 3.9 (fuzzy matching), python-dateutil >= 2.9
-- Packaged library and CLI in `gedfix/` via `pyproject.toml`; entrypoint: `gedfix`
-
-## Key Directories
-
-- `gedfix/` - Core Python library (fixer, checker, deduplication, dates, names, places, validation, manual_review)
-- `scripts/` - ~20 processing, integrity, and rollback scripts (Python + bash)
-- `rules/` - Rule configs and source data; subdirs: analysis/, master/, merged/, problems/, processing/
-- `tests/` - pytest suite (5 test files)
-- `docs/` - Methodology and analysis documentation
-- `data/` - Input data; subdirs: master/, processing/, analysis/, merged/, problems/; large files excluded from git
-- `fact/` - Geocoding working area: place cache CSV, unresolved place lists, issue CSVs, geocoded GEDs
-
-## Setup
-
-```bash
-pip install -e .
-pytest tests/ -q
-gedfix --help
+```
+apps/desktop/       Tauri 2 + SvelteKit 5 — mac/win/linux/android/iOS
+  src/              SvelteKit frontend (30+ routes)
+  src-tauri/        Rust backend (image processing, file I/O, Chrome ext bridge)
+  apps/chrome-ext/  Chrome Extension MV3 — scrapes Ancestry/FamilySearch/etc
+packages/core/      @gedfix/core — shared TypeScript types, schema, SQL queries
+tools/cli/          Python CLI — GEDCOM cleaning, deduplication, validation
+  gedfix/           Python library
+  tests/            pytest suite
+  scripts/          Processing and integrity scripts
+archive/swift/      Swift/SwiftUI macOS experiment (reference, not active)
+archive/kmp/        Kotlin Multiplatform experiment (reference, not active)
+data/               Genealogy data files (mostly gitignored)
+docs/               Methodology documentation
 ```
 
-## CLI Commands
+## Platform Status
+
+| Platform | Path | Status |
+|----------|------|--------|
+| macOS | apps/desktop/ | ✅ Complete |
+| Windows | apps/desktop/ | ✅ Complete |
+| Linux | apps/desktop/ | ✅ Complete |
+| Web | apps/desktop/ (VITE_WEB=true) | ✅ Live at gedfix.isn.biz |
+| Android | apps/desktop/ (Tauri mobile) | 🔧 APK building |
+| iOS | apps/desktop/ (Tauri mobile) | 🔧 CI wired, needs device test |
+| Chrome Ext | apps/desktop/apps/chrome-ext/ | 🔧 In progress |
+
+## Desktop App Development
 
 ```bash
+pnpm dev                    # macOS desktop dev
+pnpm dev:web                # web dev (browser, sql.js)
+pnpm build                  # desktop build
+pnpm build:web              # web build (Cloudflare Pages)
+pnpm -C packages/core build # rebuild @gedfix/core
+```
+
+## Mobile Development
+
+```bash
+# From apps/desktop/
+npm run tauri android dev   # Android (needs Android Studio + NDK 27)
+npm run tauri ios dev       # iOS (needs Xcode + macOS)
+```
+
+## Python CLI
+
+```bash
+pip install -e tools/cli
+gedfix --help
+
 gedfix scan input.ged --report out/report.json
 gedfix check input.ged --level standard|aggressive|ultra
 gedfix fix input.ged --out cleaned.ged --level standard|aggressive|ultra|comprehensive
-gedfix fix input.ged --out cleaned.ged --backup-dir ./backups --approve-dup-facts --approve-suffix
-gedfix fix input.ged --dry-run
 gedfix dedupe input.ged --out deduped.ged --threshold 95.0
-gedfix dedupe input.ged --dry-run
 gedfix review input.ged --issues-file session.json
 ```
 
-## Fix Levels (gedfix/rules.yaml)
+Fix levels (`tools/cli/gedfix/rules.yaml`):
 
-| Level | merge_duplicates | fuzzy_threshold | fix_places | structural_validation |
-|-------|-----------------|-----------------|------------|----------------------|
-| standard | no | 96 | no | no |
-| aggressive | yes | 92 | yes | yes |
-| ultra | yes | 88 | yes | yes |
-| comprehensive | yes | 90 | yes | yes |
-
-All levels fix dates and names. AutoFix notes use prefix `"AutoFix:"` by default.
+| Level | merge_duplicates | fuzzy_threshold | fix_places |
+|-------|-----------------|-----------------|------------|
+| standard | no | 96 | no |
+| aggressive | yes | 92 | yes |
+| ultra | yes | 88 | yes |
+| comprehensive | yes | 90 | yes |
 
 ## Key Scripts
 
 ```bash
-scripts/verify_data_integrity.sh original.ged processed.ged
-scripts/setup_processing_workspace.sh data/master/roots_master.ged
-scripts/rollback_to_backup.sh <backup_file>
-scripts/master_gedcom_workflow.sh data/master/roots_master.ged
+tools/cli/scripts/verify_data_integrity.sh original.ged processed.ged
+tools/cli/scripts/rollback_to_backup.sh <backup_file>
+tools/cli/scripts/master_gedcom_workflow.sh data/master/roots_master.ged
 ```
 
 ## Notes
 
-- Large data files (`.txt`, `.large`, `maps/`, `media/`) are excluded from git
-- Output files in `out/` are excluded from git
-- The project processing run (Aug 2025) is complete; remaining open items are manual genealogical review (265 flagged issues, 365 potential duplicates)
-- Place geocoding cache: `fact/places_cache.csv`; unresolved places: `fact/unresolved_places.txt`
+- Large data files excluded from git: `.txt`, `.large`, `maps/`, `media/`
+- Output files in `out/` excluded from git
+- Place geocoding cache: `fact/places_cache.csv`
+- `images/` removed from repo — Spirit Atlas content saved to ~/Desktop/extras/spirit-atlas-images/
