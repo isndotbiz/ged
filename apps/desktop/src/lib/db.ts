@@ -1083,8 +1083,80 @@ export async function deduplicateMediaByNormalizedPath(): Promise<{
 	return { duplicateGroups, entriesRemoved, linksTransferred }
 }
 
-export async function autoCategorizeMediaAfterDedup(): Promise<{ updated: number }> {
+// Document keywords — if the filename contains any of these, it's NOT a portrait
+const DOCUMENT_KEYWORDS = [
+	'census', 'birth', 'death', 'marriage', 'baptism', 'burial', 'deed',
+	'will ', 'will-', 'abstract', 'certificate', 'record', 'register',
+	'memorial', 'church', 'castle', 'screenshot', 'memoirs', 'visitation',
+	'passenger', 'immigration', 'naturalization', 'draft', 'enlistment',
+	'directory', 'newspaper', 'obituary', 'probate', 'petition', 'land',
+	'tax', 'assessment', 'index', 'page', 'pg ', 'vol ', 'volume',
+	'inscription', 'headstone', 'grave', 'cemetery', 'battalion',
+	'regiment', 'nuncupative', 'sworn', 'affidavit', 'letters of',
+	'england and wales', 'canada census', 'scotland census',
+	'sun.jpg', 'times.jpg', 'herald.jpg', 'gazette.jpg', 'tribune.jpg',
+]
+
+function isLikelyPortrait(filePath: string, personNames: Set<string>): boolean {
+	const fileName = filePath.split(/[\\/]/).pop() || ''
+	const baseName = fileName.replace(/\.[^.]*$/, '').toLowerCase().trim()
+
+	// Skip UUIDs, hex strings, and numeric-only filenames
+	if (/^[0-9a-f-]{20,}$/i.test(baseName)) return false
+	if (/^\d+$/.test(baseName)) return false
+	// Skip IMG_xxxx / DSC_xxxx camera files (these need manual classification)
+	if (/^(img|dsc|photo|image)[-_]\d+/i.test(baseName)) return false
+
+	// Check document keywords first — strong signal for non-portrait
+	const lower = baseName.replace(/_/g, ' ').replace(/-/g, ' ')
+	for (const kw of DOCUMENT_KEYWORDS) {
+		if (lower.includes(kw)) return false
+	}
+
+	// Check if filename looks like a person's name (matches a known person)
+	for (const name of personNames) {
+		if (name.length < 4) continue
+		if (lower.includes(name)) return true
+	}
+
+	// Filename is short-ish, has spaces/underscores (name-like), no numbers at start
+	const words = lower.split(/[\s_]+/).filter((w) => w.length > 1)
+	if (words.length >= 2 && words.length <= 5 && !/^\d/.test(words[0])) {
+		// Looks like "firstname lastname" pattern — likely a portrait
+		return true
+	}
+
+	return false
+}
+
+export async function autoCategorizeMediaAfterDedup(): Promise<{
+	updated: number
+	portraits: number
+	documents: number
+}> {
 	const d = await getDb()
+
+	// Build set of known person names (lowercase) for matching
+	const persons = await d.select<{ givenName: string; surname: string }[]>(
+		`SELECT givenName, surname FROM person`
+	)
+	const personNames = new Set<string>()
+	for (const p of persons) {
+		const given = (p.givenName || '').toLowerCase().trim()
+		const surname = (p.surname || '').toLowerCase().trim()
+		if (given && surname) {
+			personNames.add(`${given} ${surname}`)
+			personNames.add(`${surname} ${given}`)
+			// First name only with surname
+			const firstName = given.split(' ')[0]
+			if (firstName.length > 2) {
+				personNames.add(`${firstName} ${surname}`)
+				personNames.add(`${surname} ${firstName}`)
+			}
+		}
+		if (surname.length > 3) personNames.add(surname)
+	}
+
 	const rows = await d.select<
 		{
 			id: number
@@ -1098,18 +1170,51 @@ export async function autoCategorizeMediaAfterDedup(): Promise<{ updated: number
      LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id
      GROUP BY m.id`
 	)
+
 	let updated = 0
+	let portraits = 0
+	let documents = 0
+
 	for (const row of rows) {
-		const normalized = normalizeMediaPath(row.filePath || '')
+		const filePath = row.filePath || ''
 		let next: MediaCategory = 'uncategorized'
-		if (normalized.includes('headshot') || normalized.includes('portrait')) next = 'headshots'
-		else if (row.linkCount === 0) next = 'other'
+
+		if (isLikelyPortrait(filePath, personNames)) {
+			next = 'headshots'
+			portraits++
+		} else if (filePath) {
+			next = 'other'
+			documents++
+		}
+
 		if (row.category !== next) {
-			const result = await d.execute(`UPDATE media SET category = $1 WHERE id = $2`, [next, row.id])
-			updated += result.rowsAffected
+			await d.execute(`UPDATE media SET category = $1 WHERE id = $2`, [next, row.id])
+			updated++
 		}
 	}
-	return { updated }
+
+	// Auto-set isPrimary for portrait media linked to exactly one person
+	const portraitLinks = await d.select<{ mediaId: number; personXref: string }[]>(
+		`SELECT mpl.mediaId, mpl.personXref
+     FROM media_person_link mpl
+     JOIN media m ON m.id = mpl.mediaId
+     WHERE m.category = 'headshots' AND mpl.isPrimary = 0`
+	)
+	for (const link of portraitLinks) {
+		// Only auto-set isPrimary if this person doesn't already have a primary photo
+		const existing = await d.select<{ id: number }[]>(
+			`SELECT id FROM media_person_link WHERE personXref = $1 AND isPrimary = 1 LIMIT 1`,
+			[link.personXref]
+		)
+		if (existing.length === 0) {
+			await d.execute(
+				`UPDATE media_person_link SET isPrimary = 1, role = 'primary_portrait' WHERE mediaId = $1 AND personXref = $2`,
+				[link.mediaId, link.personXref]
+			)
+		}
+	}
+
+	return { updated, portraits, documents }
 }
 
 export async function moveNonPortraitHeadshotsToOther(): Promise<number> {
