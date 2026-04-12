@@ -3,7 +3,7 @@
   import { page } from '$app/stores';
   import { goto } from '$app/navigation';
   import { appStats, isImporting, importProgress, importMessage } from '$lib/stores';
-  import { isDbEmpty, getStats, getSetting, setSetting, exportDbAsJson, getPendingProposalCount } from '$lib/db';
+  import { isDbEmpty, getStats, getSetting, setSetting, exportDbAsJson, getPendingProposalCount, scanAndImportMediaDirectory, deduplicateMediaByNormalizedPath, autoCategorizeMediaAfterDedup } from '$lib/db';
   import { importGedcom } from '$lib/gedcom-parser';
   import { isTauri } from '$lib/platform';
   import { exportGedcom } from '$lib/gedcom-exporter';
@@ -282,22 +282,26 @@
       const { homeDir, join } = await import('@tauri-apps/api/path');
 
       const home = await homeDir();
-      const primaryPath = await join(home, 'Documents', 'Family Tree Maker', 'Ancestry_2026-03-25.ged');
-      const fallbackPath = await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged');
-      let filePath = primaryPath;
+      // Try FTM export first (has OBJE media references), then fallbacks
+      const gedcomPaths = [
+        await join(home, 'Workspace', 'ged', 'data', 'master', 'ftm_export_20260320.ged'),
+        await join(home, 'Documents', 'Family Tree Maker', 'Ancestry_2026-03-25.ged'),
+        await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged'),
+      ];
 
-      let text: string;
-      try {
-        text = await readTextFile(filePath);
-      } catch {
+      let text: string | null = null;
+      for (const filePath of gedcomPaths) {
         try {
-          filePath = fallbackPath;
           text = await readTextFile(filePath);
+          break;
         } catch {
-          $importMessage = 'GEDCOM file not found. Use Settings to import.';
-          $isImporting = false;
-          return;
+          continue;
         }
+      }
+      if (!text) {
+        $importMessage = 'GEDCOM file not found. Use Settings to import.';
+        $isImporting = false;
+        return;
       }
 
       await createAutoBackup();
@@ -305,6 +309,34 @@
         $importProgress = pct;
         $importMessage = msg;
       }, { force: true });
+
+      // Scan FTM media directory for additional images not in the GEDCOM
+      $importMessage = 'Scanning media directory for additional images...';
+      const mediaDir = await join(home, 'Documents', 'Family Tree Maker', 'Mallinger Family Tree Cleaned Media');
+      try {
+        const scanResult = await scanAndImportMediaDirectory(mediaDir, (_pct, msg) => {
+          $importMessage = msg;
+        });
+        console.log('Media scan:', scanResult);
+      } catch (e) {
+        console.warn('Media directory scan skipped:', e);
+      }
+
+      // Deduplicate and categorize all media
+      $importMessage = 'Deduplicating media...';
+      try {
+        await deduplicateMediaByNormalizedPath();
+      } catch (e) {
+        console.warn('Media dedup skipped:', e);
+      }
+
+      $importMessage = 'Classifying portraits vs documents...';
+      try {
+        const catResult = await autoCategorizeMediaAfterDedup();
+        console.log('Media categorization:', catResult);
+      } catch (e) {
+        console.warn('Media categorization skipped:', e);
+      }
 
       const stats = await getStats();
       appStats.set(stats);

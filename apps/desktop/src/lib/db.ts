@@ -877,6 +877,129 @@ export async function autoLinkOrphanMedia(): Promise<{ linked: number; skipped: 
 	return { linked, skipped }
 }
 
+/**
+ * Scan a directory for image files not yet in the media table.
+ * Insert them and try to match to people by filename.
+ */
+export async function scanAndImportMediaDirectory(
+	directory: string,
+	onProgress?: (pct: number, msg: string) => void
+): Promise<{ imported: number; matched: number; skipped: number }> {
+	const d = await getDb()
+
+	onProgress?.(5, 'Loading existing media paths...')
+	const existing = await d.select<{ filePath: string }[]>(`SELECT filePath FROM media`)
+	const existingSet = new Set(existing.map((e) => normalizeMediaPath(e.filePath)))
+
+	// Load person names for matching
+	const persons = await d.select<{ xref: string; givenName: string; surname: string }[]>(
+		`SELECT xref, givenName, surname FROM person`
+	)
+	const personsByFullName = new Map<string, string>() // lowercase name -> xref
+	const personsBySurname = new Map<string, string[]>() // lowercase surname -> xrefs
+
+	for (const p of persons) {
+		const given = (p.givenName || '').toLowerCase().trim()
+		const surname = (p.surname || '').toLowerCase().trim()
+		if (given && surname) {
+			personsByFullName.set(`${given} ${surname}`, p.xref)
+			personsByFullName.set(`${surname} ${given}`, p.xref)
+			const firstName = given.split(' ')[0]
+			if (firstName.length > 2) {
+				personsByFullName.set(`${firstName} ${surname}`, p.xref)
+				personsByFullName.set(`${surname} ${firstName}`, p.xref)
+			}
+		}
+		if (surname.length > 3) {
+			if (!personsBySurname.has(surname)) personsBySurname.set(surname, [])
+			personsBySurname.get(surname)!.push(p.xref)
+		}
+	}
+
+	onProgress?.(15, 'Listing files in directory...')
+
+	// Use Tauri to list files, or fallback for web
+	let files: string[] = []
+	try {
+		const { isTauri: checkTauri } = await import('./platform')
+		if (checkTauri()) {
+			const { invoke } = await import('@tauri-apps/api/core')
+			files = await invoke<string[]>('list_image_files', { dir: directory })
+		}
+	} catch {
+		// Can't list files in non-Tauri environment
+		return { imported: 0, matched: 0, skipped: 0 }
+	}
+
+	const imageExts = new Set(['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'tiff', 'tif'])
+	const imageFiles = files.filter((f) => {
+		const ext = f.split('.').pop()?.toLowerCase() || ''
+		return imageExts.has(ext)
+	})
+
+	onProgress?.(25, `Found ${imageFiles.length} image files, checking for new ones...`)
+
+	let imported = 0
+	let matched = 0
+	let skipped = 0
+
+	for (let i = 0; i < imageFiles.length; i++) {
+		const filePath = imageFiles[i]
+		if (i % 50 === 0) {
+			onProgress?.(25 + (i / imageFiles.length) * 70, `Processing ${i}/${imageFiles.length}...`)
+		}
+
+		const normalized = normalizeMediaPath(filePath)
+		if (existingSet.has(normalized)) {
+			skipped++
+			continue
+		}
+
+		// Insert new media record
+		const fileName = filePath.split(/[\\/]/).pop() || ''
+		const title = fileName.replace(/\.[^.]*$/, '').replace(/_/g, ' ')
+		await insertMedia({
+			xref: '',
+			ownerXref: '',
+			filePath: filePath,
+			format: 'photo',
+			title: title,
+		})
+		imported++
+		existingSet.add(normalized)
+
+		// Try to match by filename to a person
+		const baseName = title.toLowerCase().replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim()
+		let matchedXref: string | null = null
+
+		// Check full name matches
+		for (const [name, xref] of personsByFullName) {
+			if (baseName.includes(name)) {
+				matchedXref = xref
+				break
+			}
+		}
+
+		if (matchedXref) {
+			const newRows = await d.select<{ id: number }[]>(
+				`SELECT id FROM media WHERE LOWER(filePath) = LOWER($1) ORDER BY id DESC LIMIT 1`,
+				[filePath]
+			)
+			if (newRows.length > 0) {
+				await d.execute(
+					`INSERT OR IGNORE INTO media_person_link (mediaId, personXref, role, isPrimary, addedBy, createdAt)
+           VALUES ($1, $2, 'tagged', 0, 'directory_scan', datetime('now'))`,
+					[newRows[0].id, matchedXref]
+				)
+				matched++
+			}
+		}
+	}
+
+	onProgress?.(100, `Done: ${imported} imported, ${matched} matched to people, ${skipped} already existed`)
+	return { imported, matched, skipped }
+}
+
 export type MediaCategory = 'headshots' | 'other' | 'delete-queue' | 'uncategorized'
 
 export function normalizeMediaPath(filePath: string): string {

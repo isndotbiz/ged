@@ -11,6 +11,7 @@
     getAllPersons,
     updateMediaFilePath,
     normalizeMediaPath,
+    scanAndImportMediaDirectory,
     type MediaCategory,
   } from '$lib/db';
   import type { GedcomMedia, FaceDetectionBox, Person } from '$lib/types';
@@ -47,6 +48,8 @@
   let selectedPersonXref = $state('');
   let linkedOnly = $state(true);
   let imagesOnly = $state(true);
+  let scanResult = $state<{ imported: number; matched: number; skipped: number } | null>(null);
+  let scanProgress = $state('');
 
   let _convertFileSrc: ((path: string) => string) | null = null;
 
@@ -333,6 +336,37 @@
       statusMsg = `Face tagging failed: ${e}`;
     }
   }
+
+  async function runScanDirectory(): Promise<void> {
+    if (!isTauri()) {
+      statusMsg = 'Directory scanning requires the desktop app.';
+      return;
+    }
+    busy = true;
+    scanProgress = 'Selecting directory...';
+    statusMsg = '';
+    try {
+      const { open } = await import('@tauri-apps/plugin-dialog');
+      const dir = await open({ directory: true, title: 'Select media folder to scan' });
+      if (!dir) {
+        busy = false;
+        scanProgress = '';
+        return;
+      }
+      scanProgress = 'Scanning...';
+      scanResult = await scanAndImportMediaDirectory(dir as string, (_pct, msg) => {
+        scanProgress = msg;
+      });
+      // Re-categorize after importing new files
+      const cat = await autoCategorizeMediaAfterDedup();
+      await load();
+      statusMsg = `Scan complete: ${scanResult.imported} imported, ${scanResult.matched} matched to people. ${cat.portraits} portraits, ${cat.documents} documents classified.`;
+    } catch (e) {
+      statusMsg = `Scan failed: ${e}`;
+    }
+    busy = false;
+    scanProgress = '';
+  }
 </script>
 
 <div class="arch-page max-w-none h-full overflow-y-auto">
@@ -341,9 +375,20 @@
       <h1 class="display-gradient text-4xl">{t('media.management')}</h1>
       <p class="text-muted mt-2">Category management, deduplication, delete queue, and filename normalization.</p>
       <div class="mt-4 flex flex-wrap gap-3">
+        <button class="btn-primary" onclick={runScanDirectory} disabled={busy}>Scan Media Directory</button>
         <button class="btn-primary" onclick={runDedupPipeline} disabled={busy}>{t('cleanup.deduplicateMedia')}</button>
         <button class="btn-outline" onclick={runHeadshotCleanup} disabled={busy}>Move Non-Portrait Headshots</button>
       </div>
+      {#if scanProgress}
+        <p class="mt-2 text-muted font-mono text-sm">{scanProgress}</p>
+      {/if}
+      {#if scanResult}
+        <div class="mt-3 grid grid-cols-3 gap-3">
+          <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{scanResult.imported}</div><div class="text-muted">Imported</div></div>
+          <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{scanResult.matched}</div><div class="text-muted">Matched</div></div>
+          <div class="arch-card p-3 text-center"><div class="font-mono text-2xl">{scanResult.skipped}</div><div class="text-muted">Already Existed</div></div>
+        </div>
+      {/if}
       <div class="mt-3 flex flex-wrap gap-4 items-center">
         <label class="flex items-center gap-2 text-sm cursor-pointer">
           <input type="checkbox" bind:checked={linkedOnly} onchange={load} />
