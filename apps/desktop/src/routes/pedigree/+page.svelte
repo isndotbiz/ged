@@ -63,12 +63,16 @@
   let selectedMedia = $state.raw<GedcomMedia[]>([]);
 
   async function load() {
-    persons = await getPersons('', 2000);
-    if (persons.length > 0 && !rootPerson) {
-      // Find Jonathan directly by xref
-      let me = await getPerson('I2');
-      if (!me) me = persons.find(p => p.givenName === 'Jonathan' && p.surname === 'Mallinger') ?? persons[0];
-      if (me) await buildTree(me);
+    try {
+      persons = await getPersons('', 2000);
+      if (persons.length > 0 && !rootPerson) {
+        // Find Jonathan directly by xref
+        let me = await getPerson('I2');
+        if (!me) me = persons.find(p => p.givenName === 'Jonathan' && p.surname === 'Mallinger') ?? persons[0];
+        if (me) await buildTree(me);
+      }
+    } catch (e) {
+      console.error('load DB error:', e);
     }
   }
 
