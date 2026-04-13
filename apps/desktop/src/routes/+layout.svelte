@@ -293,61 +293,63 @@
       const { homeDir, join } = await import('@tauri-apps/api/path');
 
       const home = await homeDir();
+      await jsLog(`autoImport: home=${home}`);
       const primaryPath = await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged');
+      await jsLog(`autoImport: trying ${primaryPath}`);
 
       let text: string;
       try {
         text = await readTextFile(primaryPath);
-      } catch {
+        await jsLog(`autoImport: read ${text.length} chars`);
+      } catch (e) {
+        await jsLog(`autoImport: read failed: ${e}`);
         $importMessage = `GEDCOM file not found at ${primaryPath}. Use Settings to import.`;
         $isImporting = false;
         return;
       }
 
-      console.log('Auto-import: starting importGedcom with', text.length, 'chars');
+      await jsLog('autoImport: starting importGedcom');
       const linkResult = await importGedcom(text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
-        console.log(`Import: ${pct}% — ${msg}`);
       }, { force: true });
-      console.log('Auto-import: importGedcom complete, linked:', linkResult.linked);
+      await jsLog(`autoImport: importGedcom done, linked=${linkResult.linked}`);
 
-      // Scan FTM media directory for additional images not in the GEDCOM
-      $importMessage = 'Scanning media directory for additional images...';
-      const mediaDir = await join(home, 'Documents', 'Family Tree Maker', 'Mallinger Family Tree Cleaned Media');
-      try {
-        const scanResult = await scanAndImportMediaDirectory(mediaDir, (_pct, msg) => {
-          $importMessage = msg;
-        });
-        console.log('Media scan:', scanResult);
-      } catch (e) {
-        console.warn('Media directory scan skipped:', e);
-      }
-
-      // Deduplicate and categorize all media
-      $importMessage = 'Deduplicating media...';
-      try {
-        await deduplicateMediaByNormalizedPath();
-      } catch (e) {
-        console.warn('Media dedup skipped:', e);
-      }
-
-      $importMessage = 'Classifying portraits vs documents...';
-      try {
-        const catResult = await autoCategorizeMediaAfterDedup();
-        console.log('Media categorization:', catResult);
-      } catch (e) {
-        console.warn('Media categorization skipped:', e);
-      }
-
+      // Update stats immediately so the UI works even if media steps fail
       const stats = await getStats();
       appStats.set(stats);
       showWebWelcome = false;
       $isImporting = false;
-      $importMessage = `Import complete${linkResult.linked > 0 ? ` • ${t('import.mediaLinked', { count: linkResult.linked })}` : ''}`;
+      $importMessage = `Import complete — ${stats.personCount} people, ${stats.familyCount} families`;
       notifyImportComplete();
+      await jsLog(`autoImport: stats updated, ${stats.personCount} people`);
+
+      // Optional: scan media directory, dedup, categorize (failures are non-fatal)
+      try {
+        const mediaDir = await join(home, 'Documents', 'Family Tree Maker', 'Mallinger Family Tree Cleaned Media');
+        const scanResult = await scanAndImportMediaDirectory(mediaDir, (_pct, msg) => {
+          $importMessage = msg;
+        });
+        await jsLog(`autoImport: media scan done, imported=${scanResult.imported}`);
+      } catch (e) {
+        await jsLog(`autoImport: media scan skipped: ${e}`);
+      }
+
+      try {
+        await deduplicateMediaByNormalizedPath();
+      } catch (e) {
+        await jsLog(`autoImport: dedup skipped: ${e}`);
+      }
+
+      try {
+        const catResult = await autoCategorizeMediaAfterDedup();
+        await jsLog(`autoImport: categorized ${catResult.portraits} portraits, ${catResult.documents} documents`);
+      } catch (e) {
+        await jsLog(`autoImport: categorize skipped: ${e}`);
+      }
     } catch (e) {
       console.error('Import error:', e);
+      await jsLog(`autoImport ERROR: ${e}`);
       $importMessage = `Import error: ${e}`;
       $isImporting = false;
     }

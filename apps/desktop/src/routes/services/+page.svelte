@@ -698,7 +698,7 @@
         </div>
         <div>
           <h2 class="text-base font-semibold" style="color: var(--ink); font-family: var(--font-serif);">{t('services.familysearch')}</h2>
-          <p class="text-xs mt-0.5" style="color: var(--ink-muted); font-family: var(--font-sans);">Free REST API with full read/write access. OAuth2 authentication.</p>
+          <p class="text-xs mt-0.5" style="color: var(--ink-muted); font-family: var(--font-sans);">The world's largest free genealogy platform, operated by The Church of Jesus Christ of Latter-day Saints. Over 13 billion records including vital records, census data, immigration records, military records, and church registers from 100+ countries. Features a collaborative shared tree with 1.4 billion connected profiles. Free REST API with OAuth2 — search historical records, read and update the shared tree, access digital images of original documents, and retrieve standardized place data. Completely free, no subscription required.</p>
         </div>
       </div>
       <div class="flex items-center gap-2">

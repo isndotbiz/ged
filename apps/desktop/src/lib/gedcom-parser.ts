@@ -232,8 +232,12 @@ export async function importGedcom(
 
 	try {
 		if (!mergeMode) {
-			onProgress?.(0, 'Clearing database...')
-			await clearAll()
+			if (preImportPersonCount > 0) {
+				onProgress?.(0, 'Clearing database...')
+				await clearAll()
+				// Wait for WAL checkpoint after clearAll
+				await db.execute('PRAGMA wal_checkpoint(TRUNCATE)')
+			}
 		} else {
 			onProgress?.(0, 'Merging records...')
 		}
@@ -299,7 +303,6 @@ export async function importGedcom(
 		const total = records.length
 		let processed = 0
 
-		await db.execute('BEGIN TRANSACTION')
 		try {
 			for (const rec of records) {
 				processed++
@@ -657,9 +660,7 @@ export async function importGedcom(
 			await db.execute(`INSERT INTO place (name, normalized, eventCount)
     SELECT place, place, COUNT(*) FROM event WHERE place != '' GROUP BY place`)
 
-			await db.execute('COMMIT')
 		} catch (e) {
-			await db.execute('ROLLBACK')
 			throw e
 		}
 

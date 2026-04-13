@@ -27,31 +27,11 @@
   let hideInstallPrompt = $state(false);
   let undoHistory = $state.raw<{ id: string; description: string; createdAt: string }[]>([]);
 
-  interface ApiKeyConfig {
-    name: string;
-    dbKey: string;
-    key: string;
-    placeholder: string;
-  }
-
-  let apiKeys = $state<ApiKeyConfig[]>([
-    { name: 'OpenAI', dbKey: 'api_key_openai', key: '', placeholder: 'sk-...' },
-    { name: 'Anthropic', dbKey: 'api_key_anthropic', key: '', placeholder: 'sk-ant-...' },
-    { name: 'Google AI', dbKey: 'api_key_google', key: '', placeholder: 'AIza...' },
-    { name: 'FamilySearch', dbKey: 'api_key_familysearch', key: '', placeholder: 'API key' },
-    { name: 'FindMyPast', dbKey: 'api_key_findmypast', key: '', placeholder: 'API key' },
-    { name: 'MyHeritage', dbKey: 'api_key_myheritage', key: '', placeholder: 'API key' },
-    { name: 'Ancestry', dbKey: 'api_key_ancestry', key: '', placeholder: 'API key' },
-  ]);
 
   async function loadSettings() {
     const threshold = await getSetting('living_threshold');
     if (threshold) livingThreshold = parseInt(threshold);
 
-    for (let i = 0; i < apiKeys.length; i++) {
-      const val = await getSetting(apiKeys[i].dbKey);
-      if (val) apiKeys[i].key = val;
-    }
     await loadLocale();
     language = getLocale();
     hideInstallPrompt = localStorage.getItem('install-prompt-dismissed') === '1';
@@ -127,11 +107,6 @@
     setTimeout(() => { saveStatus = ''; }, 2000);
   }
 
-  async function saveApiKey(config: ApiKeyConfig) {
-    await setSetting(config.dbKey, config.key);
-    saveStatus = `${config.name} key saved`;
-    setTimeout(() => { saveStatus = ''; }, 2000);
-  }
 
   async function saveLivingThreshold() {
     await setSetting('living_threshold', String(livingThreshold));
@@ -584,30 +559,6 @@
     </div>
   </section>
 
-  <!-- API Keys -->
-  <section class="mb-8">
-    <h2 class="arch-section-header">{t('settings.apiKeys')}</h2>
-    <div class="arch-card divide-y arch-card-divide">
-      {#each apiKeys as config, i}
-        <div class="flex items-center gap-3 px-5 py-3.5">
-          <span class="text-sm font-medium text-ink w-28 shrink-0">{config.name}</span>
-          <input
-            type="password"
-            bind:value={apiKeys[i].key}
-            placeholder={config.placeholder}
-            class="flex-1 px-3 py-1.5 text-sm rounded-lg outline-none placeholder:text-gray-300 transition-colors arch-input"
-           aria-label={config.placeholder} />
-          <button
-            onclick={() => saveApiKey(config)}
-            class="px-3 py-1.5 text-xs font-medium btn-secondary transition-colors shrink-0"
-          >
-            Save
-          </button>
-        </div>
-      {/each}
-    </div>
-    <p class="text-xs text-ink-faint mt-2 px-1">API keys are stored locally in your database and never transmitted.</p>
-  </section>
 
   <!-- About -->
   <section>

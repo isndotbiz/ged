@@ -50,14 +50,12 @@
     if (xref) p = await getPerson(xref);
     if (!p) {
       // Try Jonathan Mallinger first (tree owner)
-      p = await getPerson('I2');
-      if (!p) {
-        const db = await getDb();
-        const candidates = await db.select<{xref: string}[]>(
-          `SELECT xref FROM person WHERE givenName = 'Jonathan' AND surname = 'Mallinger' LIMIT 1`
-        );
-        if (candidates.length > 0) p = await getPerson(candidates[0].xref);
-      }
+      const db2 = await getDb();
+      const candidates = await db2.select<{xref: string}[]>(
+        `SELECT xref FROM person WHERE givenName = 'Jonathan' AND surname = 'Mallinger' LIMIT 1`
+      );
+      if (candidates.length > 0) p = await getPerson(candidates[0].xref);
+      if (!p) p = await getPerson('I2');
       if (!p) {
         const db = await getDb();
         const first = await db.select<{xref: string}[]>(`SELECT xref FROM person LIMIT 1`);
@@ -336,7 +334,7 @@
     style="background: var(--vellum); border-bottom: 1px solid var(--border-rule);"
   >
     <button
-      onclick={() => loadTree('I2')}
+      onclick={() => loadTree('I272')}
       class="px-2 py-1 rounded-md transition-all"
       style="background: var(--parchment); color: var(--ink-light); border: 1px solid var(--border-subtle);"
       title={t('nav.goToHomePerson')}

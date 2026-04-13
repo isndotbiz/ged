@@ -13,6 +13,11 @@ struct BridgeStats {
     sources: u64,
 }
 
+#[tauri::command]
+fn js_log(msg: String) {
+    println!("[JS] {}", msg);
+}
+
 fn bridge_stats_store() -> &'static Mutex<BridgeStats> {
     static STORE: OnceLock<Mutex<BridgeStats>> = OnceLock::new();
     STORE.get_or_init(|| Mutex::new(BridgeStats::default()))
@@ -673,6 +678,7 @@ pub fn run() {
             set_badge_count,
             set_bridge_stats,
             backup_database,
+            js_log,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

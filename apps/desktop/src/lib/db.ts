@@ -51,19 +51,26 @@ async function pushUndoAction(
 	)
 }
 
+let dbInitPromise: Promise<PlatformDatabase> | null = null
+
 export async function getDb(): Promise<PlatformDatabase> {
-	if (!db) {
-		if (isTauri()) {
-			const { default: Database } = await import('@tauri-apps/plugin-sql')
-			db = await Database.load('sqlite:gedfix.db')
-		} else {
-			const { loadWebDatabase } = await import('./platform-db')
-			db = await loadWebDatabase()
-		}
-		await createTables()
-		if (isTauri()) await optimizeDb()
+	if (db) return db
+	// Prevent concurrent initialization — all callers wait on the same promise
+	if (!dbInitPromise) {
+		dbInitPromise = (async () => {
+			if (isTauri()) {
+				const { default: Database } = await import('@tauri-apps/plugin-sql')
+				db = await Database.load('sqlite:gedfix.db')
+			} else {
+				const { loadWebDatabase } = await import('./platform-db')
+				db = await loadWebDatabase()
+			}
+			if (isTauri()) await optimizeDb()
+			await createTables()
+			return db!
+		})()
 	}
-	return db
+	return dbInitPromise
 }
 
 async function optimizeDb() {
@@ -920,14 +927,13 @@ export async function scanAndImportMediaDirectory(
 
 	// Use Tauri to list files, or fallback for web
 	let files: string[] = []
+	if (!isTauri()) {
+		return { imported: 0, matched: 0, skipped: 0 }
+	}
 	try {
-		const { isTauri: checkTauri } = await import('./platform')
-		if (checkTauri()) {
-			const { invoke } = await import('@tauri-apps/api/core')
-			files = await invoke<string[]>('list_image_files', { dir: directory })
-		}
+		const { invoke } = await import('@tauri-apps/api/core')
+		files = await invoke<string[]>('list_image_files', { dir: directory })
 	} catch {
-		// Can't list files in non-Tauri environment
 		return { imported: 0, matched: 0, skipped: 0 }
 	}
 
@@ -3231,31 +3237,24 @@ export async function getChangeLog(entityId?: string): Promise<ChangeLogEntry[]>
 
 export async function clearAll(): Promise<void> {
 	const d = await getDb()
-	await d.execute('BEGIN TRANSACTION')
-	try {
-		await d.execute(`DROP TRIGGER IF EXISTS person_fts_ai`)
-		await d.execute(`DROP TRIGGER IF EXISTS person_fts_ad`)
-		await d.execute(`DROP TRIGGER IF EXISTS person_fts_au`)
-		await d.execute(`DROP TABLE IF EXISTS person_fts`)
-		// Delete in dependency order
-		await d.execute(`DELETE FROM change_log`)
-		await d.execute(`DELETE FROM proposal`)
-		await d.execute(`DELETE FROM agent_run`)
-		await d.execute(`DELETE FROM media_person_link`)
-		await d.execute(`DELETE FROM child_link`)
-		await d.execute(`DELETE FROM event`)
-		await d.execute(`DELETE FROM media`)
-		await d.execute(`DELETE FROM source`)
-		await d.execute(`DELETE FROM family`)
-		await d.execute(`DELETE FROM person`)
-		await d.execute(`DELETE FROM place`)
-		await d.execute(`DELETE FROM citation`)
-		await d.execute(`DELETE FROM dismissed_issue`)
-		await d.execute('COMMIT')
-	} catch (e) {
-		await d.execute('ROLLBACK')
-		throw e
-	}
+	await d.execute(`DROP TRIGGER IF EXISTS person_fts_ai`)
+	await d.execute(`DROP TRIGGER IF EXISTS person_fts_ad`)
+	await d.execute(`DROP TRIGGER IF EXISTS person_fts_au`)
+	await d.execute(`DROP TABLE IF EXISTS person_fts`)
+	// Delete in dependency order — no transaction needed, importGedcom wraps its own
+	await d.execute(`DELETE FROM change_log`)
+	await d.execute(`DELETE FROM proposal`)
+	await d.execute(`DELETE FROM agent_run`)
+	await d.execute(`DELETE FROM media_person_link`)
+	await d.execute(`DELETE FROM child_link`)
+	await d.execute(`DELETE FROM event`)
+	await d.execute(`DELETE FROM media`)
+	await d.execute(`DELETE FROM source`)
+	await d.execute(`DELETE FROM family`)
+	await d.execute(`DELETE FROM person`)
+	await d.execute(`DELETE FROM place`)
+	await d.execute(`DELETE FROM citation`)
+	await d.execute(`DELETE FROM dismissed_issue`)
 }
 
 export async function getSetting(key: string): Promise<string | null> {
