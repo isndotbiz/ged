@@ -227,7 +227,10 @@
     loading = false;
   }
 
+  let hasLoaded = false;
   $effect(() => {
+    if (hasLoaded) return;
+    hasLoaded = true;
     loadPeople();
   });
 
