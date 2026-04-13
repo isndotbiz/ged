@@ -9,7 +9,7 @@
     "zip": "cd dist && zip -r ../gedfix-chrome-ext.zip ."
   },
   "devDependencies": {
-    "esbuild": "^0.25.0",
+    "esbuild": "^0.28.0",
     "@types/chrome": "^0.0.300"
   },
   "dependencies": {
