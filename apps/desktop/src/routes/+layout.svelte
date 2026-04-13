@@ -259,9 +259,20 @@
     refreshPendingProposalCount();
   });
 
+  async function jsLog(msg: string) {
+    try {
+      if (isTauri()) {
+        const { invoke } = await import('@tauri-apps/api/core');
+        await invoke('js_log', { msg });
+      }
+    } catch { /* best effort */ }
+  }
+
   async function autoImport() {
     try {
+      await jsLog('autoImport: starting');
       const empty = await isDbEmpty();
+      await jsLog(`autoImport: isDbEmpty=${empty}`);
       if (!empty) {
         const stats = await getStats();
         appStats.set(stats);
@@ -282,33 +293,24 @@
       const { homeDir, join } = await import('@tauri-apps/api/path');
 
       const home = await homeDir();
-      // Try FTM export first (has OBJE media references), then fallbacks
-      const gedcomPaths = [
-        await join(home, 'Workspace', 'ged', 'data', 'master', 'ftm_export_20260320.ged'),
-        await join(home, 'Documents', 'Family Tree Maker', 'Ancestry_2026-03-25.ged'),
-        await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged'),
-      ];
+      const primaryPath = await join(home, 'Documents', 'GedFix', 'mallinger_cleaned.ged');
 
-      let text: string | null = null;
-      for (const filePath of gedcomPaths) {
-        try {
-          text = await readTextFile(filePath);
-          break;
-        } catch {
-          continue;
-        }
-      }
-      if (!text) {
-        $importMessage = 'GEDCOM file not found. Use Settings to import.';
+      let text: string;
+      try {
+        text = await readTextFile(primaryPath);
+      } catch {
+        $importMessage = `GEDCOM file not found at ${primaryPath}. Use Settings to import.`;
         $isImporting = false;
         return;
       }
 
-      await createAutoBackup();
+      console.log('Auto-import: starting importGedcom with', text.length, 'chars');
       const linkResult = await importGedcom(text, (pct, msg) => {
         $importProgress = pct;
         $importMessage = msg;
+        console.log(`Import: ${pct}% — ${msg}`);
       }, { force: true });
+      console.log('Auto-import: importGedcom complete, linked:', linkResult.linked);
 
       // Scan FTM media directory for additional images not in the GEDCOM
       $importMessage = 'Scanning media directory for additional images...';
