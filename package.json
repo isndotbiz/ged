@@ -21,8 +21,7 @@
   },
   "lint-staged": {
     "apps/desktop/src/**/*.ts": [
-      "pnpm -C apps/desktop lint:fix",
-      "prettier --write"
+      "pnpm -C apps/desktop lint:fix"
     ],
     "apps/desktop/src/**/*.svelte": [
       "pnpm -C apps/desktop lint:fix"

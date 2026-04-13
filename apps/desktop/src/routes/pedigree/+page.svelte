@@ -308,7 +308,12 @@
     return gens;
   }
 
-  $effect(() => { load(); });
+  let initialized = false;
+  $effect(() => {
+    if (initialized) return;
+    initialized = true;
+    load();
+  });
 </script>
 
 <style>

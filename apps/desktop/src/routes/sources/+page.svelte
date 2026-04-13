@@ -39,14 +39,19 @@
   }
 
   async function load() {
-    const [srcs, db] = await Promise.all([getSources(), getDb()]);
-    sources = srcs;
-    const rows = await db.select<{ sourceXref: string; cnt: number }[]>(
-      'SELECT sourceXref, COUNT(*) as cnt FROM citation GROUP BY sourceXref'
-    );
-    const map = new Map<string, number>();
-    for (const r of rows) map.set(r.sourceXref, r.cnt);
-    citationCounts = map;
+    try {
+      const srcs = await getSources();
+      const db = await getDb();
+      sources = srcs;
+      const rows = await db.select<{ sourceXref: string; cnt: number }[]>(
+        'SELECT sourceXref, COUNT(*) as cnt FROM citation GROUP BY sourceXref'
+      );
+      const map = new Map<string, number>();
+      for (const r of rows) map.set(r.sourceXref, r.cnt);
+      citationCounts = map;
+    } catch (e) {
+      console.error('Failed to load sources:', e);
+    }
   }
 
   let filtered = $derived(
@@ -99,7 +104,12 @@
     return colors[q] || 'bg-gray-100 text-gray-500';
   }
 
-  $effect(() => { load(); });
+  let initialized = false;
+  $effect(() => {
+    if (initialized) return;
+    initialized = true;
+    load();
+  });
 </script>
 
 <div class="p-8 max-w-4xl animate-fade-in">

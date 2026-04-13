@@ -66,9 +66,13 @@
   let searchTimeout: ReturnType<typeof setTimeout>;
 
   async function load() {
-    persons = await getPersons(search, 2000);
-    groups = await getGroups();
-    loadPhotos(persons.slice(0, 50));
+    try {
+      persons = await getPersons(search, 2000);
+      groups = await getGroups();
+      loadPhotos(persons.slice(0, 50));
+    } catch (e) {
+      console.error('load DB error:', e);
+    }
   }
 
   function togglePersonSelection(xref: string, index: number, shiftKey: boolean) {
@@ -175,41 +179,42 @@
 
   async function selectPerson(p: Person) {
     selected = p;
-    // Parallel data fetching
-    const [events, parents, media, photo, fams] = await Promise.all([
-      getEvents(p.xref),
-      getParents(p.xref),
-      getMediaWithPaths(p.xref),
-      getPrimaryPhoto(p.xref),
-      getSpouseFamilies(p.xref),
-    ]);
-    selectedEvents = events;
-    selectedParents = parents;
-    selectedMedia = media;
-    selectedPrimaryPhoto = photo;
-    selectedPrimaryPhotoPosition = '50% 50%';
-    if (photo?.filePath) {
-      const fromTitle = cropTitleObjectPosition(photo.title);
-      if (fromTitle) {
-        selectedPrimaryPhotoPosition = fromTitle;
-      } else if (photo.id) {
-        const crop = await getCachedFaceCrop(photo.id, convertFileSrc(photo.filePath));
-        if (crop) selectedPrimaryPhotoPosition = faceCropToObjectPosition(crop);
+    // Sequential DB queries to avoid SQLite lock contention
+    try {
+      const events = await getEvents(p.xref);
+      const parents = await getParents(p.xref);
+      const media = await getMediaWithPaths(p.xref);
+      const photo = await getPrimaryPhoto(p.xref);
+      const fams = await getSpouseFamilies(p.xref);
+      selectedEvents = events;
+      selectedParents = parents;
+      selectedMedia = media;
+      selectedPrimaryPhoto = photo;
+      selectedPrimaryPhotoPosition = '50% 50%';
+      if (photo?.filePath) {
+        const fromTitle = cropTitleObjectPosition(photo.title);
+        if (fromTitle) {
+          selectedPrimaryPhotoPosition = fromTitle;
+        } else if (photo.id) {
+          const crop = await getCachedFaceCrop(photo.id, convertFileSrc(photo.filePath));
+          if (crop) selectedPrimaryPhotoPosition = faceCropToObjectPosition(crop);
+        }
       }
-    }
-    expandedMedia = null;
+      expandedMedia = null;
 
-    // Load family details
-    const famDetails = await Promise.all(fams.map(async (f) => {
-      const spouseXref = f.partner1Xref === p.xref ? f.partner2Xref : f.partner1Xref;
-      const { getPerson } = await import('$lib/db');
-      const [spouse, children] = await Promise.all([
-        spouseXref ? getPerson(spouseXref) : Promise.resolve(null),
-        getChildren(f.xref),
-      ]);
-      return { family: f, spouse, children };
-    }));
-    selectedFamilies = famDetails;
+      // Load family details sequentially to avoid lock contention
+      const famDetails: { family: typeof fams[0]; spouse: Person | null; children: Person[] }[] = [];
+      for (const f of fams) {
+        const spouseXref = f.partner1Xref === p.xref ? f.partner2Xref : f.partner1Xref;
+        const { getPerson } = await import('$lib/db');
+        const spouse = spouseXref ? await getPerson(spouseXref) : null;
+        const children = await getChildren(f.xref);
+        famDetails.push({ family: f, spouse, children });
+      }
+      selectedFamilies = famDetails;
+    } catch (e) {
+      console.error('selectPerson DB error:', e);
+    }
   }
 
   function getInitials(p: Person): string {
@@ -296,7 +301,12 @@
     setTimeout(() => { isResearchingPerson = false; researchPersonMsg = ''; }, 3000);
   }
 
-  $effect(() => { load(); });
+  let initialized = false;
+  $effect(() => {
+    if (initialized) return;
+    initialized = true;
+    load();
+  });
 </script>
 
 <div class="flex h-full">

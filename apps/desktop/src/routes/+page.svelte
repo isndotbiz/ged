@@ -45,88 +45,93 @@
     treeLoading = true;
     treeReady = false;
 
-    // Find root: use provided xref, or find a good starting person
-    let p: Person | null = null;
-    if (xref) p = await getPerson(xref);
-    if (!p) {
-      // Try Jonathan Mallinger first (tree owner)
-      const db2 = await getDb();
-      const candidates = await db2.select<{xref: string}[]>(
-        `SELECT xref FROM person WHERE givenName = 'Jonathan' AND surname = 'Mallinger' LIMIT 1`
-      );
-      if (candidates.length > 0) p = await getPerson(candidates[0].xref);
-      if (!p) p = await getPerson('I2');
+    try {
+      // Find root: use provided xref, or find a good starting person
+      let p: Person | null = null;
+      if (xref) p = await getPerson(xref);
       if (!p) {
-        const db = await getDb();
-        const first = await db.select<{xref: string}[]>(`SELECT xref FROM person LIMIT 1`);
-        if (first.length > 0) p = await getPerson(first[0].xref);
+        // Try Jonathan Mallinger first (tree owner)
+        const db2 = await getDb();
+        const candidates = await db2.select<{xref: string}[]>(
+          `SELECT xref FROM person WHERE givenName = 'Jonathan' AND surname = 'Mallinger' LIMIT 1`
+        );
+        if (candidates.length > 0) p = await getPerson(candidates[0].xref);
+        if (!p) p = await getPerson('I2');
+        if (!p) {
+          const db = await getDb();
+          const first = await db.select<{xref: string}[]>(`SELECT xref FROM person LIMIT 1`);
+          if (first.length > 0) p = await getPerson(first[0].xref);
+        }
       }
-    }
-    if (!p) { treeLoading = false; return; }
-    rootPerson = p;
+      if (!p) { return; }
+      rootPerson = p;
 
-    const max = Math.pow(2, maxGen) - 1;
-    const arr: TreeNode[] = Array.from({ length: max + 1 }, () => ({ person: null, thumbUrl: '', objectPosition: '50% 50%', gen: 0, slot: 0 }));
+      const max = Math.pow(2, maxGen) - 1;
+      const arr: TreeNode[] = Array.from({ length: max + 1 }, () => ({ person: null, thumbUrl: '', objectPosition: '50% 50%', gen: 0, slot: 0 }));
 
-    // BFS level-by-level with parallel fetches per level
-    type QueueItem = { xref: string; idx: number; gen: number; slot: number };
-    let queue: QueueItem[] = [{ xref: p.xref, idx: 1, gen: 0, slot: 0 }];
+      // BFS level-by-level with parallel fetches per level
+      type QueueItem = { xref: string; idx: number; gen: number; slot: number };
+      let queue: QueueItem[] = [{ xref: p.xref, idx: 1, gen: 0, slot: 0 }];
 
-    while (queue.length > 0) {
-      const [persons, photos, parentsList] = await Promise.all([
-        Promise.all(queue.map(q => getPerson(q.xref))),
-        Promise.all(queue.map(q => getPrimaryPhoto(q.xref))),
-        Promise.all(queue.map(q => getParents(q.xref))),
-      ]);
+      while (queue.length > 0) {
+        const [persons, photos, parentsList] = await Promise.all([
+          Promise.all(queue.map(q => getPerson(q.xref))),
+          Promise.all(queue.map(q => getPrimaryPhoto(q.xref))),
+          Promise.all(queue.map(q => getParents(q.xref))),
+        ]);
 
-      const photoUi = await Promise.all(photos.map(async (photo) => {
-        if (!photo?.filePath) return { thumbUrl: '', objectPosition: '50% 50%' };
-        try {
-          if (photo.title?.startsWith('crop:')) {
-            const parts = photo.title.replace('crop:', '').split(',');
-            const x = parseFloat(parts[0] ?? '50');
-            const y = parseFloat(parts[1] ?? '30');
+        const photoUi = await Promise.all(photos.map(async (photo) => {
+          if (!photo?.filePath) return { thumbUrl: '', objectPosition: '50% 50%' };
+          try {
+            if (photo.title?.startsWith('crop:')) {
+              const parts = photo.title.replace('crop:', '').split(',');
+              const x = parseFloat(parts[0] ?? '50');
+              const y = parseFloat(parts[1] ?? '30');
+              return {
+                thumbUrl: await cropFace(photo.filePath, x, y, parseFloat(parts[2] ?? '2.5'), 96),
+                objectPosition: `${x}% ${y}%`,
+              };
+            }
+            const thumbUrl = await getThumbUrl(photo.filePath);
+            const crop = photo.id ? await getCachedFaceCrop(photo.id, thumbUrl || photo.filePath) : null;
             return {
-              thumbUrl: await cropFace(photo.filePath, x, y, parseFloat(parts[2] ?? '2.5'), 96),
-              objectPosition: `${x}% ${y}%`,
+              thumbUrl,
+              objectPosition: crop ? faceCropToObjectPosition(crop) : '50% 50%',
             };
+          } catch {
+            return { thumbUrl: '', objectPosition: '50% 50%' };
           }
-          const thumbUrl = await getThumbUrl(photo.filePath);
-          const crop = photo.id ? await getCachedFaceCrop(photo.id, thumbUrl || photo.filePath) : null;
-          return {
-            thumbUrl,
-            objectPosition: crop ? faceCropToObjectPosition(crop) : '50% 50%',
+        }));
+
+        const nextQueue: QueueItem[] = [];
+        for (let i = 0; i < queue.length; i++) {
+          const q = queue[i];
+          const person = persons[i];
+          if (!person) continue;
+          arr[q.idx] = {
+            person,
+            thumbUrl: photoUi[i]?.thumbUrl ?? '',
+            objectPosition: photoUi[i]?.objectPosition ?? '50% 50%',
+            gen: q.gen,
+            slot: q.slot
           };
-        } catch {
-          return { thumbUrl: '', objectPosition: '50% 50%' };
+          if (q.gen + 1 < maxGen) {
+            const parents = parentsList[i];
+            if (parents.father) nextQueue.push({ xref: parents.father.xref, idx: q.idx * 2, gen: q.gen + 1, slot: q.slot * 2 });
+            if (parents.mother) nextQueue.push({ xref: parents.mother.xref, idx: q.idx * 2 + 1, gen: q.gen + 1, slot: q.slot * 2 + 1 });
+          }
         }
-      }));
-
-      const nextQueue: QueueItem[] = [];
-      for (let i = 0; i < queue.length; i++) {
-        const q = queue[i];
-        const person = persons[i];
-        if (!person) continue;
-        arr[q.idx] = {
-          person,
-          thumbUrl: photoUi[i]?.thumbUrl ?? '',
-          objectPosition: photoUi[i]?.objectPosition ?? '50% 50%',
-          gen: q.gen,
-          slot: q.slot
-        };
-        if (q.gen + 1 < maxGen) {
-          const parents = parentsList[i];
-          if (parents.father) nextQueue.push({ xref: parents.father.xref, idx: q.idx * 2, gen: q.gen + 1, slot: q.slot * 2 });
-          if (parents.mother) nextQueue.push({ xref: parents.mother.xref, idx: q.idx * 2 + 1, gen: q.gen + 1, slot: q.slot * 2 + 1 });
-        }
+        queue = nextQueue;
       }
-      queue = nextQueue;
-    }
 
-    nodes = arr;
-    treeReady = true;
-    treeLoading = false;
-    appStats.set(await getStats());
+      nodes = arr;
+      treeReady = true;
+      appStats.set(await getStats());
+    } catch (e) {
+      console.error('loadTree error:', e);
+    } finally {
+      treeLoading = false;
+    }
   }
 
   function nav(p: Person) {
@@ -289,10 +294,17 @@
     loadTree();
   }
 
+  let treeInitialized = false;
   $effect(() => {
+    if (treeInitialized) return;
+    treeInitialized = true;
     (async () => {
-      showLanding = await isDbEmpty();
-      if (!showLanding && !treeReady && !treeLoading) loadTree();
+      try {
+        showLanding = await isDbEmpty();
+        if (!showLanding && !treeReady && !treeLoading) loadTree();
+      } catch (e) {
+        console.error('Tree init error:', e);
+      }
     })();
   });
 </script>

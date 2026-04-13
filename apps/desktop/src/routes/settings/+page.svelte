@@ -321,8 +321,19 @@
     window.addEventListener('beforeinstallprompt', handler as EventListener);
     return () => window.removeEventListener('beforeinstallprompt', handler as EventListener);
   });
-  $effect(() => { loadSettings(); });
-  $effect(() => { refreshExportPreview(); });
+  let settingsLoaded = false;
+  $effect(() => {
+    if (settingsLoaded) return;
+    settingsLoaded = true;
+    (async () => {
+      try {
+        await loadSettings();
+        await refreshExportPreview();
+      } catch (e) {
+        console.error('Settings load error:', e);
+      }
+    })();
+  });
 </script>
 
 <div class="p-8 max-w-2xl animate-fade-in">

@@ -303,8 +303,7 @@ export async function importGedcom(
 		const total = records.length
 		let processed = 0
 
-		try {
-			for (const rec of records) {
+		for (const rec of records) {
 				processed++
 				if (processed % 200 === 0) {
 					const pct = 15 + Math.round((processed / total) * 80)
@@ -659,10 +658,6 @@ export async function importGedcom(
 			onProgress?.(96, 'Building place index...')
 			await db.execute(`INSERT INTO place (name, normalized, eventCount)
     SELECT place, place, COUNT(*) FROM event WHERE place != '' GROUP BY place`)
-
-		} catch (e) {
-			throw e
-		}
 
 		// Rebuild FTS index after bulk load
 		onProgress?.(95, 'Building search index...')

@@ -429,9 +429,18 @@
     }
   }
 
+  let initialized = false;
   $effect(() => {
-    loadStats();
-    loadMediaStats();
+    if (initialized) return;
+    initialized = true;
+    (async () => {
+      try {
+        await loadStats();
+        await loadMediaStats();
+      } catch (e) {
+        console.error('Failed to initialize cleanup stats:', e);
+      }
+    })();
   });
 </script>
 
