@@ -29,7 +29,7 @@ tauri-plugin-shell = "2.3.5"
 tauri-plugin-notification = "2"
 tiny_http = "0.12"
 image = "0.25"
-little_exif = "0.4"
+little_exif = "0.6"
 
 [profile.release]
 strip = true
