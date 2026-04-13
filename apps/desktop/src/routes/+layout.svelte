@@ -255,8 +255,9 @@
     }
   }
 
+  // Delay proposal count check to avoid DB lock contention at startup
   $effect(() => {
-    refreshPendingProposalCount();
+    setTimeout(() => refreshPendingProposalCount(), 3000);
   });
 
   async function jsLog(msg: string) {

@@ -62,8 +62,8 @@
         _convertFileSrc = mod.convertFileSrc;
       });
     }
-    load();
-    getAllPersons().then((rows) => { people = rows; });
+    // Sequential DB access to avoid lock contention
+    load().then(() => getAllPersons()).then((rows) => { people = rows; });
   });
 
   let visibleMedia = $derived(
