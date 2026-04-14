@@ -2,6 +2,7 @@
   import { t } from '$lib/i18n';
   import {
     getMediaForManagement,
+    getMediaCounts,
     updateMediaCategory,
     processDeleteQueue,
     deduplicateMediaByNormalizedPath,
@@ -50,8 +51,13 @@
   let imagesOnly = $state(true);
   let scanResult = $state<{ imported: number; matched: number; skipped: number } | null>(null);
   let scanProgress = $state('');
+  let pageSize = 48;
+  let currentPage = $state(0);
 
   let _convertFileSrc: ((path: string) => string) | null = null;
+
+  let tabCounts = $state<Record<string, number>>({});
+  let loading = $state(false);
 
   let initialized = $state(false);
   $effect(() => {
@@ -62,29 +68,25 @@
         _convertFileSrc = mod.convertFileSrc;
       });
     }
-    // Sequential DB access to avoid lock contention
-    load().then(() => getAllPersons()).then((rows) => { people = rows; });
+    (async () => {
+      try {
+        const { invoke } = isTauri() ? await import('@tauri-apps/api/core') : { invoke: null };
+        const log = (m: string) => invoke?.('js_log', { msg: m });
+        await log?.('Media: starting load');
+        await load();
+        await log?.('Media: load complete, ' + media.length + ' items');
+      } catch (e) {
+        console.error('Media page load error:', e);
+      }
+    })();
+    // Defer people load — only needed for face tagging
+    setTimeout(() => { getAllPersons().then((rows) => { people = rows; }).catch(() => {}); }, 5000);
   });
 
-  let visibleMedia = $derived(
-    media.filter((m) => {
-      if (m.category !== activeCategory) return false;
-      if (!search.trim()) return true;
-      const q = search.toLowerCase();
-      return (
-        (m.title || '').toLowerCase().includes(q) ||
-        (m.filePath || '').toLowerCase().includes(q) ||
-        (m.peopleLabel || '').toLowerCase().includes(q)
-      );
-    })
-  );
+  let visibleMedia = $derived(media);
+  let totalPages = $derived(Math.ceil((tabCounts[activeCategory] ?? 0) / pageSize));
 
-  let counts = $derived(
-    tabs.reduce((acc, t) => {
-      acc[t.id] = media.filter((m) => m.category === t.id).length;
-      return acc;
-    }, {} as Record<MediaCategory, number>)
-  );
+  let counts = $derived(tabCounts as Record<MediaCategory, number>);
 
   function imageSrc(path: string): string {
     if (_convertFileSrc) return _convertFileSrc(path);
@@ -150,8 +152,20 @@
   }
 
   async function load(): Promise<void> {
-    media = await getMediaForManagement({ linkedOnly, imagesOnly });
-    selectedIds = new Set();
+    loading = true;
+    try {
+      tabCounts = await getMediaCounts({ linkedOnly, imagesOnly });
+      media = await getMediaForManagement({
+        linkedOnly,
+        imagesOnly,
+        category: activeCategory,
+        limit: pageSize,
+        offset: currentPage * pageSize,
+      });
+      selectedIds = new Set();
+    } finally {
+      loading = false;
+    }
   }
 
   async function moveSelection(category: MediaCategory): Promise<void> {
@@ -419,7 +433,7 @@
             role="tab"
             aria-selected={activeCategory === tab.id}
             class="tab-chip {activeCategory === tab.id ? 'is-active' : ''}"
-            onclick={() => { activeCategory = tab.id; clearSelection(); }}
+            onclick={() => { activeCategory = tab.id; currentPage = 0; clearSelection(); load(); }}
             ondragover={(e) => e.preventDefault()}
             ondrop={(e) => onDropTab(tab.id, e)}
           >
@@ -442,7 +456,7 @@
         {/if}
       </div>
 
-      <p class="text-muted mb-3">Selected: {selectedIds.size}. Use Cmd/Ctrl+click for multi-select, then drag selected cards to another category tab.</p>
+      <p class="text-muted mb-3">{loading ? 'Loading...' : `Showing ${media.length} of ${tabCounts[activeCategory] ?? 0}`}. Selected: {selectedIds.size}.</p>
 
       {#if deleteResult}
         <p class="text-muted mb-3">Delete queue processed: {deleteResult.mediaRemoved} media removed, {deleteResult.linksRemoved} links removed.</p>
@@ -500,6 +514,13 @@
       </div>
       {#if visibleMedia.length === 0}
         <p class="text-muted py-8">{t('media.noMedia')}</p>
+      {/if}
+      {#if totalPages > 1}
+        <div class="flex items-center justify-center gap-2 mt-6">
+          <button class="btn-outline" onclick={() => { currentPage = Math.max(0, currentPage - 1); load(); }} disabled={currentPage === 0}>Prev</button>
+          <span class="text-muted font-mono text-sm">Page {currentPage + 1} / {totalPages}</span>
+          <button class="btn-outline" onclick={() => { currentPage = Math.min(totalPages - 1, currentPage + 1); load(); }} disabled={currentPage >= totalPages - 1}>Next</button>
+        </div>
       {/if}
     </section>
 

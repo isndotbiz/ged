@@ -1015,6 +1015,9 @@ export function normalizeMediaPath(filePath: string): string {
 export async function getMediaForManagement(options?: {
 	linkedOnly?: boolean
 	imagesOnly?: boolean
+	category?: string
+	limit?: number
+	offset?: number
 }): Promise<
 	(GedcomMedia & {
 		category: MediaCategory
@@ -1025,6 +1028,9 @@ export async function getMediaForManagement(options?: {
 	const d = await getDb()
 	const linkedOnly = options?.linkedOnly ?? true
 	const imagesOnly = options?.imagesOnly ?? true
+	const categoryFilter = options?.category ? `AND COALESCE(m.category, 'uncategorized') = '${options.category}'` : ''
+	const limit = options?.limit ?? 50
+	const offset = options?.offset ?? 0
 	const join = linkedOnly
 		? 'INNER JOIN media_person_link mpl ON mpl.mediaId = m.id'
 		: 'LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id'
@@ -1042,10 +1048,36 @@ export async function getMediaForManagement(options?: {
     FROM media m
     ${join}
     LEFT JOIN person p ON p.xref = mpl.personXref
-    WHERE m.filePath != '' ${imageFilter}
+    WHERE m.filePath != '' ${imageFilter} ${categoryFilter}
     GROUP BY m.id
     ORDER BY m.id DESC
+    LIMIT ${limit} OFFSET ${offset}
   `)
+}
+
+export async function getMediaCounts(options?: {
+	linkedOnly?: boolean
+	imagesOnly?: boolean
+}): Promise<Record<string, number>> {
+	const d = await getDb()
+	const linkedOnly = options?.linkedOnly ?? true
+	const imagesOnly = options?.imagesOnly ?? true
+	const join = linkedOnly
+		? 'INNER JOIN media_person_link mpl ON mpl.mediaId = m.id'
+		: 'LEFT JOIN media_person_link mpl ON mpl.mediaId = m.id'
+	const imageFilter = imagesOnly
+		? `AND (LOWER(m.filePath) LIKE '%.jpg' OR LOWER(m.filePath) LIKE '%.jpeg' OR LOWER(m.filePath) LIKE '%.png' OR LOWER(m.filePath) LIKE '%.gif' OR LOWER(m.filePath) LIKE '%.bmp' OR LOWER(m.filePath) LIKE '%.webp' OR LOWER(m.filePath) LIKE '%.tiff' OR LOWER(m.filePath) LIKE '%.tif')`
+		: ''
+	const rows = await d.select<{ cat: string; cnt: number }[]>(`
+    SELECT COALESCE(m.category, 'uncategorized') as cat, COUNT(DISTINCT m.id) as cnt
+    FROM media m
+    ${join}
+    WHERE m.filePath != '' ${imageFilter}
+    GROUP BY cat
+  `)
+	const counts: Record<string, number> = {}
+	for (const r of rows) counts[r.cat] = r.cnt
+	return counts
 }
 
 export async function updateMediaCategory(
